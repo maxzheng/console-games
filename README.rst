@@ -5,5 +5,6 @@ No games yet. Come back soon!
 
 To install::
 
-    pip install games
+    pip3 install autopip
+    app install console-games
 

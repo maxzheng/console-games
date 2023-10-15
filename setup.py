@@ -23,11 +23,11 @@ setuptools.setup(
     python_requires='>=3.5',
     setup_requires=['setuptools-git', 'wheel'],
 
-    # entry_points={
-    #    'console_scripts': [
-    #        'script_name = package.module:entry_callable',
-    #    ],
-    # },
+    entry_points={
+       'console_scripts': [
+           'play = games.scripts:main',
+       ],
+    },
 
     # Standard classifiers at https://pypi.org/classifiers/
     classifiers=[
