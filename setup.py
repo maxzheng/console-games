@@ -2,7 +2,7 @@ import setuptools
 
 
 setuptools.setup(
-    name='games',
+    name='console-games',
     version='0.0.1',
 
     author='Max Zheng',
@@ -11,7 +11,7 @@ setuptools.setup(
     description='Cool games for your terminal!',
     long_description=open('README.rst').read(),
 
-    url='https://github.com/maxzheng/games',
+    url='https://github.com/maxzheng/console-games',
 
     install_requires=open('requirements.txt').read(),
 
