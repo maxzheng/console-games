@@ -55,17 +55,21 @@ class Screen:
         frame = []
         if self._width and self._height:
             for r in range(self._height):
-                frame.append([' '] * self._width)
+                frame.append([' '] * (self._width))
         return frame
 
     def draw(self, x: int, y: int, char: str):
         """ Draw character on the given position """
+        if x < 0:
+            x = self._width + x
+        if y < 0:
+            y = self._height + y - 1
         if x >= 0 and x < self._width and y >= 0 and y < self._height:
             self.next_frame[y][x] = char
 
-    def add(self, screen_object):
+    def add(self, *screen_object):
         """ Add object to be rendered on the screen """
-        self.objects.append(screen_object)
+        self.objects.extend(screen_object)
 
     def remove(self, screen_object):
         """ Remove object from the screen """
@@ -93,4 +97,3 @@ class Screen:
                     self.current_frame[y][x] = self.next_frame[y][x]
 
         self.screen.refresh()
-

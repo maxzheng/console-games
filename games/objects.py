@@ -1,3 +1,5 @@
+from time import time
+
 from games.screen import Screen
 
 
@@ -23,7 +25,7 @@ class Text(ScreenObject):
 
 
 class BouncyText(Text):
-    def __init__(self, x: int, y: int, text: str, x_delta = 1, y_delta = 1):
+    def __init__(self, x: int, y: int, text: str, x_delta=1, y_delta=1):
         super().__init__(x, y, text)
         self.x_delta = x_delta
         self.y_delta = y_delta
@@ -40,12 +42,24 @@ class BouncyText(Text):
 
 
 class Border(ScreenObject):
-    def __init__(self, char: str):
+    def __init__(self, char: str, show_fps=False):
         super().__init__(0, 0)
         self.char = char
+        self.show_fps = show_fps
+
+        self._renders = 0
+        self._start_time = time()
 
     def render(self, screen: Screen):
         for x in range(screen.width):
             for y in range(screen.height):
                 if x == 0 or y == 0 or x == screen.width - 1 or y == screen.height - 1:
                     screen.draw(x, y, self.char)
+
+        if self.show_fps:
+            self._renders += 1
+            fps = round(self._renders / (time() - self._start_time))
+            fps_text = ' FPS: {} '.format(fps)
+            start_x = round((screen.width - len(fps_text)) / 2)
+            for x_offset in range(len(fps_text)):
+                screen.draw(start_x + x_offset, screen.height - 1, fps_text[x_offset])
