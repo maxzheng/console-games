@@ -65,7 +65,7 @@ class Screen:
         if y < 0:
             y = self._height + y - 1
         if x >= 0 and x < self._width and y >= 0 and y < self._height:
-            self.next_frame[y][x] = char
+            self.next_frame[int(y)][int(x)] = char
 
     def add(self, *screen_object):
         """ Add object to be rendered on the screen """
