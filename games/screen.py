@@ -29,9 +29,14 @@ class Screen:
     def height(self):
         return self._height
 
+    @property
+    def key(self):
+        return self._screen.getch()
+
     def __enter__(self):
         self._screen = curses.initscr()
         self._screen.keypad(True)
+        self._screen.nodelay(True)
 
         max_height, max_width = self._screen.getmaxyx()
         if not self._height or self._height >= max_height:
@@ -88,7 +93,11 @@ class Screen:
 
         for obj in self.objects:
             obj.render(self)
+            if obj.is_out:
+                self.remove(obj)
+
         if self.border:
+            self.border.debug_info['Objects'] = len(self.objects)
             self.border.render(self)
 
         for x in range(self._width):

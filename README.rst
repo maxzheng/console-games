@@ -1,5 +1,5 @@
-games
-===========
+console games
+=============
 
 No games yet. Come back soon!
 
