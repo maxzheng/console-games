@@ -30,10 +30,10 @@ class Screen:
         return self._height
 
     def __enter__(self):
-        self.screen = curses.initscr()
-        self.screen.keypad(True)
+        self._screen = curses.initscr()
+        self._screen.keypad(True)
 
-        max_height, max_width = self.screen.getmaxyx()
+        max_height, max_width = self._screen.getmaxyx()
         if not self._height or self._height >= max_height:
             self._height = max_height - 1
         if not self._width or self._width >= max_width:
@@ -41,11 +41,12 @@ class Screen:
 
         curses.noecho()
         curses.cbreak()
+        curses.curs_set(False)
 
-        return self.screen
+        return self._screen
 
     def __exit__(self, *args):
-        self.screen.keypad(False)
+        self._screen.keypad(False)
         curses.nocbreak()
         curses.echo()
         curses.endwin()
@@ -93,7 +94,7 @@ class Screen:
         for x in range(self._width):
             for y in range(self._height):
                 if self.next_frame[y][x] != self.current_frame[y][x]:
-                    self.screen.addstr(y, x, self.next_frame[y][x])
+                    self._screen.addstr(y, x, self.next_frame[y][x])
                     self.current_frame[y][x] = self.next_frame[y][x]
 
-        self.screen.refresh()
+        self._screen.refresh()
