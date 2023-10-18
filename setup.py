@@ -8,7 +8,7 @@ setuptools.setup(
     author='Max Zheng',
     author_email='maxzheng.os@gmail.com',
 
-    description='Cool games for Linux console!',
+    description='Cool games for macOS/Linux console!',
     long_description=open('README.rst').read(),
 
     url='https://github.com/maxzheng/console-games',
