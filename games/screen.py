@@ -12,11 +12,8 @@ class Screen:
         #: Add border around the frame
         self.border = border
 
-        #: The next frame to be rendered
-        self.next_frame = self._new_frame()
-
-        #: The current frame displayed to the user
-        self.current_frame = self._new_frame()
+        #: Buffer for next frame to display
+        self.buffer = None
 
         #: List of objets on the screen
         self.objects = []
@@ -44,9 +41,19 @@ class Screen:
         if not self._width or self._width >= max_width:
             self._width = max_width - 1
 
+        curses.start_color()
+        curses.use_default_colors()
         curses.noecho()
         curses.cbreak()
         curses.curs_set(False)
+
+        curses.init_pair(1, curses.COLOR_RED, curses.COLOR_BLACK)
+        self.COLOR_RED = curses.color_pair(1)
+        curses.init_pair(2, curses.COLOR_GREEN, curses.COLOR_BLACK)
+        self.COLOR_GREEN = curses.color_pair(2)
+        curses.init_pair(3, curses.COLOR_BLUE, curses.COLOR_BLACK)
+        self.COLOR_BLUE = curses.color_pair(3)
+        self.colors = [self.COLOR_RED, self.COLOR_GREEN, self.COLOR_BLUE]
 
         return self._screen
 
@@ -64,14 +71,17 @@ class Screen:
                 frame.append([' '] * (self._width))
         return frame
 
-    def draw(self, x: int, y: int, char: str):
+    def draw(self, x: int, y: int, char: str, color=None):
         """ Draw character on the given position """
         if x < 0:
             x = self._width + x
         if y < 0:
             y = self._height + y - 1
         if x >= 0 and x < self._width and y >= 0 and y < self._height:
-            self.next_frame[int(y)][int(x)] = char
+            if color:
+                self.buffer.addstr(int(y), int(x), char, color)
+            else:
+                self.buffer.addstr(int(y), int(x), char)
 
     def add(self, *screen_object):
         """ Add object to be rendered on the screen """
@@ -87,9 +97,10 @@ class Screen:
         self.objects.pop(index)
 
     def render(self):
-        self.next_frame = self._new_frame()
-        if not self.current_frame:
-            self.current_frame = self._new_frame()
+        if not self.buffer:
+            self.buffer = curses.newpad(self.height, self.width + 1)
+
+        self.buffer.clear()
 
         for obj in self.objects:
             obj.render(self)
@@ -97,13 +108,7 @@ class Screen:
                 self.remove(obj)
 
         if self.border:
-            self.border.debug_info['Objects'] = len(self.objects)
+            self.border.debug_info['objects'] = len(self.objects)
             self.border.render(self)
 
-        for x in range(self._width):
-            for y in range(self._height):
-                if self.next_frame[y][x] != self.current_frame[y][x]:
-                    self._screen.addstr(y, x, self.next_frame[y][x])
-                    self.current_frame[y][x] = self.next_frame[y][x]
-
-        self._screen.refresh()
+        self.buffer.refresh(0, 0, 0, 0, self.height, self.width)

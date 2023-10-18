@@ -1,3 +1,4 @@
+from random import randint
 from time import time
 
 from games.screen import Screen
@@ -5,9 +6,10 @@ from games.screen import Screen
 
 class ScreenObject:
     """ Base class for all objects on screen """
-    def __init__(self, x: int, y: int):
+    def __init__(self, x: int, y: int, color=None):
         self.x = x
         self.y = y
+        self.color = color
 
     @property
     def is_out(self):
@@ -31,7 +33,7 @@ class Text(ScreenObject):
 
     def render(self, screen: Screen):
         for offset, char in enumerate(self.text):
-            screen.draw(self.x + offset, self.y, char)
+            screen.draw(self.x + offset, self.y, char, color=self.color)
 
 
 class BouncyText(Text):
@@ -66,13 +68,13 @@ class Border(ScreenObject):
         for x in range(screen.width):
             for y in range(screen.height):
                 if x == 0 or y == 0 or x == screen.width - 1 or y == screen.height - 1:
-                    screen.draw(x, y, self.char)
+                    screen.draw(x, y, self.char, color=self.color)
 
         if self.title:
             padded_title = ' ' + self.title + ' '
             start_x = round((screen.width - len(padded_title)) / 2)
             for x_offset in range(len(padded_title)):
-                screen.draw(start_x + x_offset, 0, padded_title[x_offset])
+                screen.draw(start_x + x_offset, 0, padded_title[x_offset], color=self.color)
 
         if self.show_fps:
             self._renders += 1
@@ -81,10 +83,10 @@ class Border(ScreenObject):
 
         if self.debug_info:
             debug_text = ' ' + ' | '.join(
-                ['{}: {}'.format(k, v) for k, v in self.debug_info.items()]) + ' '
+                ['{}: {}'.format(k[0].upper() + k[1:], v) for k, v in self.debug_info.items()]) + ' '
             start_x = round((screen.width - len(debug_text)) / 2)
             for x_offset in range(len(debug_text)):
-                screen.draw(start_x + x_offset, screen.height - 1, debug_text[x_offset])
+                screen.draw(start_x + x_offset, screen.height - 1, debug_text[x_offset], color=self.color)
 
 
 class Square(ScreenObject):
@@ -101,12 +103,12 @@ class Square(ScreenObject):
             for y in range(start_y, start_y + self.size):
                 if (x == start_x or x == start_x + self.size - 1
                         or y == start_y or y == start_y + self.size - 1):
-                    screen.draw(x, y, self.char)
+                    screen.draw(x, y, self.char, color=self.color)
 
 
 class Projectile(ScreenObject):
-    def __init__(self, x: int, y: int, shape='^', x_delta=0, y_delta=-1):
-        super().__init__(x, y)
+    def __init__(self, x: int, y: int, shape='^', x_delta=0, y_delta=-1, color=None):
+        super().__init__(x, y, color=color)
         self.shape = shape
         self.x_delta = x_delta
         self.y_delta = y_delta
@@ -116,6 +118,19 @@ class Projectile(ScreenObject):
         self.y += self.y_delta
 
         if not self.is_out:
-            screen.draw(self.x, self.y, self.shape)
+            screen.draw(self.x, self.y, self.shape, color=self.color or screen.colors[randint(0, len(screen.colors)-1)])
 
         super().render(screen)
+
+
+class Circle(ScreenObject):
+    def __init__(self, x: int, y: int, size=1, char='O', color=None):
+        super().__init__(x, y, color=color)
+        self.size = size
+        self.char = char
+
+    def render(self, screen: Screen):
+        screen.draw(self.x + 1, self.y, self.char, color=self.color)
+        screen.draw(self.x - 1, self.y, self.char, color=self.color)
+        screen.draw(self.x, self.y + 1, self.char, color=self.color)
+        screen.draw(self.x, self.y - 1, self.char, color=self.color)
