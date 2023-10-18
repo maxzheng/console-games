@@ -67,12 +67,12 @@ class GeoBash(Controller):
 
         if len(self.enemies) < self.max_enemies and self.start:
             enemy = Square(randint(3, self.screen.width-3), -3, size=randint(2, 4),
-                           y_delta=random() + 0.2)
+                           y_delta=random() * 0.5 + 0.1)
             self.enemies.add(enemy)
             self.screen.add(enemy)
 
-        self.screen.border.status['score'] = ('{} (High: {})'.format(self.score, self.high_score)
-                                              if self.score < self.high_score else self.score)
+        self.screen.border.status['bashed'] = ('{} (High: {})'.format(self.score, self.high_score)
+                                               if self.score < self.high_score else self.score)
 
     def key_pressed(self, key):
         if self.intro in self.screen.objects:
@@ -81,11 +81,11 @@ class GeoBash(Controller):
 
     def left_pressed(self):
         if self.player.x > 3:
-            self.player.x -= 1
+            self.player.x -= 2
 
     def right_pressed(self):
         if self.player.x < self.screen.width - 2:
-            self.player.x += 1
+            self.player.x += 2
 
     def up_pressed(self):
         if self.player.y > 2:
