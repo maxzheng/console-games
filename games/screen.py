@@ -2,7 +2,7 @@ import curses
 
 
 class Screen:
-    def __init__(self, width=None, height=None, border=None):
+    def __init__(self, width=None, height=None, border=None, debug=False):
         #: Width of the screen
         self._width = width
 
@@ -17,6 +17,9 @@ class Screen:
 
         #: List of objets on the screen
         self.objects = []
+
+        #: Show debug info
+        self.debug = debug
 
     @property
     def width(self):
@@ -53,7 +56,9 @@ class Screen:
         self.COLOR_GREEN = curses.color_pair(2)
         curses.init_pair(3, curses.COLOR_BLUE, curses.COLOR_BLACK)
         self.COLOR_BLUE = curses.color_pair(3)
-        self.colors = [self.COLOR_RED, self.COLOR_GREEN, self.COLOR_BLUE]
+        curses.init_pair(4, curses.COLOR_YELLOW, curses.COLOR_BLACK)
+        self.COLOR_YELLOW = curses.color_pair(4)
+        self.colors = [self.COLOR_RED, self.COLOR_GREEN, self.COLOR_BLUE, self.COLOR_YELLOW]
 
         return self._screen
 
@@ -73,10 +78,6 @@ class Screen:
 
     def draw(self, x: int, y: int, char: str, color=None):
         """ Draw character on the given position """
-        if x < 0:
-            x = self._width + x
-        if y < 0:
-            y = self._height + y - 1
         if x >= 0 and x < self._width and y >= 0 and y < self._height:
             if color:
                 self.buffer.addstr(int(y), int(x), char, color)
@@ -103,12 +104,19 @@ class Screen:
         self.buffer.clear()
 
         for obj in self.objects:
-            obj.render(self)
+            if obj.is_visible:
+                obj.render(self)
             if obj.is_out:
+                if obj.parent:
+                    obj.parent.kids.remove(obj)
                 self.remove(obj)
 
         if self.border:
-            self.border.debug_info['objects'] = len(self.objects)
+            if self.debug:
+                self.border.status['objects'] = len(self.objects)
             self.border.render(self)
 
         self.buffer.refresh(0, 0, 0, 0, self.height, self.width)
+
+    def reset(self):
+        self.objects = []

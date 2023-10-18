@@ -4,5 +4,6 @@ from games.manager import Manager
 
 
 @click.command()
-def main():
-    Manager().start()
+@click.option('--debug', is_flag=True, help='Turn on debug modoe')
+def main(debug):
+    Manager().start(debug=debug)
