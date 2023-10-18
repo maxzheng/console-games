@@ -5,16 +5,18 @@ One game has been prototyped: Geometry Bash!
 
 Don't like geometry? You will love this one! :D
 
-To install::
+To install using autopip_::
 
     sudo pip3 install autopip
     app install console-games
 
-And then play::
+If you have trouble using autopip_, you can also install using `pip3` directly too.
+
+And start playing::
 
     play
 
-If you have trouble using autopip_, you can also install using `pip3` directly too.
+Enjoy! And come back soon for more games!!
 
 Links & Contact Info
 ====================
