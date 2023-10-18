@@ -3,12 +3,12 @@ import setuptools
 
 setuptools.setup(
     name='console-games',
-    version='0.0.5',
+    version='0.0.4',
 
     author='Max Zheng',
     author_email='maxzheng.os@gmail.com',
 
-    description='Cool games for macOS/Linux console!',
+    description='Fun games for macOS/Linux console!',
     long_description=open('README.rst').read(),
 
     url='https://github.com/maxzheng/console-games',
