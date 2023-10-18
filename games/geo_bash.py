@@ -1,7 +1,7 @@
 from random import randint, random
 
 from games.controller import Controller
-from games.objects import Square, Circle, Projectile, Explosion, Text
+from games.objects import Square, Circle, Projectile, Explosion, Text, Monologue
 
 
 class GeoBash(Controller):
@@ -14,12 +14,27 @@ class GeoBash(Controller):
         self.high_score = 0
         self.reset()
 
+        def bash():
+            self.start = True
+
+        # After reset actions
+        self.start = False
+        self.intro = Monologue(self.player.x, self.player.y - 2, on_finish=bash,
+                               texts=["Hi, I am Nina!",
+                                      "Most people don't like geometry, but not me.",
+                                      "I LOVE to bash them!! :D",
+                                      "Move me using arrow keys.",
+                                      "Press space to attack.",
+                                      "Ready? Let's BASH!!"])
+        self.screen.add(self.intro)
+
     def reset(self):
         self.enemies = set()
         self.screen.reset()
         self.screen.add(self.player)
         self.score = 0
         self.player.is_visible = True
+        self.start = True
 
     def process(self):
         super().process()
@@ -36,7 +51,7 @@ class GeoBash(Controller):
                         self.player.kids.remove(projectile)
                         self.screen.remove(projectile)
 
-                        self.screen.add(Explosion(enemy.x, enemy.y, size=enemy.size * 2))
+                        self.screen.add(Explosion(enemy.x, enemy.y, size=enemy.size * 3))
 
                         self.score += 1
                         if self.score > self.high_score:
@@ -50,7 +65,7 @@ class GeoBash(Controller):
                         self.screen.add(Text((self.screen.width - 10) / 2,
                                              self.screen.height / 2, 'You got BASHED!!'))
 
-        if len(self.enemies) < self.max_enemies:
+        if len(self.enemies) < self.max_enemies and self.start:
             enemy = Square(randint(3, self.screen.width-3), -3, size=randint(2, 4),
                            y_delta=random() + 0.2)
             self.enemies.add(enemy)
@@ -58,6 +73,11 @@ class GeoBash(Controller):
 
         self.screen.border.status['score'] = ('{} (High: {})'.format(self.score, self.high_score)
                                               if self.score < self.high_score else self.score)
+
+    def key_pressed(self, key):
+        if self.intro in self.screen.objects:
+            self.start = True
+            self.screen.remove(self.intro)
 
     def left_pressed(self):
         if self.player.x > 3:

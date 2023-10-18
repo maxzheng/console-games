@@ -37,8 +37,9 @@ class Text(ScreenObject):
         self.text = text
 
     def render(self, screen: Screen):
-        for offset, char in enumerate(self.text):
-            screen.draw(self.x + offset, self.y, char, color=self.color)
+        if self.text:
+            for offset, char in enumerate(self.text):
+                screen.draw(self.x + offset, self.y, char, color=self.color)
 
 
 class BouncyText(Text):
@@ -56,6 +57,29 @@ class BouncyText(Text):
             self.y_delta = -self.y_delta
 
         super().render(screen)
+
+
+class Monologue(Text):
+    def __init__(self, x: int, y: int, texts=[], on_finish=None):
+        super().__init__(x, y, None)
+        self.center_x = x
+        self.index = 0
+        self.texts = texts
+        self.renders = 0
+        self.on_finish = on_finish
+
+    def render(self, screen: Screen):
+        self.text = self.texts[self.index]
+        self.x = self.center_x - len(self.text) / 2
+        super().render(screen)
+
+        self.renders += 1
+        if self.renders % 45 == 0:
+            self.index += 1
+            if self.index >= len(self.texts):
+                screen.remove(self)
+                if self.on_finish:
+                    self.on_finish()
 
 
 class Border(ScreenObject):

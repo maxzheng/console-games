@@ -11,9 +11,13 @@ class Controller:
         self.screen = screen
         self.screen.border.title = self.name
         self.init()
+        self.last_key = None
 
     def process(self):
         key = self.screen.key
+
+        if key > 0:
+            self.key_pressed(key)
 
         if key == curses.KEY_LEFT or key == ord('h'):
             self.left_pressed()
@@ -32,6 +36,9 @@ class Controller:
 
         elif key == ord(' ') or key == ord('f'):
             self.space_pressed()
+
+    def key_pressed(self, key):
+        pass
 
     def left_pressed(self):
         pass
