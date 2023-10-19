@@ -285,7 +285,7 @@ class Choice(ScreenObject):
             start_x = int(self.x - width / 2)
             end_x = start_x + width
 
-            self.bar = Bar(self.x, self.y + max_size / 2, size=bar_size, color=self.color)
+            self.bar = Bar(self.x, self.y + max_size / 2 + 1, size=bar_size, color=self.color)
             screen.add(self.bar)
             self.kids.add(self.bar)
 
