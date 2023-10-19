@@ -40,6 +40,9 @@ class GeoBash(Controller):
         super().process()
 
         for enemy in list(self.enemies):
+            if not self.player.is_visible:
+                enemy.y_delta += 0.5
+
             if enemy.is_out:
                 self.enemies.remove(enemy)
             else:
@@ -65,7 +68,7 @@ class GeoBash(Controller):
                         self.screen.add(Text((self.screen.width - 10) / 2,
                                              self.screen.height / 2, 'You got BASHED!!'))
 
-        if len(self.enemies) < self.max_enemies and self.start:
+        if len(self.enemies) < self.max_enemies and self.start and self.player.is_visible:
             enemy = Square(randint(3, self.screen.width-3), -3, size=randint(2, 4),
                            y_delta=random() * 0.25 + 0.1)
             self.enemies.add(enemy)

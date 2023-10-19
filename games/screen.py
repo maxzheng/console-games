@@ -2,12 +2,12 @@ import curses
 
 
 class Screen:
-    def __init__(self, width=None, height=None, border=None, debug=False):
+    def __init__(self, border=None, debug=False):
         #: Width of the screen
-        self._width = width
+        self._width = None
 
         #: Height of the screen
-        self._height = height
+        self._height = None
 
         #: Add border around the frame
         self.border = border
@@ -38,11 +38,7 @@ class Screen:
         self._screen.keypad(True)
         self._screen.nodelay(True)
 
-        max_height, max_width = self._screen.getmaxyx()
-        if not self._height or self._height >= max_height:
-            self._height = max_height - 1
-        if not self._width or self._width >= max_width:
-            self._width = max_width - 1
+        self.resize_screen()
 
         curses.start_color()
         curses.use_default_colors()
@@ -75,6 +71,12 @@ class Screen:
             for r in range(self._height):
                 frame.append([' '] * (self._width))
         return frame
+
+    def resize_screen(self):
+        max_height, max_width = self._screen.getmaxyx()
+        self._height = max_height - 1
+        self._width = max_width - 1
+        self.buffer = curses.newpad(self.height + 1, self.width + 1)
 
     def draw(self, x: int, y: int, char: str, color=None):
         """ Draw character on the given position """
@@ -116,7 +118,10 @@ class Screen:
                 self.border.status['objects'] = len(self.objects)
             self.border.render(self)
 
-        self.buffer.refresh(0, 0, 0, 0, self.height, self.width)
+        try:
+            self.buffer.refresh(0, 0, 0, 0, self.height, self.width)
+        except Exception:
+            self.resize_screen()
 
     def reset(self):
         self.objects = []
