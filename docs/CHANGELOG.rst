@@ -1,5 +1,12 @@
-Version 0.0.7
+Version 0.0.8
 ================================================================================
+
+* Add rainbow missiles
+* Auto shoot and increased levels
+* Update screen size on change
+
+Version 0.0.7
+--------------------------------------------------------------------------------
 
 * Reduce speed again
 
