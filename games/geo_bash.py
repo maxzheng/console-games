@@ -10,13 +10,12 @@ class GeoBash(Controller):
 
     def init(self):
         self.max_enemies = 5
-        self.player = Diamond(self.screen.width / 2, self.screen.height - 3, size=3,
-                              color=self.screen.COLOR_YELLOW, name='Jon')
         self.player = Triangle(self.screen.width / 2, self.screen.height - 3, size=3,
                                color=self.screen.COLOR_BLUE, name='Kate')
         self.player = Circle(self.screen.width / 2, self.screen.height - 3, size=3,
                              color=self.screen.COLOR_RED, name='Nina')
-        self.projectile = self.player.char.lower()
+        self.player = Diamond(self.screen.width / 2, self.screen.height - 3, size=3,
+                              color=self.screen.COLOR_YELLOW, name='Jon')
         self.high_score = 0
         self.reset()
 
@@ -81,8 +80,13 @@ class GeoBash(Controller):
                 self.screen.add(enemy)
 
             if self.player.is_visible and self.screen.renders % 2 == 0:
-                projectile = Projectile(self.player.x, self.player.y, shape=self.projectile,
-                                        parent=self.player, color=self.player.color)
+                if self.player.char == '!':
+                    color = self.screen.colors[self.screen.renders % len(self.screen.colors)]
+                else:
+                    color = self.player.color
+
+                projectile = Projectile(self.player.x, self.player.y-1, shape=self.player.char,
+                                        parent=self.player, color=color)
                 self.player.kids.add(projectile)
                 self.screen.add(projectile)
 

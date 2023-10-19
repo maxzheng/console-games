@@ -53,15 +53,13 @@ class Screen:
         curses.cbreak()
         curses.curs_set(False)
 
-        curses.init_pair(1, curses.COLOR_RED, curses.COLOR_BLACK)
-        self.COLOR_RED = curses.color_pair(1)
-        curses.init_pair(2, curses.COLOR_GREEN, curses.COLOR_BLACK)
-        self.COLOR_GREEN = curses.color_pair(2)
-        curses.init_pair(3, curses.COLOR_BLUE, curses.COLOR_BLACK)
-        self.COLOR_BLUE = curses.color_pair(3)
-        curses.init_pair(4, curses.COLOR_YELLOW, curses.COLOR_BLACK)
-        self.COLOR_YELLOW = curses.color_pair(4)
-        self.colors = [self.COLOR_RED, self.COLOR_GREEN, self.COLOR_BLUE, self.COLOR_YELLOW]
+        self.colors = []
+        for color in ('RED', 'GREEN', 'BLUE', 'YELLOW', 'CYAN', 'MAGENTA'):
+            color_name = 'COLOR_' + color
+            color_id = getattr(curses, color_name)
+            curses.init_pair(color_id, color_id, curses.COLOR_BLACK)
+            setattr(self, color_name, curses.color_pair(color_id))
+            self.colors.append(getattr(self, color_name))
 
         return self._screen
 
