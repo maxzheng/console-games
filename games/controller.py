@@ -18,6 +18,7 @@ class Controller:
 
         if key > 0:
             self.key_pressed(key)
+            # self.screen.border.status['key'] = key
 
         if key == curses.KEY_LEFT or key == ord('h'):
             self.left_pressed()
@@ -36,6 +37,9 @@ class Controller:
 
         elif key == ord(' ') or key == ord('f'):
             self.space_pressed()
+
+        elif key == 10:
+            self.enter_pressed()
 
     def key_pressed(self, key):
         pass
@@ -56,4 +60,7 @@ class Controller:
         pass
 
     def space_pressed(self):
+        pass
+
+    def enter_pressed(self):
         pass

@@ -247,3 +247,59 @@ class Triangle(Projectile):
 
         for x, y in self.coords:
             screen.draw(x, y, self.char, color=self.color)
+
+
+class Bar(Projectile):
+    def __init__(self, x: int, y: int, size=3, char='=', x_delta=0, y_delta=0, color=None):
+        super().__init__(x, y, shape=None, x_delta=x_delta, y_delta=y_delta, color=color,
+                         size=size)
+        self.char = char
+
+    def render(self, screen: Screen):
+        super().render(screen)
+
+        start_x = int(self.x - self.size / 2)
+        self.coords = set()
+
+        for x in range(start_x, start_x + self.size):
+            self.coords.add((int(x), int(self.y)))
+            screen.draw(x, self.y, self.char, color=self.color)
+
+
+class Choice(ScreenObject):
+    def __init__(self, x: int, y: int, color: None, choices=[], on_select=None):
+        super().__init__(x, y, color=color)
+
+        self.choices = choices
+        self.on_select = on_select
+        self.current_choice = int(len(self.choices) / 2)
+        self.bar = None
+
+    def render(self, screen: Screen):
+        super().render(screen)
+
+        if not self.bar:
+            max_size = max(c.size for c in self.choices)
+            bar_size = max_size * 3
+            width = bar_size * len(self.choices)
+            start_x = int(self.x - width / 2)
+            end_x = start_x + width
+
+            self.bar = Bar(self.x, self.y + max_size / 2, size=bar_size, color=self.color)
+            screen.add(self.bar)
+            self.kids.add(self.bar)
+
+            instruction = Text(self.x - 18, self.y + 1.5 * max_size,
+                               'Press ENTER to select or ESC to exit')
+            screen.add(instruction)
+            self.kids.add(instruction)
+
+            for i, x in enumerate(range(start_x, end_x, bar_size)):
+                choice = self.choices[i]
+                choice.x = x + bar_size / 2
+                choice.y = self.y
+                screen.add(choice)
+                self.kids.add(choice)
+
+                if i == self.current_choice:
+                    self.bar.x = choice.x

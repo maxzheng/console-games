@@ -10,9 +10,9 @@ To install using autopip_::
     sudo pip3 install autopip
     app install console-games
 
-If you have trouble using autopip_, you can also install using `pip3` directly too.
+If you have trouble using autopip_, you can install using `pip3` directly too.
 
-And start playing::
+And then start playing::
 
     play
 

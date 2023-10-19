@@ -102,7 +102,9 @@ class Screen:
         except ValueError:
             return
 
-        self.objects.pop(index)
+        obj = self.objects.pop(index)
+        for kid in obj.kids:
+            self.remove(kid)
 
     def render(self):
         start_time = time()
