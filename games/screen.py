@@ -1,8 +1,12 @@
 import curses
+from time import sleep, time
 
 
 class Screen:
-    def __init__(self, border=None, debug=False):
+    def __init__(self, border=None, fps=30, debug=False):
+        #: FPS limit to render
+        self.fps = fps
+
         #: Width of the screen
         self._width = None
 
@@ -17,6 +21,9 @@ class Screen:
 
         #: List of objets on the screen
         self.objects = []
+
+        #: Number of times the screen has rendered
+        self.renders = 0
 
         #: Show debug info
         self.debug = debug
@@ -100,8 +107,16 @@ class Screen:
         self.objects.pop(index)
 
     def render(self):
-        if not self.buffer:
-            self.buffer = curses.newpad(self.height, self.width + 1)
+        start_time = time()
+
+        self._render()
+
+        render_time = time() - start_time
+        if render_time < 1/self.fps:
+            sleep(1/self.fps - render_time)
+
+    def _render(self):
+        self.renders += 1
 
         self.buffer.clear()
 

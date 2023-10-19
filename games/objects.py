@@ -65,7 +65,6 @@ class Monologue(Text):
         self.center_x = x
         self.index = 0
         self.texts = texts
-        self.renders = 0
         self.on_finish = on_finish
 
     def render(self, screen: Screen):
@@ -73,8 +72,7 @@ class Monologue(Text):
         self.x = self.center_x - len(self.text) / 2
         super().render(screen)
 
-        self.renders += 1
-        if self.renders % 45 == 0:
+        if screen.renders % 45 == 0:
             self.index += 1
             if self.index >= len(self.texts):
                 screen.remove(self)
@@ -90,7 +88,6 @@ class Border(ScreenObject):
         self.title = title
         self.status = {}
 
-        self._renders = 0
         self._start_time = time()
 
     def render(self, screen: Screen):
@@ -106,8 +103,7 @@ class Border(ScreenObject):
                 screen.draw(start_x + x_offset, 0, padded_title[x_offset], color=self.color)
 
         if self.show_fps:
-            self._renders += 1
-            fps = round(self._renders / (time() - self._start_time))
+            fps = round(screen.renders / (time() - self._start_time))
             self.status['FPS'] = fps
 
         if self.status:
@@ -141,10 +137,32 @@ class Projectile(ScreenObject):
 
 
 class Circle(Projectile):
-    def __init__(self, x: int, y: int, size=3, char='O', x_delta=0, y_delta=0, color=None):
+    def __init__(self, x: int, y: int, size=3, char='O', x_delta=0, y_delta=0, color=None,
+                 name=None):
         super().__init__(x, y, shape=None, x_delta=x_delta, y_delta=y_delta, color=color,
                          size=size)
         self.char = char
+        self.name = name
+
+    def render(self, screen: Screen):
+        super().render(screen)
+
+        self.coords = {(int(self.x - 1), int(self.y - 1)), (int(self.x), int(self.y - 1)),
+                       (int(self.x + 1), int(self.y - 1)), (int(self.x - 2), int(self.y)),
+                       (int(self.x + 2), int(self.y)), (int(self.x - 1), int(self.y + 1)),
+                       (int(self.x), int(self.y + 1)), (int(self.x + 1), int(self.y + 1))}
+
+        for x, y in self.coords:
+            screen.draw(x, y, self.char, color=self.color)
+
+
+class Diamond(Projectile):
+    def __init__(self, x: int, y: int, size=3, char='!', x_delta=0, y_delta=0, color=None,
+                 name=None):
+        super().__init__(x, y, shape=None, x_delta=x_delta, y_delta=y_delta, color=color,
+                         size=size)
+        self.char = char
+        self.name = name
 
     def render(self, screen: Screen):
         super().render(screen)
@@ -157,11 +175,12 @@ class Circle(Projectile):
 
 
 class Square(Projectile):
-    def __init__(self, x: int, y: int, size=3, char='#', x_delta=0, y_delta=0, color=None):
+    def __init__(self, x: int, y: int, size=3, char='#', x_delta=0, y_delta=0, color=None,
+                 name=None):
         super().__init__(x, y, shape=None, x_delta=x_delta, y_delta=y_delta, color=color,
                          size=size)
-
         self.char = char
+        self.name = name
 
     def render(self, screen: Screen):
         super().render(screen)
@@ -208,3 +227,23 @@ class Explosion(ScreenObject):
             screen.remove(self)
             if self.on_finish:
                 self.on_finish()
+
+
+class Triangle(Projectile):
+    def __init__(self, x: int, y: int, size=3, char='^', x_delta=0, y_delta=0, color=None,
+                 name=None):
+        super().__init__(x, y, shape=None, x_delta=x_delta, y_delta=y_delta, color=color,
+                         size=size)
+        self.char = char
+        self.name = name
+
+    def render(self, screen: Screen):
+        super().render(screen)
+
+        self.coords = {(int(self.x), int(self.y - 1)), (int(self.x - 1), int(self.y)),
+                       (int(self.x + 1), int(self.y)), (int(self.x - 1), int(self.y + 1)),
+                       (int(self.x), int(self.y + 1)), (int(self.x + 1), int(self.y + 1)),
+                       (int(self.x - 2), int(self.y + 1)), (int(self.x + 2), int(self.y + 1))}
+
+        for x, y in self.coords:
+            screen.draw(x, y, self.char, color=self.color)

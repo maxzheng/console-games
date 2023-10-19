@@ -1,7 +1,8 @@
 from random import randint, random
 
 from games.controller import Controller
-from games.objects import Square, Circle, Projectile, Explosion, Text, Monologue
+from games.objects import (Square, Circle, Projectile, Explosion, Text, Monologue, Triangle,
+                           Diamond)
 
 
 class GeoBash(Controller):
@@ -9,8 +10,13 @@ class GeoBash(Controller):
 
     def init(self):
         self.max_enemies = 5
-        self.projectile = 'o'
-        self.player = Circle(self.screen.width / 2, self.screen.height - 3, size=3, color=self.screen.COLOR_RED)
+        self.player = Diamond(self.screen.width / 2, self.screen.height - 3, size=3,
+                              color=self.screen.COLOR_YELLOW, name='Jon')
+        self.player = Triangle(self.screen.width / 2, self.screen.height - 3, size=3,
+                               color=self.screen.COLOR_BLUE, name='Kate')
+        self.player = Circle(self.screen.width / 2, self.screen.height - 3, size=3,
+                             color=self.screen.COLOR_RED, name='Nina')
+        self.projectile = self.player.char.lower()
         self.high_score = 0
         self.reset()
 
@@ -20,11 +26,10 @@ class GeoBash(Controller):
         # After reset actions
         self.start = False
         self.intro = Monologue(self.player.x, self.player.y - 2, on_finish=bash,
-                               texts=["Hi, I am Nina!",
+                               texts=["Hi, I am {}!".format(self.player.name),
                                       "Most people don't like geometry, but not me.",
                                       "I LOVE to bash them!! :D",
                                       "Move me using arrow keys.",
-                                      "Press space to attack.",
                                       "Ready? Let's BASH!!"])
         self.screen.add(self.intro)
 
@@ -68,11 +73,18 @@ class GeoBash(Controller):
                         self.screen.add(Text((self.screen.width - 10) / 2,
                                              self.screen.height / 2, 'You got BASHED!!'))
 
-        if len(self.enemies) < self.max_enemies and self.start and self.player.is_visible:
-            enemy = Square(randint(3, self.screen.width-3), -3, size=randint(2, 4),
-                           y_delta=random() * 0.25 + 0.1)
-            self.enemies.add(enemy)
-            self.screen.add(enemy)
+        if self.start:
+            if len(self.enemies) < self.max_enemies and self.player.is_visible:
+                enemy = Square(randint(3, self.screen.width-3), -3, size=randint(2, 4),
+                               y_delta=random() * self.score / 100 + 0.25)
+                self.enemies.add(enemy)
+                self.screen.add(enemy)
+
+            if self.player.is_visible and self.screen.renders % 2 == 0:
+                projectile = Projectile(self.player.x, self.player.y, shape=self.projectile,
+                                        parent=self.player, color=self.player.color)
+                self.player.kids.add(projectile)
+                self.screen.add(projectile)
 
         self.screen.border.status['bashed'] = ('{} (High: {})'.format(self.score, self.high_score)
                                                if self.score < self.high_score else self.score)
@@ -99,11 +111,7 @@ class GeoBash(Controller):
             self.player.y += 1
 
     def space_pressed(self):
-        if self.player.is_visible:
-            projectile = Projectile(self.player.x, self.player.y, shape=self.projectile,
-                                    parent=self.player, color=self.player.color)
-            self.player.kids.add(projectile)
-            self.screen.add(projectile)
+        pass
 
     def escape_pressed(self):
         exit()
