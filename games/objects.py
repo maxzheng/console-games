@@ -65,14 +65,16 @@ class Monologue(Text):
         self.center_x = x
         self.index = 0
         self.texts = texts
+        self.renders = 0
         self.on_finish = on_finish
 
     def render(self, screen: Screen):
+        self.renders += 1
         self.text = self.texts[self.index]
         self.x = self.center_x - len(self.text) / 2
         super().render(screen)
 
-        if screen.renders % 45 == 0:
+        if self.renders % 45 == 0:
             self.index += 1
             if self.index >= len(self.texts):
                 screen.remove(self)
@@ -289,8 +291,9 @@ class Choice(ScreenObject):
             screen.add(self.bar)
             self.kids.add(self.bar)
 
-            instruction = Text(self.x - 18, self.y + 1.5 * max_size,
-                               'Press ENTER to select or ESC to exit')
+            instruction = Monologue(self.x, self.y + 1.5 * max_size,
+                                    texts=['Select your shape using arrow keys',
+                                           'Press SPACE to start or ESC to exit'])
             screen.add(instruction)
             self.kids.add(instruction)
 
