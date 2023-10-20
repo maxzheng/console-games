@@ -133,7 +133,7 @@ class GeoBash(Controller):
             # else:
             #    self.screen.border.status['boss'] = 'Dead'
 
-            if self.score and self.score % 50 == 0 and self.boss not in self.screen.objects:
+            if self.score and self.score % 25 == 0 and self.boss not in self.screen.objects:
                 self.boss.x = randint(5, self.screen.width - 5)
                 self.boss.y = -5
                 self.boss.x_delta = max(random() * 1, 0.5)
