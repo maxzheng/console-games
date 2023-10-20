@@ -178,11 +178,12 @@ class Diamond(Projectile):
 
 class Square(Projectile):
     def __init__(self, x: int, y: int, size=3, char='#', x_delta=0, y_delta=0, color=None,
-                 name=None):
+                 name=None, solid=False):
         super().__init__(x, y, shape=None, x_delta=x_delta, y_delta=y_delta, color=color,
                          size=size)
         self.char = char
         self.name = name
+        self.solid = solid
 
     def render(self, screen: Screen):
         super().render(screen)
@@ -191,10 +192,10 @@ class Square(Projectile):
         start_y = int(self.y - self.size / 2)
         self.coords = set()
 
-        for x in range(start_x, start_x + self.size):
-            for y in range(start_y, start_y + self.size):
-                if (x == start_x or x == start_x + self.size - 1
-                        or y == start_y or y == start_y + self.size - 1):
+        for x in range(start_x, int(start_x + self.size)):
+            for y in range(start_y, int(start_y + self.size)):
+                if self.solid or (x == start_x or x == start_x + self.size - 1
+                                  or y == start_y or y == start_y + self.size - 1):
                     self.coords.add((int(x), int(y)))
                     screen.draw(x, y, self.char, color=self.color)
 
@@ -252,9 +253,10 @@ class Triangle(Projectile):
 
 
 class Bar(Projectile):
-    def __init__(self, x: int, y: int, size=3, char='=', x_delta=0, y_delta=0, color=None):
+    def __init__(self, x: int, y: int, size=3, char='=', x_delta=0, y_delta=0, color=None,
+                 parent=None):
         super().__init__(x, y, shape=None, x_delta=x_delta, y_delta=y_delta, color=color,
-                         size=size)
+                         size=size, parent=parent)
         self.char = char
 
     def render(self, screen: Screen):
@@ -263,7 +265,7 @@ class Bar(Projectile):
         start_x = int(self.x - self.size / 2)
         self.coords = set()
 
-        for x in range(start_x, start_x + self.size):
+        for x in range(start_x, int(start_x + self.size)):
             self.coords.add((int(x), int(self.y)))
             screen.draw(x, self.y, self.char, color=self.color)
 

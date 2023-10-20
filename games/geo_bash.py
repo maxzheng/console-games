@@ -2,7 +2,7 @@ from random import randint, random
 
 from games.controller import Controller
 from games.objects import (Square, Circle, Projectile, Explosion, Text, Monologue, Triangle,
-                           Diamond, Choice)
+                           Diamond, Choice, Bar)
 
 
 class GeoBash(Controller):
@@ -37,8 +37,8 @@ class GeoBash(Controller):
         self.player_choice = Choice(self.screen.width / 2, self.screen.height / 2,
                                     choices=self.player_choices, color=self.screen.COLOR_CYAN,
                                     on_select=intro)
-        self.boss = Square(self.screen.width / 2, self.screen.height - 3, size=3,
-                           color=self.screen.COLOR_GREEN, name='Max')
+        self.boss = Square(self.screen.width / 2, -5, size=5,
+                           color=self.screen.COLOR_GREEN, name='Max', y_delta=0.1, solid=True)
         self.player = None
 
         self.reset()
@@ -47,6 +47,10 @@ class GeoBash(Controller):
         self.screen.add(self.player_choice)
 
     def reset(self):
+        self.boss.size = 5
+        self.boss.y_delta = 0.1
+        self.boss.kids = set()
+        self.boss.is_hit = False
         self.enemies = set()
         self.screen.reset()
         self.score = 0
@@ -59,26 +63,43 @@ class GeoBash(Controller):
     def process(self):
         super().process()
 
+        if self.boss in self.screen.objects:
+            for projectile in self.boss.kids:
+                if projectile.coords & self.player.coords:
+                    self.player.is_visible = False
+                    self.screen.add(Explosion(self.player.x, self.player.y, size=20,
+                                              on_finish=lambda: self.reset()))
+                    self.screen.add(Text((self.screen.width - 10) / 2,
+                                         self.screen.height / 2, 'You got BASHED!!'))
+
         for enemy in list(self.enemies):
             if not self.player.is_visible:
                 enemy.y_delta += 0.5
 
-            if enemy.is_out:
+            if enemy.is_out and (enemy != self.boss or self.player.is_visible):
                 self.enemies.remove(enemy)
+                self.screen.remove(enemy)
             else:
                 for projectile in list(self.player.kids):
                     if projectile.coords & enemy.coords:
+                        if enemy == self.boss and self.boss.size > 2.05:
+                            self.boss.size -= 0.05
+                            self.boss.is_hit = True
+                            break
+
                         self.enemies.remove(enemy)
                         self.screen.remove(enemy)
 
                         self.player.kids.remove(projectile)
                         self.screen.remove(projectile)
 
-                        self.screen.add(Explosion(enemy.x, enemy.y, size=enemy.size * 3))
+                        explosion_size = 25 if enemy == self.boss else enemy.size * 3
+                        self.screen.add(Explosion(enemy.x, enemy.y, size=explosion_size))
 
-                        self.score += 1
+                        self.score += 5 if enemy == self.boss else 1
                         if self.score > self.player.high_score:
                             self.player.high_score = self.score
+
                         break
                 else:
                     if enemy.coords & self.player.coords:
@@ -88,16 +109,52 @@ class GeoBash(Controller):
                         self.screen.add(Text((self.screen.width - 10) / 2,
                                              self.screen.height / 2, 'You got BASHED!!'))
 
-        if self.start and self.player:
-            if len(self.enemies) < self.max_enemies and self.player.is_visible:
+        if self.start and self.player and self.player.is_visible:
+            if self.boss in self.screen.objects:
+                # self.screen.border.status['boss'] = str((int(self.boss.x), int(self.boss.y), self.boss.size))
+                if self.boss.x > self.player.x:
+                    self.boss.x_delta = -1 * abs(self.boss.x_delta)
+                else:
+                    self.boss.x_delta = abs(self.boss.x_delta)
+                if self.boss.y > self.screen.height + 2.5:
+                    self.boss.y = -2.5
+
+                if self.boss.is_hit:
+                    self.boss.color = self.screen.colors[self.screen.renders % len(self.screen.colors)]
+                    if self.screen.renders % 10 == 0:
+                        if self.boss.size >= 4:
+                            self.boss.color = self.screen.COLOR_GREEN
+                        elif self.boss.size >= 3:
+                            self.boss.color = self.screen.COLOR_YELLOW
+                        else:
+                            self.boss.color = self.screen.COLOR_RED
+                        self.boss.is_hit = False
+
+            # else:
+            #    self.screen.border.status['boss'] = 'Dead'
+
+            if self.score and self.score % 50 == 0 and self.boss not in self.screen.objects:
+                self.boss.x = randint(5, self.screen.width - 5)
+                self.boss.y = -5
+                self.boss.x_delta = max(random() * 1, 0.5)
+                self.boss.char = '$'
+                self.boss.size = 5
+                self.boss.kids = set()
+                self.boss.is_hit = False
+                self.boss.color = self.screen.COLOR_GREEN
+
+                self.enemies.add(self.boss)
+                self.screen.add(self.boss)
+
+            if len(self.enemies) < self.max_enemies:
                 enemy = Square(randint(3, self.screen.width-3), -3, size=randint(2, 4),
                                y_delta=random() * self.score / 100 + 0.25)
                 self.enemies.add(enemy)
                 self.screen.add(enemy)
 
-            if self.player.is_visible and self.screen.renders % 2 == 0:
+            if self.screen.renders % 2 == 0:
                 if self.player.char == '!':
-                    color = self.screen.colors[self.screen.renders % len(self.screen.colors)]
+                    color = self.screen.colors[int(self.screen.renders / 2) % len(self.screen.colors)]
                 else:
                     color = self.player.color
 
@@ -105,6 +162,13 @@ class GeoBash(Controller):
                                         parent=self.player, color=color)
                 self.player.kids.add(projectile)
                 self.screen.add(projectile)
+
+                if self.screen.renders % 30 == 0 and self.boss in self.screen.objects:
+                    projectile = Bar(self.boss.x, self.boss.y+self.boss.size/2, size=self.boss.size,
+                                     parent=self.boss, color=self.boss.color, y_delta=0.5,
+                                     char=self.boss.char)
+                    self.boss.kids.add(projectile)
+                    self.screen.add(projectile)
 
         player = self.player or self.player_choices[self.player_choice.current_choice]
         self.screen.border.status['bashed'] = ('{} (High: {})'.format(
@@ -160,6 +224,7 @@ class GeoBash(Controller):
 
     def escape_pressed(self):
         if self.player:
+            self.player.is_visible = True
             self.player = None
             self.reset()
             self.player_choice.bar = None
