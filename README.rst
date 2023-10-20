@@ -3,7 +3,7 @@ console games
 
 One game has been prototyped: Geometry Bash!
 
-.. image:: https://raw.githubusercontent.com/maxzheng/console-games/master/docs/geometry_bash.jpeg?token=GHSAT0AAAAAACH6AFWDV5RSSPNRVL57MSSWZJS2J5A
+.. image:: https://raw.githubusercontent.com/maxzheng/console-games/master/docs/geometry_bash.jpeg
  :alt: Geometry Bash
 
 Don't like geometry? You will love this one! :D
