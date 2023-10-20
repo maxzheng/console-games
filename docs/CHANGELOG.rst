@@ -1,5 +1,12 @@
-Version 0.0.14
+Version 0.0.15
 ================================================================================
+
+* Update README.rst
+* Update README.rst
+* Add screenshot for Geometry Bash
+
+Version 0.0.14
+--------------------------------------------------------------------------------
 
 * Revert to 50 bashes
 
