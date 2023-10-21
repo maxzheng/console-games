@@ -10,12 +10,7 @@ class GeoBash(Controller):
     name = "Geometry Bash"
 
     def init(self):
-        #: Player object that will be set by ChoosePlayer scene
+        #: Player object that will be set by ChoosePlayer scene and then used by other scenes.
         self.player = None
 
-        self.choose_player = ChoosePlayer()
-        self.intro = Intro()
-        self.bash = Bash()
-
-        self.set_scene(self.choose_player)
-
+        self.scenes = [ChoosePlayer, Intro, Bash]

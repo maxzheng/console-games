@@ -1,6 +1,7 @@
 import curses
 
 from games.screen import Screen
+from games.scenes import Scene
 from games.objects import KeyListener
 
 
@@ -12,6 +13,7 @@ class Controller(KeyListener):
         self.screen = screen
         self.screen.border.title = self.name
         self.key_listeners = set()
+        self.current_index = 0
         self.current_scene = None
         self.init()
 
@@ -20,10 +22,16 @@ class Controller(KeyListener):
 
     def set_scene(self, scene: Scene):
         self.current_scene = scene
-        self.key_listeners = set()
+        self.key_listeners = {scene}
         scene.start()
 
     def play(self):
+        if not self.current_scene:
+            self.set_scene(self.scenes[self.current_index](self.screen, self))
+        elif self.current_scene.done:
+            self.current_index += 1
+            self.set_scene(self.scenes[self.current_index](self.screen, self))
+
         key = self.screen.key
 
         if key > 0:
@@ -50,9 +58,6 @@ class Controller(KeyListener):
 
         elif key == 10:
             self.enter_pressed()
-
-        if self.current_scene:
-            self.current_scene.render()
 
     def key_pressed(self, key):
         """

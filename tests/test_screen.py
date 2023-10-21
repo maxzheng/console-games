@@ -1,9 +1,9 @@
-from games.screen import OrderedScreenObjects
+from games.screen import Screen
 from games.objects import Circle, Square, Diamond
 
 
-def test_ordered_screen_objects():
-    so = OrderedScreenObjects()
+def test_add_and_remove():
+    so = Screen()
     circle = Circle(1, 1)
     square = Square(2, 2)
     diamond = Diamond(2, 2)

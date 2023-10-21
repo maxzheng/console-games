@@ -69,10 +69,9 @@ class Monologue(Text):
     def __init__(self, x: int, y: int, texts=[], on_finish=None):
         super().__init__(x, y, None)
         self.center_x = x
-        self.index = 0
         self.texts = texts
-        self.renders = 0
         self.on_finish = on_finish
+        self.reset()
 
     def render(self, screen: Screen):
         self.renders += 1
@@ -86,6 +85,10 @@ class Monologue(Text):
                 screen.remove(self)
                 if self.on_finish:
                     self.on_finish()
+
+    def reset(self):
+        self.index = 0
+        self.renders = 0
 
 
 class Border(ScreenObject):
@@ -282,9 +285,13 @@ class Choice(ScreenObject, KeyListener):
 
         self.choices = choices
         self.on_select = on_select
-        self.current = int(len(self.choices) / 2)
+        self._current = int(len(self.choices) / 2)
 
         self.reset()
+
+    @property
+    def current(self):
+        return self.choices[self._current]
 
     def reset(self):
         self.bar = None
@@ -316,33 +323,42 @@ class Choice(ScreenObject, KeyListener):
                 screen.add(choice)
                 self.kids.add(choice)
 
-                if i == self.current:
+                if i == self._current:
                     self.bar.x = choice.x
 
     def left_pressed(self):
-        if self.choice.current > 0:
-            self.choice.current -= 1
-            self.choice.bar.x -= self.choice.bar.size
+        if self._current > 0:
+            self._current -= 1
+            self.bar.x -= self.bar.size
 
     def right_pressed(self):
-        if self.choice.current < len(self.choice.choices) - 1:
-            self.choice.current += 1
-            self.choice.bar.x += self.choice.bar.size
+        if self._current < len(self.choices) - 1:
+            self._current += 1
+            self.bar.x += self.bar.size
 
     def enter_pressed(self):
-        player = self.choices[self.current]
-        if self.choice.on_select:
-            self.choice.on_select(player)
+        player = self.choices[self._current]
+        if self.on_select:
+            self.on_select(player)
+
+    def space_pressed(self):
+        self.enter_pressed()
 
 
 class Player(ScreenObject, KeyListener):
     def __init__(self, name, shape: ScreenObject):
-        super().__init__(shape.x, shape.y)
+        super().__init__(shape.x, shape.y, size=shape.size, color=shape.color)
 
         self.name = name
         self.shape = shape
 
         self.reset()
+
+    def __setattr__(self, name, value):
+        if name in ('x', 'y', 'size') and hasattr(self, 'shape'):
+            setattr(self.shape, name, value)
+        else:
+            super().__setattr__(name, value)
 
     def reset(self):
         self.score = 0
@@ -353,6 +369,7 @@ class Player(ScreenObject, KeyListener):
 
     def render(self, screen: Screen):
         super().render(screen)
+        self.shape.render(screen)
 
 
 class Boss(Player):

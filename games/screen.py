@@ -4,7 +4,7 @@ from time import sleep, time
 from games.listeners import KeyListener
 
 
-class Screen(OrderedScreenObjects):
+class Screen:
     def __init__(self, border=None, fps=30, debug=False):
         #: FPS limit to render
         self.fps = fps
@@ -31,7 +31,7 @@ class Screen(OrderedScreenObjects):
         self._objects = []
 
         #: Game controller
-        self.controller = controller
+        self.controller = None
 
     def __contains__(self, screen_object):
         return screen_object in self._objects
@@ -96,7 +96,7 @@ class Screen(OrderedScreenObjects):
         for obj in screen_objects:
             self._objects.append(obj)
             if isinstance(obj, KeyListener) and self.controller:
-                self.controller.add(obj)
+                self.controller.key_listeners.add(obj)
 
     def remove(self, *screen_objects):
         """ Remove screen objects from the list """
@@ -112,7 +112,6 @@ class Screen(OrderedScreenObjects):
 
     def reset(self):
         self._objects = []
-
 
     def resize_screen(self):
         max_height, max_width = self._screen.getmaxyx()

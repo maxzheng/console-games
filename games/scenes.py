@@ -1,12 +1,21 @@
 from games.objects import (Square, Circle, Projectile, Explosion, Text, Monologue, Triangle,
-                           Diamond, Choice, Bar, Player, KeyListener)
+                           Diamond, Choice, Bar, Player, KeyListener, Boss)
 
 
 class Scene(KeyListener):
     def __init__(self, screen, controller):
         self.screen = screen
         self.controller = controller
+        self.next_scene = None
+        self.done = False
         self.init()
+
+    def __rshift__(self, scene: 'Scene'):
+        self.next_scene = scene
+
+    @property
+    def player(self):
+        return self.controller.player
 
     def init(self):
         """ Initialize the scene """
@@ -25,15 +34,16 @@ class ChoosePlayer(Scene):
     def init(self):
         choices = [
             Player('Kate', Triangle(self.screen.width / 2, self.screen.height - 3, size=3,
-                                    color=self.screen.COLOR_BLUE),
+                                    color=self.screen.COLOR_BLUE)),
             Player('Nina', Circle(self.screen.width / 2, self.screen.height - 3, size=3,
-                                  color=self.screen.COLOR_RED),
+                                  color=self.screen.COLOR_RED)),
             Player('Jon', Diamond(self.screen.width / 2, self.screen.height - 3, size=3,
-                                  color=self.screen.COLOR_YELLOW)
+                                  color=self.screen.COLOR_YELLOW))
         ]
         self.choice = Choice(self.screen.width / 2, self.screen.height / 2,
                              choices=choices, color=self.screen.COLOR_CYAN,
                              on_select=self.next)
+        self.reset()
 
     def start(self):
         self.screen.add(self.choice)
@@ -45,6 +55,10 @@ class ChoosePlayer(Scene):
     def reset(self):
         super().reset()
         self.choice.reset()
+        self.choice.current.is_visible = True
+
+    def escape_pressed(self):
+        exit()
 
 
 class Intro(Scene):
@@ -56,9 +70,14 @@ class Intro(Scene):
                                       "I LOVE to bash them!! :D",
                                       "Move me using arrow keys.",
                                       "Ready? Let's BASH!!"])
+        self.reset()
 
     def start(self):
-        self.screen.add(intro, self.controller.player)
+        self.screen.add(self.intro, self.controller.player)
+
+    def reset(self):
+        self.intro.reset()
+        self.controller.player.reset()
 
 
 class Bash(Scene):
@@ -66,6 +85,7 @@ class Bash(Scene):
         self.max_enemies = 5
         self.boss = Boss('Max', Square(self.screen.width / 2, -5, size=5,
                                        color=self.screen.COLOR_GREEN, y_delta=0.1, solid=True))
+
     def start(self):
         self.boss.size = 5
         self.boss.y_delta = 0.1
@@ -193,6 +213,10 @@ class Bash(Scene):
         self.screen.border.status['bashed'] = ('{} (High: {})'.format(
             self.score, player.high_score) if self.score < player.high_score else self.score)
 
+    def reset(self):
+        self.player.x = self.screen.width / 2
+        self.player.y = self.screen.height - 3
+
     def key_pressed(self, key):
         if self.player and self.intro in self.screen:
             self.start = True
@@ -203,12 +227,10 @@ class Bash(Scene):
             if self.player.x > 3:
                 self.player.x -= 2
 
-
     def right_pressed(self):
         if self.player:
             if self.player.x < self.screen.width - 2:
                 self.player.x += 2
-
 
     def up_pressed(self):
         if self.player:
@@ -224,10 +246,4 @@ class Bash(Scene):
         self.enter_pressed()
 
     def escape_pressed(self):
-        if self.player:
-            self.player.is_visible = True
-            self.player = None
-            self.reset()
-            self.screen.add(self.player_choice)
-        else:
-            exit()
+        self.next()
