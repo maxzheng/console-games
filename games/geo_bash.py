@@ -63,7 +63,7 @@ class GeoBash(Controller):
     def process(self):
         super().process()
 
-        if self.boss in self.screen.objects:
+        if self.boss in self.screen:
             for projectile in self.boss.kids:
                 if projectile.coords & self.player.coords:
                     self.player.is_visible = False
@@ -110,7 +110,7 @@ class GeoBash(Controller):
                                              self.screen.height / 2, 'You got BASHED!!'))
 
         if self.start and self.player and self.player.is_visible:
-            if self.boss in self.screen.objects:
+            if self.boss in self.screen:
                 # self.screen.border.status['boss'] = str((int(self.boss.x), int(self.boss.y), self.boss.size))
                 if self.boss.x > self.player.x:
                     self.boss.x_delta = -1 * abs(self.boss.x_delta)
@@ -133,7 +133,7 @@ class GeoBash(Controller):
             # else:
             #    self.screen.border.status['boss'] = 'Dead'
 
-            if self.score and self.score % 50 == 0 and self.boss not in self.screen.objects:
+            if self.score and self.score % 50 == 0 and self.boss not in self.screen:
                 self.boss.x = randint(5, self.screen.width - 5)
                 self.boss.y = -5
                 self.boss.x_delta = max(random() * 0.7, 0.3)
@@ -163,7 +163,7 @@ class GeoBash(Controller):
                 self.player.kids.add(projectile)
                 self.screen.add(projectile)
 
-                if self.screen.renders % 30 == 0 and self.boss in self.screen.objects:
+                if self.screen.renders % 30 == 0 and self.boss in self.screen:
                     projectile = Bar(self.boss.x, self.boss.y+self.boss.size/2, size=self.boss.size,
                                      parent=self.boss, color=self.boss.color, y_delta=0.5,
                                      char=self.boss.char)
@@ -175,7 +175,7 @@ class GeoBash(Controller):
             self.score, player.high_score) if self.score < player.high_score else self.score)
 
     def key_pressed(self, key):
-        if self.player and self.intro in self.screen.objects:
+        if self.player and self.intro in self.screen:
             self.start = True
             self.screen.remove(self.intro)
 

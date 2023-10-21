@@ -2,7 +2,42 @@ import curses
 from time import sleep, time
 
 
-class Screen:
+class OrderedScreenObjects:
+    def __init__(self):
+        #: List of screen objects
+        self._objects = []
+
+    def __contains__(self, screen_object):
+        return screen_object in self._objects
+
+    def __iter__(self):
+        yield from self._objects
+
+    def __len__(self):
+        return len(self._objects)
+
+    def add(self, *screen_objects):
+        """ Add screen objects to the list """
+        self._objects.extend(screen_objects)
+
+    def remove(self, *screen_objects):
+        """ Remove screen objects from the list """
+
+        for screen_object in screen_objects:
+            try:
+                index = self._objects.index(screen_object)
+            except ValueError:
+                return
+
+            obj = self._objects.pop(index)
+            for kid in obj.kids:
+                self.remove(kid)
+
+    def reset(self):
+        self._objects = []
+
+
+class Screen(OrderedScreenObjects):
     def __init__(self, border=None, fps=30, debug=False):
         #: FPS limit to render
         self.fps = fps
@@ -18,9 +53,6 @@ class Screen:
 
         #: Buffer for next frame to display
         self.buffer = None
-
-        #: List of objets on the screen
-        self.objects = []
 
         #: Number of times the screen has rendered
         self.renders = 0
@@ -91,21 +123,6 @@ class Screen:
             else:
                 self.buffer.addstr(int(y), int(x), char)
 
-    def add(self, *screen_object):
-        """ Add object to be rendered on the screen """
-        self.objects.extend(screen_object)
-
-    def remove(self, screen_object):
-        """ Remove object from the screen """
-        try:
-            index = self.objects.index(screen_object)
-        except ValueError:
-            return
-
-        obj = self.objects.pop(index)
-        for kid in obj.kids:
-            self.remove(kid)
-
     def render(self):
         start_time = time()
 
@@ -120,7 +137,7 @@ class Screen:
 
         self.buffer.clear()
 
-        for obj in self.objects:
+        for obj in self:
             if obj.is_visible:
                 obj.render(self)
             if obj.is_out:
@@ -130,13 +147,10 @@ class Screen:
 
         if self.border:
             if self.debug:
-                self.border.status['objects'] = len(self.objects)
+                self.border.status['objects'] = len(self)
             self.border.render(self)
 
         try:
             self.buffer.refresh(0, 0, 0, 0, self.height, self.width)
         except Exception:
             self.resize_screen()
-
-    def reset(self):
-        self.objects = []
