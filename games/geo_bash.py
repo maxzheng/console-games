@@ -136,7 +136,7 @@ class GeoBash(Controller):
             if self.score and self.score % 50 == 0 and self.boss not in self.screen.objects:
                 self.boss.x = randint(5, self.screen.width - 5)
                 self.boss.y = -5
-                self.boss.x_delta = max(random() * 1, 0.5)
+                self.boss.x_delta = max(random() * 0.7, 0.3)
                 self.boss.char = '$'
                 self.boss.size = 5
                 self.boss.kids = set()
@@ -148,7 +148,7 @@ class GeoBash(Controller):
 
             if len(self.enemies) < self.max_enemies:
                 enemy = Square(randint(3, self.screen.width-3), -3, size=randint(2, 4),
-                               y_delta=random() * self.score / 100 + 0.25)
+                               y_delta=random() * self.score / 200 + 0.2)
                 self.enemies.add(enemy)
                 self.screen.add(enemy)
 
