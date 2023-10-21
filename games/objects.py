@@ -2,6 +2,7 @@ from random import randint, random
 from time import time
 
 from games.screen import Screen
+from games.listeners import KeyListener
 
 
 class ScreenObject:
@@ -15,6 +16,7 @@ class ScreenObject:
         self.parent = parent
         self.kids = set()
         self.is_visible = True
+        self.screen = None
 
     @property
     def is_out(self):
@@ -29,6 +31,10 @@ class ScreenObject:
     def render(self, screen: Screen):
         """ Render object onto the given screen """
         self.screen = screen
+
+    def reset(self):
+        """ Reset object to original state """
+        pass
 
 
 class Text(ScreenObject):
@@ -270,13 +276,17 @@ class Bar(Projectile):
             screen.draw(x, self.y, self.char, color=self.color)
 
 
-class Choice(ScreenObject):
+class Choice(ScreenObject, KeyListener):
     def __init__(self, x: int, y: int, color: None, choices=[], on_select=None):
         super().__init__(x, y, color=color)
 
         self.choices = choices
         self.on_select = on_select
-        self.current_choice = int(len(self.choices) / 2)
+        self.current = int(len(self.choices) / 2)
+
+        self.reset()
+
+    def reset(self):
         self.bar = None
 
     def render(self, screen: Screen):
@@ -306,5 +316,44 @@ class Choice(ScreenObject):
                 screen.add(choice)
                 self.kids.add(choice)
 
-                if i == self.current_choice:
+                if i == self.current:
                     self.bar.x = choice.x
+
+    def left_pressed(self):
+        if self.choice.current > 0:
+            self.choice.current -= 1
+            self.choice.bar.x -= self.choice.bar.size
+
+    def right_pressed(self):
+        if self.choice.current < len(self.choice.choices) - 1:
+            self.choice.current += 1
+            self.choice.bar.x += self.choice.bar.size
+
+    def enter_pressed(self):
+        player = self.choices[self.current]
+        if self.choice.on_select:
+            self.choice.on_select(player)
+
+
+class Player(ScreenObject, KeyListener):
+    def __init__(self, name, shape: ScreenObject):
+        super().__init__(shape.x, shape.y)
+
+        self.name = name
+        self.shape = shape
+
+        self.reset()
+
+    def reset(self):
+        self.score = 0
+        self.high_score = 0
+        if self.screen:
+            self.shape.x = self.screen.width / 2
+            self.shape.y = self.screen.height - self.shape.size
+
+    def render(self, screen: Screen):
+        super().render(screen)
+
+
+class Boss(Player):
+    pass

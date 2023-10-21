@@ -1,40 +1,7 @@
 import curses
 from time import sleep, time
 
-
-class OrderedScreenObjects:
-    def __init__(self):
-        #: List of screen objects
-        self._objects = []
-
-    def __contains__(self, screen_object):
-        return screen_object in self._objects
-
-    def __iter__(self):
-        yield from self._objects
-
-    def __len__(self):
-        return len(self._objects)
-
-    def add(self, *screen_objects):
-        """ Add screen objects to the list """
-        self._objects.extend(screen_objects)
-
-    def remove(self, *screen_objects):
-        """ Remove screen objects from the list """
-
-        for screen_object in screen_objects:
-            try:
-                index = self._objects.index(screen_object)
-            except ValueError:
-                return
-
-            obj = self._objects.pop(index)
-            for kid in obj.kids:
-                self.remove(kid)
-
-    def reset(self):
-        self._objects = []
+from games.listeners import KeyListener
 
 
 class Screen(OrderedScreenObjects):
@@ -59,6 +26,21 @@ class Screen(OrderedScreenObjects):
 
         #: Show debug info
         self.debug = debug
+
+        #: List of screen objects
+        self._objects = []
+
+        #: Game controller
+        self.controller = controller
+
+    def __contains__(self, screen_object):
+        return screen_object in self._objects
+
+    def __iter__(self):
+        yield from self._objects
+
+    def __len__(self):
+        return len(self._objects)
 
     @property
     def width(self):
@@ -108,6 +90,29 @@ class Screen(OrderedScreenObjects):
             for r in range(self._height):
                 frame.append([' '] * (self._width))
         return frame
+
+    def add(self, *screen_objects):
+        """ Add screen objects to the list """
+        for obj in screen_objects:
+            self._objects.append(obj)
+            if isinstance(obj, KeyListener) and self.controller:
+                self.controller.add(obj)
+
+    def remove(self, *screen_objects):
+        """ Remove screen objects from the list """
+        for screen_object in screen_objects:
+            try:
+                index = self._objects.index(screen_object)
+            except ValueError:
+                return
+
+            obj = self._objects.pop(index)
+            for kid in obj.kids:
+                self.remove(kid)
+
+    def reset(self):
+        self._objects = []
+
 
     def resize_screen(self):
         max_height, max_width = self._screen.getmaxyx()

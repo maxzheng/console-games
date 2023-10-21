@@ -8,8 +8,9 @@ class Manager:
         screen = Screen(border=Border('*', show_fps=debug), debug=debug, fps=fps)
 
         with screen:
-            geo_bash = GeoBash(screen)
+            game = GeoBash(screen)
+            screen.controller = game
 
             while True:
                 screen.render()
-                geo_bash.process()
+                game.play()
