@@ -59,12 +59,20 @@ class Player(ScreenObject, KeyListener):
                                   on_finish=self.controller.reset_scene))
 
     def left_pressed(self):
-        if self.is_alive and self.x > 3:
-            self.x -= 2
+        speed = 3 if self.char == '!' else 2
+        if self.is_alive:
+            if self.x - speed >= 1:
+                self.x -= speed
+            elif self.x - 1 >= 1:
+                self.x -= 1
 
     def right_pressed(self):
-        if self.is_alive and self.x < self.screen.width - 2:
-            self.x += 2
+        speed = 3 if self.char == '!' else 2
+        if self.is_alive:
+            if self.x + speed < self.screen.width - 1:
+                self.x += speed
+            elif self.x + 1 < self.screen.width - 1:
+                self.x += 1
 
     def up_pressed(self):
         if self.is_alive and self.y > 2:

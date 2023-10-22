@@ -285,7 +285,7 @@ class Bar(Projectile):
     def render(self, screen: Screen):
         super().render(screen)
 
-        start_x = int(self.x - self.size / 2)
+        start_x = int(self.x - self.size / 2 - 0.5)  # Round down
         self.coords = set()
 
         for x in range(start_x, int(start_x + self.size)):
@@ -338,7 +338,7 @@ class Choice(ScreenObject, KeyListener):
                 self.kids.add(choice)
 
                 if i == self._current:
-                    self.bar.x = choice.x
+                    self.bar.x = choice.x + 1
 
     def left_pressed(self):
         if self._current > 0 and self.bar:
