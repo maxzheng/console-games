@@ -1,5 +1,12 @@
-Version 0.0.20
+Version 0.0.21
 ================================================================================
+
+* Add render time to debug
+* Turn on style checking
+* Create custom buffer to update screen for changed only to avoid flickers
+
+Version 0.0.20
+--------------------------------------------------------------------------------
 
 * Add --fps option and increase enemies based on level
 
