@@ -1,5 +1,21 @@
-Version 0.0.16
+Version 0.0.17
 ================================================================================
+
+* Fix bug with score when boss appears
+* Allow player to go down more based on size
+* Shrink Kate shape when moved continuously
+* Let Jon shape go faster
+* Fix buggy boss
+* Collapse reset into init as resetting state can be messy and easily introduce weird bugs
+* Fix bugs
+* Remove debug
+* Add other scenes
+* Finished ChoosePlayer scene
+* Refactor and add tests
+* Refactor to use OrderedScreenObject
+
+Version 0.0.16
+--------------------------------------------------------------------------------
 
 * Slow enemies down a bit
 
