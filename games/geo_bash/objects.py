@@ -17,7 +17,7 @@ class Player(ScreenObject, KeyListener):
         self.reset()
 
     @property
-    def is_active(self):
+    def is_alive(self):
         return self.is_visible and self.is_playing
 
     def reset(self):
@@ -36,7 +36,7 @@ class Player(ScreenObject, KeyListener):
         self.screen.border.status['bashed'] = ('{} (High: {})'.format(
             self.score, self.high_score) if self.score < self.high_score else self.score)
 
-        if (self.screen.renders % 2 == 0 or self.char == '!') and self.is_active:
+        if (self.screen.renders % 2 == 0 or self.char == '!') and self.is_alive:
             if self.char == '!':
                 color = self.screen.colors[int(self.screen.renders / 2) % len(self.screen.colors)]
             else:
@@ -59,19 +59,19 @@ class Player(ScreenObject, KeyListener):
                                   on_finish=self.controller.reset_scene))
 
     def left_pressed(self):
-        if self.is_active and self.x > 3:
+        if self.is_alive and self.x > 3:
             self.x -= 2
 
     def right_pressed(self):
-        if self.is_active and self.x < self.screen.width - 2:
+        if self.is_alive and self.x < self.screen.width - 2:
             self.x += 2
 
     def up_pressed(self):
-        if self.is_active and self.y > 2:
+        if self.is_alive and self.y > 2:
             self.y -= 1
 
     def down_pressed(self):
-        if self.is_active and self.y < self.screen.height - 3:
+        if self.is_alive and self.y < self.screen.height - 3:
             self.y += 1
 
 
@@ -79,18 +79,12 @@ class Boss(Player):
     def __init__(self, name, shape: ScreenObject, player: Player):
         super().__init__(name, shape)
         self.player = player
-
-    def reset(self):
-        super().reset()
         self.size = 5
         self.y = -5
         self.y_delta = 0.1
         self.x_delta = max(random() * 0.5, 0.2)
         self.kids = set()
         self.is_hit = False
-        if self.screen:
-            self.x = randint(5, self.screen.width - 5)
-            self.color = self.screen.COLOR_GREEN
 
     def render(self, screen: Screen):
         super().render(screen)
@@ -103,31 +97,32 @@ class Boss(Player):
                 if projectile.coords & self.player.coords:
                     self.player.got_bashed()
 
-        if self.player.is_visible:
-            if self in self.screen:
-                self.y += self.y_delta
+        if self in self.screen:
+            self.y += self.y_delta
+            self.x += self.x_delta if self.player.score >= 100 and self.player.char != '^' else 0
 
-                # self.screen.border.status['boss'] = str((int(self.x), int(self.y), self.size))
-                if self.player.char == '^':
-                    self.x_delta = 0
+            # self.screen.border.status['boss'] = str((int(self.x), int(self.y), self.size))
+            if self.player.char == '^':
+                self.x_delta = 0
 
-                if self.x > self.player.x:
-                    self.x_delta = -1 * abs(self.x_delta)
-                else:
-                    self.x_delta = abs(self.x_delta)
-                if self.y > self.screen.height + 2.5:
-                    self.y = -2.5
+            if self.x > self.player.x:
+                self.x_delta = -1 * abs(self.x_delta)
+            else:
+                self.x_delta = abs(self.x_delta)
 
-                if self.is_hit:
-                    self.color = self.screen.colors[self.screen.renders % len(self.screen.colors)]
-                    if self.screen.renders % 10 == 0:
-                        if self.size >= 4:
-                            self.color = self.screen.COLOR_GREEN
-                        elif self.size >= 3:
-                            self.color = self.screen.COLOR_YELLOW
-                        else:
-                            self.color = self.screen.COLOR_RED
-                        self.is_hit = False
+            if self.y > self.screen.height + 2.5 and self.player.is_alive:
+                self.y = -2.5
+
+            if self.is_hit:
+                self.color = self.screen.colors[self.screen.renders % len(self.screen.colors)]
+                if self.screen.renders % 10 == 0:
+                    if self.size >= 4:
+                        self.color = self.screen.COLOR_GREEN
+                    elif self.size >= 3:
+                        self.color = self.screen.COLOR_YELLOW
+                    else:
+                        self.color = self.screen.COLOR_RED
+                    self.is_hit = False
 
             # else:
             #   self.screen.border.status['boss'] = 'Dead'
@@ -143,15 +138,10 @@ class Boss(Player):
 class Enemies(ScreenObject):
     def __init__(self, max_enemies=5, player=None):
         super().__init__(0, 0)
-        self.boss = Boss('Max', Square(0, -5, size=5, char='$', y_delta=0.1, solid=True),
-                         player=player)
         self.max_enemies = max_enemies
         self.enemies = set()
         self.player = player
-
-    def reset(self):
-        super().reset()
-        self.boss.reset()
+        self.boss = None
 
     def render(self, screen: Screen):
         super().render(screen)
@@ -169,13 +159,16 @@ class Enemies(ScreenObject):
                 enemy.y_delta += 0.5
 
             # Add boss every 50 bashes
-            if self.player.score and self.player.score % 50 == 0 and self.boss not in screen and self.player.is_active:
-                self.boss.x = randint(self.boss.size, screen.width - self.boss.size)
+            if self.player.score and self.player.score % 50 == 0 and self.boss not in screen and self.player.is_alive:
+                self.boss = Boss('Max',
+                                 Square(randint(5, screen.width - 5), -5, size=5, char='$',
+                                        y_delta=0.1, solid=True, color=screen.COLOR_GREEN),
+                                 player=self.player)
                 self.enemies.add(self.boss)
                 screen.add(self.boss)
 
             # If it is out of the screen, remove it (except for boss or player has been bashed)
-            if enemy.is_out and (enemy != self.boss or self.player.is_active):
+            if enemy.is_out and (enemy != self.boss and self.player.is_alive):
                 self.enemies.remove(enemy)
                 screen.remove(enemy)
 

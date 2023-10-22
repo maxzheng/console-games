@@ -341,12 +341,12 @@ class Choice(ScreenObject, KeyListener):
                     self.bar.x = choice.x
 
     def left_pressed(self):
-        if self._current > 0:
+        if self._current > 0 and self.bar:
             self._current -= 1
             self.bar.x -= self.bar.size
 
     def right_pressed(self):
-        if self._current < len(self.choices) - 1:
+        if self._current < len(self.choices) - 1 and self.bar:
             self._current += 1
             self.bar.x += self.bar.size
 
