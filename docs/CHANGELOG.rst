@@ -1,5 +1,10 @@
-Version 0.0.19
+Version 0.0.20
 ================================================================================
+
+* Add --fps option and increase enemies based on level
+
+Version 0.0.19
+--------------------------------------------------------------------------------
 
 * Use default background color
 
