@@ -58,7 +58,6 @@ class Player(ScreenObject, KeyListener):
                              self.screen.height / 2, 'You got BASHED!!'))
 
     def left_pressed(self):
-        self.screen.border.status['x'] = str(self.x)
         if self.is_active and self.x > 3:
             self.x -= 2
 
