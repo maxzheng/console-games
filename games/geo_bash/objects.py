@@ -13,7 +13,6 @@ class Player(ScreenObject, KeyListener):
         self.high_score = 0
         self.is_playing = False
         self.char = shape.char
-        self.continuous_moves = 0
 
         self.reset()
 
@@ -24,6 +23,7 @@ class Player(ScreenObject, KeyListener):
     def reset(self):
         self.score = 0
         self.is_visible = True
+        self.continuous_moves = 0
         if self.screen:
             self.x = self.screen.width / 2
             self.y = self.screen.height - self.size
@@ -87,12 +87,12 @@ class Player(ScreenObject, KeyListener):
                 self.continuous_moves += 1
 
     def up_pressed(self):
-        if self.is_alive and self.y > 2:
+        if self.is_alive and self.y >= self.size:
             self.y -= 1
             self.continuous_moves += 1
 
     def down_pressed(self):
-        if self.is_alive and self.y < self.screen.height - 3:
+        if self.is_alive and self.y < self.screen.height - self.size:
             self.y += 1
             self.continuous_moves += 1
 

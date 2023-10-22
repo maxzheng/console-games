@@ -25,7 +25,7 @@ class Screen:
         self.renders = 0
 
         #: Show debug info
-        self.debug = debug
+        self._debug = debug
 
         #: List of screen objects
         self._objects = []
@@ -153,7 +153,7 @@ class Screen:
                 self.remove(obj)
 
         if self.border:
-            if self.debug:
+            if self._debug:
                 self.border.status['objects'] = len(self)
             self.border.render(self)
 
