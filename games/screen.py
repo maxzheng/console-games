@@ -114,8 +114,9 @@ class Screen:
 
     def reset(self):
         self._objects = []
-        self.border.reset()
         self.renders = 0
+        if self.border:
+            self.border.reset()
 
     def resize_screen(self):
         max_height, max_width = self._screen.getmaxyx()
