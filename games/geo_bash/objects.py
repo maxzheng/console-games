@@ -24,6 +24,7 @@ class Player(ScreenObject, KeyListener):
         self.score = 0
         self.is_visible = True
         self.continuous_moves = 0
+        self.size = 3
         if self.screen:
             self.x = self.screen.width / 2
             self.y = self.screen.height - self.size
