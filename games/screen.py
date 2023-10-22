@@ -135,7 +135,7 @@ class Screen:
         self._render()
 
         render_time = time() - start_time
-        self.debug(rsecs=round(render_time * self.fps, 1))
+        # self.debug(rsecs=round(render_time * self.fps, 1))
         if render_time < 1/self.fps:
             sleep(1/self.fps - render_time)
 
