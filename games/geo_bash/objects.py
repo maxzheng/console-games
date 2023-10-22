@@ -179,7 +179,7 @@ class Enemies(ScreenObject):
         super().render(screen)
 
         # Create enemies
-        if len(self.enemies) < self.max_enemies:
+        if len(self.enemies) < self.max_enemies + int(self.player.score / 100):
             enemy = Square(randint(3, self.screen.width-3), -3, size=randint(2, 4),
                            y_delta=random() * self.player.score / 200 + 0.2)
             self.enemies.add(enemy)
