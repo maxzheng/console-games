@@ -22,6 +22,7 @@ class Player(ScreenObject, KeyListener):
 
     def reset(self):
         self.score = 0
+        self.is_visible = True
         if self.screen:
             self.x = self.screen.width / 2
             self.y = self.screen.height - self.size
@@ -52,15 +53,10 @@ class Player(ScreenObject, KeyListener):
 
     def got_bashed(self):
         self.is_visible = False
-        text = Text((self.screen.width - 10) / 2, self.screen.height / 2, 'You got BASHED!!')
 
-        def reset():
-            self.screen.remove(text)
-            self.controller.reset_scene()
-
-        self.screen.add(text)
+        self.screen.add(Text((self.screen.width - 10) / 2, self.screen.height / 2, 'You got BASHED!!'))
         self.screen.add(Explosion(self.x, self.y, size=20,
-                                  on_finish=reset))
+                                  on_finish=self.controller.reset_scene))
 
     def left_pressed(self):
         if self.is_active and self.x > 3:

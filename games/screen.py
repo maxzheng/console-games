@@ -175,14 +175,11 @@ class Scene(KeyListener):
     def player(self):
         return self.controller.player
 
+    def next(self):
+        self.done = True
+
     def init(self):
         """ Initialize the scene """
 
     def start(self):
         """ Start the scene """
-
-    def next(self):
-        self.done = True
-
-    def reset(self):
-        self.done = False

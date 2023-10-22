@@ -27,7 +27,7 @@ class Controller(KeyListener):
 
     def reset_scene(self):
         if self.current_scene:
-            self.current_scene.reset()
+            self.set_scene(self.current_scene.__class__(self.screen, self))
 
     def play(self):
         if not self.current_scene:
