@@ -158,3 +158,28 @@ class Screen:
             self.buffer.refresh(0, 0, 0, 0, self.height, self.width)
         except Exception:
             self.resize_screen()
+
+
+class Scene(KeyListener):
+    def __init__(self, screen, controller):
+        self.screen = screen
+        self.controller = controller
+        self.next_scene = None
+        self.done = False
+        self.init()
+
+    @property
+    def player(self):
+        return self.controller.player
+
+    def init(self):
+        """ Initialize the scene """
+
+    def start(self):
+        """ Start the scene """
+
+    def next(self):
+        self.done = True
+
+    def reset(self):
+        self.done = False

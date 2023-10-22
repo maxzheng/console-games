@@ -1,9 +1,5 @@
-from random import randint, random
-
 from games.controller import Controller
-from games.scenes import ChoosePlayer, Intro, Bash
-from games.objects import (Square, Circle, Projectile, Explosion, Text, Monologue, Triangle,
-                           Diamond, Bar, Boss)
+from games.geo_bash.scenes import ChoosePlayer, Intro, Bash
 
 
 class GeoBash(Controller):

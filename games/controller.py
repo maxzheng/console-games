@@ -1,7 +1,6 @@
 import curses
 
-from games.screen import Screen
-from games.scenes import Scene
+from games.screen import Screen, Scene
 from games.objects import KeyListener
 
 
@@ -21,6 +20,7 @@ class Controller(KeyListener):
         """ Initialize the game """
 
     def set_scene(self, scene: Scene):
+        self.screen.reset()
         self.current_scene = scene
         self.key_listeners = {scene}
         scene.start()
@@ -30,6 +30,8 @@ class Controller(KeyListener):
             self.set_scene(self.scenes[self.current_index](self.screen, self))
         elif self.current_scene.done:
             self.current_index += 1
+            if self.current_index >= len(self.scenes):
+                self.current_index = 0
             self.set_scene(self.scenes[self.current_index](self.screen, self))
 
         key = self.screen.key

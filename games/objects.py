@@ -28,6 +28,13 @@ class ScreenObject:
         except Exception:
             return False
 
+    def sync(self, screen_object):
+        self.x = screen_object.x
+        self.y = screen_object.y
+        self.size = screen_object.size
+        self.color = screen_object.color
+        self.is_visible = screen_object.is_visible
+
     def render(self, screen: Screen):
         """ Render object onto the given screen """
         self.screen = screen
@@ -337,40 +344,8 @@ class Choice(ScreenObject, KeyListener):
             self.bar.x += self.bar.size
 
     def enter_pressed(self):
-        player = self.choices[self._current]
         if self.on_select:
-            self.on_select(player)
+            self.on_select(self.choices[self._current])
 
     def space_pressed(self):
         self.enter_pressed()
-
-
-class Player(ScreenObject, KeyListener):
-    def __init__(self, name, shape: ScreenObject):
-        super().__init__(shape.x, shape.y, size=shape.size, color=shape.color)
-
-        self.name = name
-        self.shape = shape
-
-        self.reset()
-
-    def __setattr__(self, name, value):
-        if name in ('x', 'y', 'size') and hasattr(self, 'shape'):
-            setattr(self.shape, name, value)
-        else:
-            super().__setattr__(name, value)
-
-    def reset(self):
-        self.score = 0
-        self.high_score = 0
-        if self.screen:
-            self.shape.x = self.screen.width / 2
-            self.shape.y = self.screen.height - self.shape.size
-
-    def render(self, screen: Screen):
-        super().render(screen)
-        self.shape.render(screen)
-
-
-class Boss(Player):
-    pass
