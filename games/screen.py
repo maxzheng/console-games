@@ -135,6 +135,7 @@ class Screen:
         self._render()
 
         render_time = time() - start_time
+        self.debug(rsecs=round(render_time * self.fps, 1))
         if render_time < 1/self.fps:
             sleep(1/self.fps - render_time)
 
@@ -167,7 +168,8 @@ class Screen:
 
     def debug(self, **debug_info):
         """ Show debug info (enabled when --debug flag is used) """
-        self.border.status.update(debug_info)
+        if self._debug:
+            self.border.status.update(debug_info)
 
 
 class ScreenBuffer:
