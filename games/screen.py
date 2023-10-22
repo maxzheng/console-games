@@ -73,7 +73,7 @@ class Screen:
         for color in ('RED', 'GREEN', 'BLUE', 'YELLOW', 'CYAN', 'MAGENTA'):
             color_name = 'COLOR_' + color
             color_id = getattr(curses, color_name)
-            curses.init_pair(color_id, color_id, curses.COLOR_BLACK)
+            curses.init_pair(color_id, color_id, -1)
             setattr(self, color_name, curses.color_pair(color_id))
             self.colors.append(getattr(self, color_name))
 
