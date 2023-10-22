@@ -26,6 +26,7 @@ class ChoosePlayer(Scene):
         chosen.y = self.screen.height - chosen.size
         chosen.x = self.screen.width / 2
         self.controller.player = chosen
+        chosen.controller = self.controller
 
     def reset(self):
         super().reset()
@@ -67,6 +68,7 @@ class Bash(Scene):
 
     def reset(self):
         super().reset()
+        self.enemies.reset()
         self.player.reset()
         self.player.is_visible = True
         self.player.is_playing = True

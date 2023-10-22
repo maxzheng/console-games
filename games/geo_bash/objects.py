@@ -52,10 +52,15 @@ class Player(ScreenObject, KeyListener):
 
     def got_bashed(self):
         self.is_visible = False
+        text = Text((self.screen.width - 10) / 2, self.screen.height / 2, 'You got BASHED!!')
+
+        def reset():
+            self.screen.remove(text)
+            self.controller.reset_scene()
+
+        self.screen.add(text)
         self.screen.add(Explosion(self.x, self.y, size=20,
-                                  on_finish=self.reset))
-        self.screen.add(Text((self.screen.width - 10) / 2,
-                             self.screen.height / 2, 'You got BASHED!!'))
+                                  on_finish=reset))
 
     def left_pressed(self):
         if self.is_active and self.x > 3:
@@ -94,43 +99,48 @@ class Boss(Player):
     def render(self, screen: Screen):
         super().render(screen)
 
+        if not self.color:
+            self.color = self.screen.COLOR_GREEN
+
         if self in screen:
             for projectile in self.kids:
                 if projectile.coords & self.player.coords:
                     self.player.got_bashed()
 
         if self.player.is_visible:
-            if self.boss in self.screen:
-                # self.screen.border.status['boss'] = str((int(self.boss.x), int(self.boss.y), self.boss.size))
+            if self in self.screen:
+                self.y += self.y_delta
+
+                # self.screen.border.status['boss'] = str((int(self.x), int(self.y), self.size))
                 if self.player.char == '^':
-                    self.boss.x_delta = 0
+                    self.x_delta = 0
 
-                if self.boss.x > self.player.x:
-                    self.boss.x_delta = -1 * abs(self.boss.x_delta)
+                if self.x > self.player.x:
+                    self.x_delta = -1 * abs(self.x_delta)
                 else:
-                    self.boss.x_delta = abs(self.boss.x_delta)
-                if self.boss.y > self.screen.height + 2.5:
-                    self.boss.y = -2.5
+                    self.x_delta = abs(self.x_delta)
+                if self.y > self.screen.height + 2.5:
+                    self.y = -2.5
 
-                if self.boss.is_hit:
-                    self.boss.color = self.screen.colors[self.screen.renders % len(self.screen.colors)]
+                if self.is_hit:
+                    self.color = self.screen.colors[self.screen.renders % len(self.screen.colors)]
                     if self.screen.renders % 10 == 0:
-                        if self.boss.size >= 4:
-                            self.boss.color = self.screen.COLOR_GREEN
-                        elif self.boss.size >= 3:
-                            self.boss.color = self.screen.COLOR_YELLOW
+                        if self.size >= 4:
+                            self.color = self.screen.COLOR_GREEN
+                        elif self.size >= 3:
+                            self.color = self.screen.COLOR_YELLOW
                         else:
-                            self.boss.color = self.screen.COLOR_RED
-                        self.boss.is_hit = False
+                            self.color = self.screen.COLOR_RED
+                        self.is_hit = False
 
             # else:
-            #    self.screen.border.status['boss'] = 'Dead'
+            #   self.screen.border.status['boss'] = 'Dead'
 
-            if self.screen.renders % 30 == 0 and self.boss in self.screen:
-                projectile = Bar(self.boss.x, self.boss.y+self.boss.size/2, size=self.boss.size,
-                                 parent=self.boss, color=self.boss.color, y_delta=0.5,
-                                 char=self.boss.char)
-                self.boss.kids.add(projectile)
+            if self.screen.renders % 60 == 0 and self in self.screen:
+                projectile = Bar(self.x, self.y+self.size/2, size=self.size,
+                                 parent=self, color=self.color, y_delta=0.5,
+                                 char=self.char)
+                self.kids.add(projectile)
                 self.screen.add(projectile)
 
 
@@ -142,6 +152,10 @@ class Enemies(ScreenObject):
         self.max_enemies = max_enemies
         self.enemies = set()
         self.player = player
+
+    def reset(self):
+        super().reset()
+        self.boss.reset()
 
     def render(self, screen: Screen):
         super().render(screen)
@@ -159,14 +173,15 @@ class Enemies(ScreenObject):
                 enemy.y_delta += 0.5
 
             # Add boss every 50 bashes
-            if self.player.score and self.player.score % 50 == 0 and self.boss not in self.screen:
+            if self.player.score and self.player.score % 50 == 0 and self.boss not in screen and self.player.is_active:
+                self.boss.x = randint(self.boss.size, screen.width - self.boss.size)
                 self.enemies.add(self.boss)
-                self.screen.add(self.boss)
+                screen.add(self.boss)
 
             # If it is out of the screen, remove it (except for boss or player has been bashed)
-            if enemy.is_out and (enemy != self.boss or self.player.is_visible):
+            if enemy.is_out and (enemy != self.boss or self.player.is_active):
                 self.enemies.remove(enemy)
-                self.screen.remove(enemy)
+                screen.remove(enemy)
 
             # Otherwise, check if player's projectiles hit the enemies
             else:

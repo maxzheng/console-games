@@ -153,6 +153,13 @@ class Projectile(ScreenObject):
             screen.draw(self.x, self.y, self.shape,
                         color=self.color or screen.colors[randint(0, len(screen.colors)-1)])
 
+    def sync(self, screen_object):
+        super().sync(screen_object)
+        if hasattr(screen_object, 'x_delta'):
+            self.x_delta = screen_object.x_delta
+        if hasattr(screen_object, 'y_delta'):
+            self.y_delta = screen_object.y_delta
+
 
 class Circle(Projectile):
     def __init__(self, x: int, y: int, size=3, char='O', x_delta=0, y_delta=0, color=None,

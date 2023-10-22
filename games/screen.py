@@ -146,7 +146,10 @@ class Screen:
                 obj.render(self)
             if obj.is_out:
                 if obj.parent:
-                    obj.parent.kids.remove(obj)
+                    try:
+                        obj.parent.kids.remove(obj)
+                    except Exception:
+                        pass
                 self.remove(obj)
 
         if self.border:
