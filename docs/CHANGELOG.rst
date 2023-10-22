@@ -1,5 +1,10 @@
-Version 0.0.17
+Version 0.0.18
 ================================================================================
+
+* Reset size after being bashed
+
+Version 0.0.17
+--------------------------------------------------------------------------------
 
 * Fix bug with score when boss appears
 * Allow player to go down more based on size
