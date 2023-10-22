@@ -122,15 +122,12 @@ class Screen:
         max_height, max_width = self._screen.getmaxyx()
         self._height = max_height - 1
         self._width = max_width - 1
-        self.buffer = curses.newpad(self.height + 1, self.width + 1)
+        self.buffer = ScreenBuffer(max_width, max_height)
 
     def draw(self, x: int, y: int, char: str, color=None):
         """ Draw character on the given position """
         if x >= 0 and x < self._width and y >= 0 and y < self._height:
-            if color:
-                self.buffer.addstr(int(y), int(x), char, color)
-            else:
-                self.buffer.addstr(int(y), int(x), char)
+            self.buffer.add(x, y, char, color)
 
     def render(self):
         start_time = time()
@@ -163,13 +160,45 @@ class Screen:
             self.border.render(self)
 
         try:
-            self.buffer.refresh(0, 0, 0, 0, self.height, self.width)
-        except Exception:
+            self.buffer.render(self._screen)
+        except Exception as e:
+            self.debug(exception=str(e))
             self.resize_screen()
 
     def debug(self, **debug_info):
         """ Show debug info (enabled when --debug flag is used) """
         self.border.status.update(debug_info)
+
+
+class ScreenBuffer:
+    def __init__(self, width: int, height: int):
+        self.width = width
+        self.height = height
+        self.screen = self._new_buffer()
+        self.clear()
+
+    def _new_buffer(self):
+        buffer = []
+        for y in range(self.height):
+            buffer.append([(None, None)] * self.width)
+        return buffer
+
+    def add(self, x, y, char, color=None):
+        self.buffer[int(y)][int(x)] = (char, color)
+
+    def clear(self):
+        self.buffer = self._new_buffer()
+
+    def render(self, screen: Screen):
+        for x in range(self.width):
+            for y in range(self.height):
+                if self.buffer[y][x] != self.screen[y][x]:
+                    self.screen[y][x] = self.buffer[y][x]
+                    char, color = self.buffer[y][x]
+                    if color:
+                        screen.addstr(int(y), int(x), char or ' ', color)
+                    else:
+                        screen.addstr(int(y), int(x), char or ' ')
 
 
 class Scene(KeyListener):
