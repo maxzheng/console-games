@@ -1,3 +1,4 @@
+from time import time
 import curses
 
 from games.screen import Screen, Scene
@@ -14,6 +15,8 @@ class Controller(KeyListener):
         self.key_listeners = set()
         self.current_index = 0
         self.current_scene = None
+        self.last_key_pressed = None
+        self.last_key_time = None
         self.init()
 
     def init(self):
@@ -42,7 +45,8 @@ class Controller(KeyListener):
 
         if key > 0:
             self.key_pressed(key)
-            # self.screen.border.status['key'] = key
+        elif self.last_key_time and (time() - self.last_key_time) > 0.5:
+            self.key_released()
 
         if key == curses.KEY_LEFT or key == ord('h'):
             self.left_pressed()
@@ -66,13 +70,19 @@ class Controller(KeyListener):
             self.enter_pressed()
 
     def key_pressed(self, key):
-        """
-        A key has been pressed
+        # self.screen.border.status['key'] = str(key)
 
-        :param int: ASCII code of the key
-        """
+        self.last_key_pressed = key
+        self.last_key_time = time()
+
         for listener in self.key_listeners:
             listener.key_pressed(key)
+
+    def key_released(self):
+        # self.screen.border.status['key'] = 'released'
+
+        for listener in self.key_listeners:
+            listener.key_released()
 
     def left_pressed(self):
         for listener in self.key_listeners:

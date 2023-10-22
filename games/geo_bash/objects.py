@@ -13,6 +13,7 @@ class Player(ScreenObject, KeyListener):
         self.high_score = 0
         self.is_playing = False
         self.char = shape.char
+        self.continuous_moves = 0
 
         self.reset()
 
@@ -32,6 +33,13 @@ class Player(ScreenObject, KeyListener):
         self.shape.sync(self)
         self.shape.render(screen)
         self.coords = self.shape.coords
+
+        if self.continuous_moves % 30 == 0 and self.char == '^':
+            self.size = max(1, 3 - self.continuous_moves / 30)
+
+            # Cap it
+            if self.continuous_moves > 100:
+                self.continuous_moves = 100
 
         self.screen.border.status['bashed'] = ('{} (High: {})'.format(
             self.score, self.high_score) if self.score < self.high_score else self.score)
@@ -63,24 +71,34 @@ class Player(ScreenObject, KeyListener):
         if self.is_alive:
             if self.x - speed >= 1:
                 self.x -= speed
+                self.continuous_moves += 1
             elif self.x - 1 >= 1:
                 self.x -= 1
+                self.continuous_moves += 1
 
     def right_pressed(self):
         speed = 3 if self.char == '!' else 2
         if self.is_alive:
             if self.x + speed < self.screen.width - 1:
                 self.x += speed
+                self.continuous_moves += 1
             elif self.x + 1 < self.screen.width - 1:
                 self.x += 1
+                self.continuous_moves += 1
 
     def up_pressed(self):
         if self.is_alive and self.y > 2:
             self.y -= 1
+            self.continuous_moves += 1
 
     def down_pressed(self):
         if self.is_alive and self.y < self.screen.height - 3:
             self.y += 1
+            self.continuous_moves += 1
+
+    def key_released(self):
+        if self.continuous_moves >= 1:
+            self.continuous_moves -= 1
 
 
 class Boss(Player):

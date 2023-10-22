@@ -162,6 +162,10 @@ class Screen:
         except Exception:
             self.resize_screen()
 
+    def debug(self, **debug_info):
+        """ Show debug info (enabled when --debug flag is used) """
+        self.border.status.update(debug_info)
+
 
 class Scene(KeyListener):
     def __init__(self, screen, controller):

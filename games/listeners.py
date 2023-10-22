@@ -7,6 +7,11 @@ class KeyListener:
         """
         pass
 
+    def key_released(self):
+        """
+        No key is pressed
+        """
+
     def left_pressed(self):
         pass
 

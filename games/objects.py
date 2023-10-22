@@ -266,10 +266,17 @@ class Triangle(Projectile):
     def render(self, screen: Screen):
         super().render(screen)
 
-        self.coords = {(int(self.x), int(self.y - 1)), (int(self.x - 1), int(self.y)),
-                       (int(self.x + 1), int(self.y)), (int(self.x - 1), int(self.y + 1)),
-                       (int(self.x), int(self.y + 1)), (int(self.x + 1), int(self.y + 1)),
-                       (int(self.x - 2), int(self.y + 1)), (int(self.x + 2), int(self.y + 1))}
+        self.coords = {(int(self.x), int(self.y - 1))}
+
+        if self.size >= 2:
+            self.coords.update({(int(self.x - 1), int(self.y)), (int(self.x + 1), int(self.y))})
+            if self.size == 2:
+                self.coords.update({(int(self.x), int(self.y))})
+
+        if self.size >= 3:
+            self.coords.update({(int(self.x - 1), int(self.y + 1)), (int(self.x), int(self.y + 1)),
+                                (int(self.x + 1), int(self.y + 1)), (int(self.x - 2), int(self.y + 1)),
+                                (int(self.x + 2), int(self.y + 1))})
 
         for x, y in self.coords:
             screen.draw(x, y, self.char, color=self.color)
