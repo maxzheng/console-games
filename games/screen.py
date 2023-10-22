@@ -33,6 +33,8 @@ class Screen:
         #: Game controller
         self.controller = None
 
+        self.reset()
+
     def __contains__(self, screen_object):
         return screen_object in self._objects
 
@@ -112,6 +114,8 @@ class Screen:
 
     def reset(self):
         self._objects = []
+        self.border.reset()
+        self.renders = 0
 
     def resize_screen(self):
         max_height, max_width = self._screen.getmaxyx()

@@ -101,9 +101,10 @@ class Player(ScreenObject, KeyListener):
             self.continuous_moves -= 1
 
 
-class Boss(Player):
+class Boss(ScreenObject):
     def __init__(self, name, shape: ScreenObject, player: Player):
-        super().__init__(name, shape)
+        super().__init__(shape.x, shape.y, size=shape.size, color=shape.color)
+        self.shape = shape
         self.player = player
         self.size = 5
         self.y = -5
@@ -111,9 +112,13 @@ class Boss(Player):
         self.x_delta = max(random() * 0.5, 0.2)
         self.kids = set()
         self.is_hit = False
+        self.char = shape.char
 
     def render(self, screen: Screen):
         super().render(screen)
+        self.shape.sync(self)
+        self.shape.render(screen)
+        self.coords = self.shape.coords
 
         if not self.color:
             self.color = self.screen.COLOR_GREEN

@@ -104,9 +104,12 @@ class Border(ScreenObject):
         self.char = char
         self.show_fps = show_fps
         self.title = title
-        self.status = {}
+        self.reset()
 
+    def reset(self):
+        super().reset()
         self._start_time = time()
+        self.status = {}
 
     def render(self, screen: Screen):
         for x in range(screen.width):
