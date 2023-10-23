@@ -61,18 +61,20 @@ class ScreenObject:
 
 
 class Text(ScreenObject):
-    def __init__(self, x: int, y: int, text: str, x_delta=0, y_delta=0):
-        super().__init__(x, y, x_delta=x_delta, y_delta=y_delta)
+    def __init__(self, x: int, y: int, text: str, x_delta=0, y_delta=0, is_centered=False):
+        super().__init__(x, y, size=len(text), x_delta=x_delta, y_delta=y_delta)
         self.text = text
+        self.is_centered = is_centered
 
     def render(self, screen: Screen):
         super().render(screen)
 
         if self.text:
             self.coords = set()
+            x = self.x - len(self.text) / 2 if self.is_centered else self.x
             for offset, char in enumerate(self.text):
-                screen.draw(self.x + offset, self.y, char, color=self.color)
-                self.coords.add((int(self.x + offset), int(self.y)))
+                screen.draw(x + offset, self.y, char, color=self.color)
+                self.coords.add((int(x + offset), int(self.y)))
 
 
 class BouncyText(Text):
@@ -90,7 +92,7 @@ class BouncyText(Text):
 
 class Monologue(Text):
     def __init__(self, x: int, y: int, texts=[], on_finish=None, x_delta=0, y_delta=0):
-        super().__init__(x, y, None, x_delta=x_delta, y_delta=y_delta)
+        super().__init__(x, y, texts[0], x_delta=x_delta, y_delta=y_delta)
         self.center_x = x
         self.texts = texts
         self.on_finish = on_finish
@@ -317,7 +319,7 @@ class Bar(Projectile):
 
 
 class Choice(ScreenObject, KeyListener):
-    def __init__(self, x: int, y: int, color: None, choices=[], on_select=None):
+    def __init__(self, x: int, y: int, color=None, choices=[], on_select=None):
         super().__init__(x, y, color=color)
 
         self.choices = choices

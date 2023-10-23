@@ -17,6 +17,7 @@ class Controller(KeyListener):
         self.current_scene = None
         self.last_key_pressed = None
         self.last_key_time = None
+        self.done = False
         self.init()
 
     def init(self):

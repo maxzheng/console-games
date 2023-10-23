@@ -12,4 +12,4 @@ class Crush(Scene):
         self.screen.add(self.player, self.numbers)
 
     def escape_pressed(self):
-        exit()
+        self.controller.done = True
