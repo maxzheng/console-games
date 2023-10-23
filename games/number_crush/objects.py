@@ -74,6 +74,9 @@ class Numbers(ScreenObject, KeyListener):
             if self.operand == '-' and (self.a - self.b) < 0:
                 self.a, self.b = self.b, self.a
 
+            if self.operand == '/' and self.b == 0:
+                self.b = 1
+
             if self.operand == '/':
                 self.a = self.a * self.b
 
