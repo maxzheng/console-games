@@ -69,8 +69,14 @@ class Controller(KeyListener):
         elif key == 10:
             self.enter_pressed()
 
+        elif key >= 48 and key <= 57:
+            self.number_pressed(key - 48)
+
+        elif key == 45:
+            self.minus_pressed()
+
     def key_pressed(self, key):
-        # self.screen.border.status['key'] = str(key)
+        # self.screen.debug(key=key)
 
         self.last_key_pressed = key
         self.last_key_time = time()
@@ -79,8 +85,6 @@ class Controller(KeyListener):
             listener.key_pressed(key)
 
     def key_released(self):
-        # self.screen.border.status['key'] = 'released'
-
         for listener in self.key_listeners:
             listener.key_released()
 
@@ -111,3 +115,11 @@ class Controller(KeyListener):
     def enter_pressed(self):
         for listener in self.key_listeners:
             listener.enter_pressed()
+
+    def minus_pressed(self):
+        for listener in self.key_listeners:
+            listener.minus_pressed()
+
+    def number_pressed(self, number):
+        for listener in self.key_listeners:
+            listener.number_pressed(number)

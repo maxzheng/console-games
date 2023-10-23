@@ -32,3 +32,9 @@ class KeyListener:
 
     def enter_pressed(self):
         pass
+
+    def minus_pressed(self):
+        pass
+
+    def number_pressed(self, number):
+        pass

@@ -7,9 +7,11 @@ from games.listeners import KeyListener
 
 class ScreenObject:
     """ Base class for all objects on screen """
-    def __init__(self, x: int, y: int, color=None, size=1, parent=None):
+    def __init__(self, x: int, y: int, x_delta=0, y_delta=0, color=None, size=1, parent=None):
         self.x = x
         self.y = y
+        self.x_delta = x_delta
+        self.y_delta = y_delta
         self.color = color
         self.size = size
         self.coords = set()
@@ -17,6 +19,14 @@ class ScreenObject:
         self.kids = set()
         self.is_visible = True
         self.screen = None
+
+    @property
+    def all_coords(self):
+        """ All coords of this object and its kids """
+        all_coords = set(self.coords)
+        for kid in self.kids:
+            all_coords.update(kid.coords)
+        return all_coords
 
     @property
     def is_out(self):
@@ -39,52 +49,58 @@ class ScreenObject:
         """ Render object onto the given screen """
         self.screen = screen
 
+        if self.x_delta:
+            self.x += self.x_delta
+
+        if self.y_delta:
+            self.y += self.y_delta
+
     def reset(self):
         """ Reset object to original state """
         pass
 
 
 class Text(ScreenObject):
-    def __init__(self, x: int, y: int, text: str):
-        super().__init__(x, y)
+    def __init__(self, x: int, y: int, text: str, x_delta=0, y_delta=0):
+        super().__init__(x, y, x_delta=x_delta, y_delta=y_delta)
         self.text = text
 
     def render(self, screen: Screen):
+        super().render(screen)
+
         if self.text:
+            self.coords = set()
             for offset, char in enumerate(self.text):
                 screen.draw(self.x + offset, self.y, char, color=self.color)
+                self.coords.add((int(self.x + offset), int(self.y)))
 
 
 class BouncyText(Text):
     def __init__(self, x: int, y: int, text: str, x_delta=1, y_delta=1):
-        super().__init__(x, y, text)
-        self.x_delta = x_delta
-        self.y_delta = y_delta
+        super().__init__(x, y, text, x_delta=x_delta, y_delta=y_delta)
 
     def render(self, screen: Screen):
-        self.x += self.x_delta
-        self.y += self.y_delta
+        super().render(screen)
+
         if self.x + len(self.text) >= screen.width - 1 or self.x == 1:
             self.x_delta = -self.x_delta
         if self.y >= screen.height - 1 or self.y == 1:
             self.y_delta = -self.y_delta
 
-        super().render(screen)
-
 
 class Monologue(Text):
-    def __init__(self, x: int, y: int, texts=[], on_finish=None):
-        super().__init__(x, y, None)
+    def __init__(self, x: int, y: int, texts=[], on_finish=None, x_delta=0, y_delta=0):
+        super().__init__(x, y, None, x_delta=x_delta, y_delta=y_delta)
         self.center_x = x
         self.texts = texts
         self.on_finish = on_finish
         self.reset()
 
     def render(self, screen: Screen):
+        super().render(screen)
         self.renders += 1
         self.text = self.texts[self.index]
         self.x = self.center_x - len(self.text) / 2
-        super().render(screen)
 
         if self.renders % 45 == 0:
             self.index += 1
@@ -146,9 +162,6 @@ class Projectile(ScreenObject):
 
     def render(self, screen: Screen):
         super().render(screen)
-
-        self.x += self.x_delta
-        self.y += self.y_delta
 
         self.coords = {(int(self.x), int(self.y))}
 

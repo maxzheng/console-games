@@ -103,7 +103,7 @@ class Player(ScreenObject, KeyListener):
 
 
 class Boss(ScreenObject):
-    def __init__(self, name, shape: ScreenObject, player: Player):
+    def __init__(self, name, shape: ScreenObject, player: Player = None):
         super().__init__(shape.x, shape.y, size=shape.size, color=shape.color)
         self.shape = shape
         self.player = player
@@ -111,7 +111,6 @@ class Boss(ScreenObject):
         self.y = -5
         self.y_delta = 0.1
         self.x_delta = max(random() * 0.5, 0.2)
-        self.kids = set()
         self.is_hit = False
         self.char = shape.char
 
@@ -130,8 +129,8 @@ class Boss(ScreenObject):
                     self.player.got_bashed()
 
         if self in self.screen:
-            self.y += self.y_delta
-            self.x += self.x_delta if self.player.score >= 100 and self.player.char != '^' else 0
+            if self.player.score < 100 or self.player.char == '^':
+                self.x_delta = 0
 
             # self.screen.border.status['boss'] = str((int(self.x), int(self.y), self.size))
             if self.player.char == '^':
