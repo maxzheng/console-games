@@ -92,18 +92,19 @@ class Numbers(ScreenObject, KeyListener):
             self.player.got_crushed()
 
     def number_pressed(self, number):
-        self.numbers_pressed.append(number)
-        answer = eval(self.numbers_text.text)
-        player_answer = eval(''.join([str(n) for n in self.numbers_pressed[-len(str(answer)):]]).lstrip('0') or '0')
-        if player_answer == answer:
-            self.kids.remove(self.numbers_text)
-            self.screen.remove(self.numbers_text)
-            self.screen.add(Explosion(self.numbers_text.x + len(self.numbers_text.text) / 2,
-                                      self.numbers_text.y, size=25, on_finish=self.next))
+        if self.kids:
+            self.numbers_pressed.append(number)
+            answer = eval(self.numbers_text.text)
+            player_answer = eval(''.join([str(n) for n in self.numbers_pressed[-len(str(answer)):]]).lstrip('0') or '0')
+            if player_answer == answer:
+                self.kids.remove(self.numbers_text)
+                self.screen.remove(self.numbers_text)
+                self.screen.add(Explosion(self.numbers_text.x + len(self.numbers_text.text) / 2,
+                                          self.numbers_text.y, size=25, on_finish=self.next))
 
-            self.player.score += 1
-            if self.player.score > self.player.high_score:
-                self.player.high_score = self.player.score
+                self.player.score += 1
+                if self.player.score > self.player.high_score:
+                    self.player.high_score = self.player.score
 
     def next(self):
         self.ready_for_next = True
