@@ -23,7 +23,7 @@ class Choose(Scene):
         self.screen.add(self.game_choice)
 
     def escape_pressed(self):
-        exit()
+        self.controller.done = True
 
     def play(self, game_text):
         game_class = self.game_classes[self.game_texts.index(game_text)]
