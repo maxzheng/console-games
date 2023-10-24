@@ -1,5 +1,18 @@
-Version 0.0.21
+Version 0.0.22
 ================================================================================
+
+* Fix one more bug
+* Fix some bugs
+* Render after reset
+* Fix typo
+* Add chooser for games
+* Fix bug
+* Fix division by zero
+* Prototype Number Crush
+* Update readme
+
+Version 0.0.21
+--------------------------------------------------------------------------------
 
 * Add render time to debug
 * Turn on style checking
