@@ -41,9 +41,12 @@ class ScreenObject:
     def sync(self, screen_object):
         self.x = screen_object.x
         self.y = screen_object.y
+        self.x_delta = screen_object.x_delta
+        self.y_delta = screen_object.y_delta
         self.size = screen_object.size
         self.color = screen_object.color
         self.is_visible = screen_object.is_visible
+        self.coords = screen_object.coords
 
     def render(self, screen: Screen):
         """ Render object onto the given screen """
@@ -57,7 +60,11 @@ class ScreenObject:
 
     def reset(self):
         """ Reset object to original state """
-        pass
+        if self.screen:
+            for kid in self.kids:
+                if kid in self.screen:
+                    self.screen.remove(kid)
+        self.kids = set()
 
 
 class Text(ScreenObject):
@@ -99,6 +106,7 @@ class Monologue(Text):
         self.reset()
 
     def reset(self):
+        super().reset()
         self.index = 0
         self.renders = 0
 
@@ -171,13 +179,6 @@ class Projectile(ScreenObject):
         if not self.is_out and self.shape is not None:
             screen.draw(self.x, self.y, self.shape,
                         color=self.color or screen.colors[randint(0, len(screen.colors)-1)])
-
-    def sync(self, screen_object):
-        super().sync(screen_object)
-        if hasattr(screen_object, 'x_delta'):
-            self.x_delta = screen_object.x_delta
-        if hasattr(screen_object, 'y_delta'):
-            self.y_delta = screen_object.y_delta
 
 
 class Circle(Projectile):
@@ -262,9 +263,9 @@ class Explosion(ScreenObject):
             for y in range(start_y, start_y + self.current_size):
                 if (x == start_x or x == start_x + self.current_size - 1
                         or y == start_y or y == start_y + self.current_size - 1):
-                    self.coords.add((int(x), int(y)))
                     distance = ((x - self.x) ** 2 + (y - self.y) ** 2) ** (1/2)
                     if distance < self.current_size and random() < 2/self.current_size:
+                        self.coords.add((int(x), int(y)))
                         screen.draw(x, y, self.char, color=colors[randint(0, len(colors) - 1)])
 
         self.current_size += 1
@@ -325,7 +326,7 @@ class Choice(ScreenObject, KeyListener):
 
         self.choices = choices
         self.on_select = on_select
-        self._current = int(len(self.choices) / 2)
+        self._current = int(len(self.choices) / 2 - 0.5)
 
         self.reset()
 
@@ -334,8 +335,8 @@ class Choice(ScreenObject, KeyListener):
         return self.choices[self._current]
 
     def reset(self):
+        super().reset()
         self.bar = None
-        self.kids = set()
 
     def render(self, screen: Screen):
         super().render(screen)

@@ -149,9 +149,7 @@ class Screen:
 
         self.buffer.clear()
 
-        for obj in self:
-            if obj.is_visible:
-                obj.render(self)
+        for obj in list(self):
             if obj.is_out:
                 if obj.parent:
                     try:
@@ -159,6 +157,8 @@ class Screen:
                     except Exception:
                         pass
                 self.remove(obj)
+            elif obj.is_visible:
+                obj.render(self)
 
         if self.border:
             if self._debug:
@@ -167,8 +167,9 @@ class Screen:
 
         try:
             self.buffer.render(self._screen)
-        except Exception as e:
-            self.debug(exception=str(e))
+        except Exception:
+            if self._debug:
+                raise
             self.resize_screen()
 
     def debug(self, **debug_info):
@@ -196,18 +197,18 @@ class ScreenBuffer:
     def clear(self):
         self.buffer = self._new_buffer()
 
-    def render(self, screen: Screen):
+    def render(self, curses_screen):
         for x in range(self.width):
             for y in range(self.height):
                 if self.buffer[y][x] != self.screen[y][x]:
                     self.screen[y][x] = self.buffer[y][x]
                     char, color = self.buffer[y][x]
                     if color:
-                        screen.addstr(int(y), int(x), char or ' ', color)
+                        curses_screen.addstr(y, x, char or ' ', color)
                     else:
-                        screen.addstr(int(y), int(x), char or ' ')
+                        curses_screen.addstr(y, x, char or ' ')
 
-        screen.refresh()
+        curses_screen.refresh()
 
 
 class Scene(KeyListener):
