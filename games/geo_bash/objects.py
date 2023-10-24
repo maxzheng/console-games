@@ -21,6 +21,7 @@ class Player(ScreenObject, KeyListener):
         return self.is_visible and self.is_playing
 
     def reset(self):
+        super().reset()
         self.score = 0
         self.is_visible = True
         self.continuous_moves = 0
@@ -34,6 +35,7 @@ class Player(ScreenObject, KeyListener):
         self.shape.sync(self)
         self.shape.render(screen)
         self.coords = self.shape.coords
+        screen.debug(kids=len(self.kids))
 
         if self.continuous_moves % 30 == 0 and self.char == '^':
             self.size = max(1, 3 - self.continuous_moves / 30)

@@ -1,6 +1,6 @@
 from games.screen import Screen
 from games.objects import Border
-from games.chooser import Chooser
+from games.geo_bash import GeoBash
 
 
 class Manager:
@@ -8,7 +8,7 @@ class Manager:
         screen = Screen(border=Border('*', show_fps=debug), debug=debug, fps=fps)
 
         with screen:
-            game = Chooser(screen)
+            game = GeoBash(screen)
             screen.controller = game
 
             while True:

@@ -29,6 +29,7 @@ class ChoosePlayer(Scene):
 
     def escape_pressed(self):
         self.controller.done = True
+        exit()
 
 
 class Intro(Scene):
