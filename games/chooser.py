@@ -29,6 +29,8 @@ class Choose(Scene):
         game_class = self.game_classes[self.game_texts.index(game_text)]
         game = game_class(self.screen)
         self.screen.controller = game
+        self.screen.reset()
+
         while not game.done:
             self.screen.render()
             game.play()

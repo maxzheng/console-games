@@ -62,7 +62,7 @@ class ScreenObject:
 
 class Text(ScreenObject):
     def __init__(self, x: int, y: int, text: str, x_delta=0, y_delta=0, is_centered=False):
-        super().__init__(x, y, size=len(text), x_delta=x_delta, y_delta=y_delta)
+        super().__init__(x, y, size=int(len(text) / 2), x_delta=x_delta, y_delta=y_delta)
         self.text = text
         self.is_centered = is_centered
 
@@ -98,11 +98,16 @@ class Monologue(Text):
         self.on_finish = on_finish
         self.reset()
 
+    def reset(self):
+        self.index = 0
+        self.renders = 0
+
     def render(self, screen: Screen):
-        super().render(screen)
         self.renders += 1
         self.text = self.texts[self.index]
         self.x = self.center_x - len(self.text) / 2
+
+        super().render(screen)
 
         if self.renders % 45 == 0:
             self.index += 1
@@ -110,10 +115,6 @@ class Monologue(Text):
                 screen.remove(self)
                 if self.on_finish:
                     self.on_finish()
-
-    def reset(self):
-        self.index = 0
-        self.renders = 0
 
 
 class Border(ScreenObject):
@@ -334,6 +335,7 @@ class Choice(ScreenObject, KeyListener):
 
     def reset(self):
         self.bar = None
+        self.kids = set()
 
     def render(self, screen: Screen):
         super().render(screen)
@@ -350,8 +352,8 @@ class Choice(ScreenObject, KeyListener):
             self.kids.add(self.bar)
 
             instruction = Monologue(self.x, self.y + 1.5 * max_size,
-                                    texts=['Select your shape using arrow keys',
-                                           'Press SPACE to start or ESC to exit'])
+                                    texts=['Change selection using arrow keys',
+                                           'Press Space to start or Esc to exit'])
             screen.add(instruction)
             self.kids.add(instruction)
 

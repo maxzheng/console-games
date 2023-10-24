@@ -33,6 +33,9 @@ class Screen:
         #: Game controller
         self.controller = None
 
+        #: Curses screen object
+        self._screen = None
+
         self.reset()
 
     def __contains__(self, screen_object):
@@ -117,6 +120,8 @@ class Screen:
         self.renders = 0
         if self.border:
             self.border.reset()
+        if self._screen:
+            self.render()
 
     def resize_screen(self):
         max_height, max_width = self._screen.getmaxyx()
@@ -201,6 +206,8 @@ class ScreenBuffer:
                         screen.addstr(int(y), int(x), char or ' ', color)
                     else:
                         screen.addstr(int(y), int(x), char or ' ')
+
+        screen.refresh()
 
 
 class Scene(KeyListener):
