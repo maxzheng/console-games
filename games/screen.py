@@ -127,6 +127,7 @@ class Screen:
         max_height, max_width = self._screen.getmaxyx()
         self._height = max_height - 1
         self._width = max_width - 1
+        self._screen.clear()
         self.buffer = ScreenBuffer(max_width, max_height)
 
     def draw(self, x: int, y: int, char: str, color=None):
@@ -146,6 +147,10 @@ class Screen:
 
     def _render(self):
         self.renders += 1
+
+        # Hack to fix weird bug with leftover artifacts on macBook Pro
+        if self.renders % self.fps == 0:
+            self.resize_screen()
 
         self.buffer.clear()
 
