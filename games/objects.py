@@ -68,8 +68,8 @@ class ScreenObject:
 
 
 class Text(ScreenObject):
-    def __init__(self, x: int, y: int, text: str, x_delta=0, y_delta=0, is_centered=False):
-        super().__init__(x, y, size=int(len(text) / 2), x_delta=x_delta, y_delta=y_delta)
+    def __init__(self, x: int, y: int, text: str, x_delta=0, y_delta=0, is_centered=False, color=None):
+        super().__init__(x, y, size=int(len(text) / 2), x_delta=x_delta, y_delta=y_delta, color=color)
         self.text = text
         self.is_centered = is_centered
 
@@ -165,11 +165,8 @@ class Border(ScreenObject):
 class Projectile(ScreenObject):
     def __init__(self, x: int, y: int, shape='^', x_delta=0, y_delta=-1, color=None, size=1,
                  parent=None):
-        super().__init__(x, y, color=color, size=size)
+        super().__init__(x, y, color=color, x_delta=x_delta, y_delta=y_delta, size=size, parent=parent)
         self.shape = shape
-        self.x_delta = x_delta
-        self.y_delta = y_delta
-        self.parent = parent
 
     def render(self, screen: Screen):
         super().render(screen)
@@ -177,14 +174,13 @@ class Projectile(ScreenObject):
         self.coords = {(int(self.x), int(self.y))}
 
         if not self.is_out and self.shape is not None:
-            screen.draw(self.x, self.y, self.shape,
-                        color=self.color or screen.colors[randint(0, len(screen.colors)-1)])
+            screen.draw(self.x, self.y, self.shape, color=self.color)
 
 
-class Circle(Projectile):
+class Circle(ScreenObject):
     def __init__(self, x: int, y: int, size=3, char='O', x_delta=0, y_delta=0, color=None,
                  name=None):
-        super().__init__(x, y, shape=None, x_delta=x_delta, y_delta=y_delta, color=color,
+        super().__init__(x, y, x_delta=x_delta, y_delta=y_delta, color=color,
                          size=size)
         self.char = char
         self.name = name
@@ -201,10 +197,10 @@ class Circle(Projectile):
             screen.draw(x, y, self.char, color=self.color)
 
 
-class Diamond(Projectile):
+class Diamond(ScreenObject):
     def __init__(self, x: int, y: int, size=3, char='!', x_delta=0, y_delta=0, color=None,
                  name=None):
-        super().__init__(x, y, shape=None, x_delta=x_delta, y_delta=y_delta, color=color,
+        super().__init__(x, y, x_delta=x_delta, y_delta=y_delta, color=color,
                          size=size)
         self.char = char
         self.name = name
@@ -219,10 +215,10 @@ class Diamond(Projectile):
             screen.draw(x, y, self.char, color=self.color)
 
 
-class Square(Projectile):
+class Square(ScreenObject):
     def __init__(self, x: int, y: int, size=3, char='#', x_delta=0, y_delta=0, color=None,
                  name=None, solid=False):
-        super().__init__(x, y, shape=None, x_delta=x_delta, y_delta=y_delta, color=color,
+        super().__init__(x, y, x_delta=x_delta, y_delta=y_delta, color=color,
                          size=size)
         self.char = char
         self.name = name
@@ -275,10 +271,10 @@ class Explosion(ScreenObject):
                 self.on_finish()
 
 
-class Triangle(Projectile):
+class Triangle(ScreenObject):
     def __init__(self, x: int, y: int, size=3, char='^', x_delta=0, y_delta=0, color=None,
                  name=None):
-        super().__init__(x, y, shape=None, x_delta=x_delta, y_delta=y_delta, color=color,
+        super().__init__(x, y, x_delta=x_delta, y_delta=y_delta, color=color,
                          size=size)
         self.char = char
         self.name = name
@@ -302,10 +298,10 @@ class Triangle(Projectile):
             screen.draw(x, y, self.char, color=self.color)
 
 
-class Bar(Projectile):
+class Bar(ScreenObject):
     def __init__(self, x: int, y: int, size=3, char='=', x_delta=0, y_delta=0, color=None,
                  parent=None):
-        super().__init__(x, y, shape=None, x_delta=x_delta, y_delta=y_delta, color=color,
+        super().__init__(x, y, x_delta=x_delta, y_delta=y_delta, color=color,
                          size=size, parent=parent)
         self.char = char
 
@@ -321,12 +317,13 @@ class Bar(Projectile):
 
 
 class Choice(ScreenObject, KeyListener):
-    def __init__(self, x: int, y: int, color=None, choices=[], on_select=None):
+    def __init__(self, x: int, y: int, color=None, choices=[], on_select=None, on_change=None, current=None):
         super().__init__(x, y, color=color)
 
         self.choices = choices
         self.on_select = on_select
-        self._current = int(len(self.choices) / 2 - 0.5)
+        self.on_change = on_change
+        self._current = current if current is not None else int(len(self.choices) / 2 - 0.5)
 
         self.reset()
 
@@ -343,7 +340,7 @@ class Choice(ScreenObject, KeyListener):
 
         if not self.bar:
             max_size = max(c.size for c in self.choices)
-            bar_size = max_size * 3
+            bar_size = max_size * 4
             width = bar_size * len(self.choices)
             start_x = int(self.x - width / 2)
             end_x = start_x + width
@@ -372,11 +369,15 @@ class Choice(ScreenObject, KeyListener):
         if self._current > 0 and self.bar:
             self._current -= 1
             self.bar.x -= self.bar.size
+            if self.on_change:
+                self.on_change(self.choices[self._current])
 
     def right_pressed(self):
         if self._current < len(self.choices) - 1 and self.bar:
             self._current += 1
             self.bar.x += self.bar.size
+            if self.on_change:
+                self.on_change(self.choices[self._current])
 
     def enter_pressed(self):
         if self.on_select:
@@ -384,3 +385,84 @@ class Choice(ScreenObject, KeyListener):
 
     def space_pressed(self):
         self.enter_pressed()
+
+
+class One(ScreenObject):
+    def __init__(self, x: int, y: int, char='#', x_delta=0, y_delta=0, color=None):
+        super().__init__(x, y, x_delta=x_delta, y_delta=y_delta, color=color,
+                         size=5)
+        self.char = char
+        self.matrix = """\
+ ##  
+  #  
+  #  
+  #  
+ ### 
+""".split('\n')  # noqa
+
+    def render(self, screen: Screen):
+        super().render(screen)
+
+        start_x = int(self.x - self.size / 2)
+        start_y = int(self.y - self.size / 2)
+        self.coords = set()
+
+        for x in range(start_x, start_x + self.size):
+            for y in range(start_y, start_y + self.size):
+                if self.matrix[y-start_y][x-start_x] == '#':
+                    screen.draw(x, y, self.char, color=self.color)
+                    self.coords.add((x, y))
+
+
+class Two(ScreenObject):
+    def __init__(self, x: int, y: int, char='#', x_delta=0, y_delta=0, color=None):
+        super().__init__(x, y, x_delta=x_delta, y_delta=y_delta, color=color,
+                         size=5)
+        self.char = char
+        self.matrix = """\
+ ### 
+#   #
+   # 
+ ##  
+#####
+""".split('\n')  # noqa
+
+    def render(self, screen: Screen):
+        super().render(screen)
+
+        start_x = int(self.x - self.size / 2)
+        start_y = int(self.y - self.size / 2)
+        self.coords = set()
+
+        for x in range(start_x, start_x + self.size):
+            for y in range(start_y, start_y + self.size):
+                if self.matrix[y-start_y][x-start_x] == '#':
+                    screen.draw(x, y, self.char, color=self.color)
+                    self.coords.add((x, y))
+
+
+class Three(ScreenObject):
+    def __init__(self, x: int, y: int, char='#', x_delta=0, y_delta=0, color=None):
+        super().__init__(x, y, x_delta=x_delta, y_delta=y_delta, color=color,
+                         size=5)
+        self.char = char
+        self.matrix = """\
+ ### 
+#   #
+   # 
+#   #
+ ### 
+""".split('\n')  # noqa
+
+    def render(self, screen: Screen):
+        super().render(screen)
+
+        start_x = int(self.x - self.size / 2)
+        start_y = int(self.y - self.size / 2)
+        self.coords = set()
+
+        for x in range(start_x, start_x + self.size):
+            for y in range(start_y, start_y + self.size):
+                if self.matrix[y-start_y][x-start_x] == '#':
+                    screen.draw(x, y, self.char, color=self.color)
+                    self.coords.add((x, y))

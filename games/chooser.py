@@ -1,5 +1,5 @@
 from games.controller import Controller
-from games.objects import Text, Choice
+from games.objects import Choice
 from games.screen import Scene
 from games.geo_bash import GeoBash
 from games.number_crush import NumberCrush
@@ -15,9 +15,10 @@ class Chooser(Controller):
 class Choose(Scene):
     def init(self):
         self.game_classes = [GeoBash, NumberCrush]
-        self.game_texts = [Text(0, 0, g.name, is_centered=True) for g in self.game_classes]
+        self.game_texts = [g.Logo(0, 0, g.name) for g in self.game_classes]
         self.game_choice = Choice(x=self.screen.width / 2, y=self.screen.height / 2,
-                                  choices=self.game_texts, on_select=self.play)
+                                  choices=self.game_texts, on_select=self.play,
+                                  current=getattr(self.controller, '_last_game_index', None))
 
     def start(self):
         self.screen.reset(border=True)
@@ -37,4 +38,5 @@ class Choose(Scene):
             game.play()
 
         self.screen.controller = self.controller
+        self.controller._last_game_index = self.game_texts.index(game_text)
         self.controller.reset_scene()

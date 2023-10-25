@@ -13,19 +13,25 @@ class GeoBash(Controller):
 
         self.scenes = [ChoosePlayer, Intro, Bash]
 
+    class Logo(ScreenObject):
+        def __init__(self, x, y, name, color=None):
+            super().__init__(x, y, size=7, color=color)
+            self.name = name
+            self.text = self.triangle = self.circle = self.diamond = None
 
-class Logo(ScreenObject):
-    def __init__(self, x, y, name, color=None):
-        super().__init__(x, y, size=len(name), color=color)
-        self.text = Text(x, y, name, is_centered=True, color=color)
-        self.triangle = Triangle(x - 10, y, size=3, color=self.screen.COLOR_BLUE)
-        self.circle = Circle(x, y, size=3, color=self.screen.COLOR_RED)
-        self.diamond = Diamond(x + 10, y, size=3, color=self.screen.COLOR_YELLOW)
+        def render(self, screen: Screen):
+            super().render(screen)
 
-    def render(self, screen: Screen):
-        super().render(screen)
+            if not self.text:
+                self.text = Text(self.x, self.y + 3, self.name, is_centered=True, color=self.color)
+            if not self.triangle:
+                self.triangle = Triangle(self.x - 6, self.y, size=3, color=screen.COLOR_BLUE)
+            if not self.circle:
+                self.circle = Circle(self.x, self.y, size=3, color=screen.COLOR_RED)
+            if not self.diamond:
+                self.diamond = Diamond(self.x + 5, self.y, size=3, color=screen.COLOR_YELLOW)
 
-        self.text.render(screen)
-        self.triangle.render(screen)
-        self.circle.render(screen)
-        self.diamond.render(screen)
+            self.triangle.render(screen)
+            self.circle.render(screen)
+            self.diamond.render(screen)
+            self.text.render(screen)

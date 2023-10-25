@@ -1,5 +1,6 @@
 from games.controller import Controller
-from games.objects import Diamond
+from games.screen import Screen
+from games.objects import Diamond, ScreenObject, Text, One, Two, Three
 from games.number_crush.scenes import Crush, Intro
 from games.number_crush.objects import Player
 
@@ -12,3 +13,28 @@ class NumberCrush(Controller):
                              color=self.screen.COLOR_YELLOW), controller=self)
 
         self.scenes = [Intro, Crush]
+
+    class Logo(ScreenObject):
+        def __init__(self, x, y, name, color=None):
+            super().__init__(x, y, size=7, color=color)
+            self.name = name
+            self.text = self.one = self.two = self.three = None
+
+        def render(self, screen: Screen):
+            super().render(screen)
+
+            if not self.text:
+                self.text = Text(self.x, self.y + 3, self.name, is_centered=True, color=self.color)
+                screen.add(self.text)
+
+            if not self.one:
+                self.one = One(self.x - 5, self.y)
+                screen.add(self.one)
+
+            if not self.two:
+                self.two = Two(self.x, self.y)
+                screen.add(self.two)
+
+            if not self.three:
+                self.three = Three(self.x + 6, self.y)
+                screen.add(self.three)

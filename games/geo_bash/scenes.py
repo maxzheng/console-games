@@ -15,7 +15,8 @@ class ChoosePlayer(Scene):
         ]
         self.choice = Choice(self.screen.width / 2, self.screen.height / 2,
                              choices=choices, color=self.screen.COLOR_CYAN,
-                             on_select=self.next)
+                             on_select=self.next,
+                             current=getattr(self.controller, '_last_player_index', None))
 
     def start(self):
         self.screen.add(self.choice)
@@ -25,6 +26,7 @@ class ChoosePlayer(Scene):
         chosen.y = self.screen.height - chosen.size
         chosen.x = self.screen.width / 2
         self.controller.player = chosen
+        self.controller._last_player_index = self.choice.choices.index(chosen)
         chosen.controller = self.controller
 
     def escape_pressed(self):

@@ -106,7 +106,7 @@ class Numbers(ScreenObject, KeyListener):
                 self.kids.remove(self.numbers_text)
                 self.screen.remove(self.numbers_text)
                 self.screen.add(Explosion(self.numbers_text.x + len(self.numbers_text.text) / 2,
-                                          self.numbers_text.y, size=25, on_finish=self.next))
+                                          self.numbers_text.y, size=15, on_finish=self.next))
 
                 self.player.score += 1
                 self.player.total_score += 1

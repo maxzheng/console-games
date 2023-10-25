@@ -2,7 +2,7 @@ from time import time
 import curses
 
 from games.screen import Screen, Scene
-from games.objects import KeyListener
+from games.objects import KeyListener, ScreenObject, Text
 
 
 class Controller(KeyListener):
@@ -124,3 +124,17 @@ class Controller(KeyListener):
     def number_pressed(self, number):
         for listener in self.key_listeners:
             listener.number_pressed(number)
+
+    class Logo(ScreenObject):
+        def __init__(self, x, y, name, color=None):
+            super().__init__(x, y, size=int(len(name) / 2), color=color)
+            self.name = name
+            self.text = None
+
+        def render(self, screen: Screen):
+            super().render(screen)
+
+            if not self.text:
+                self.text = Text(self.x, self.y + 3, self.name, is_centered=True, color=self.color)
+
+            self.text.render(screen)
