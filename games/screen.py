@@ -115,13 +115,11 @@ class Screen:
             for kid in obj.kids:
                 self.remove(kid)
 
-    def reset(self):
+    def reset(self, border=False):
         self._objects = []
         self.renders = 0
-        if self.border:
+        if self.border and border:
             self.border.reset()
-        if self._screen:
-            self.render()
 
     def resize_screen(self):
         max_height, max_width = self._screen.getmaxyx()

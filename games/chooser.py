@@ -20,6 +20,7 @@ class Choose(Scene):
                                   choices=self.game_texts, on_select=self.play)
 
     def start(self):
+        self.screen.reset(border=True)
         self.screen.add(self.game_choice)
 
     def escape_pressed(self):
