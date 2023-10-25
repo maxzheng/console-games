@@ -1,5 +1,10 @@
-Version 0.0.24
+Version 0.0.25
 ================================================================================
+
+* Add logo
+
+Version 0.0.24
+--------------------------------------------------------------------------------
 
 * Add intro for Number Crush and fix border flickering
 * Add total score for Number Crush
