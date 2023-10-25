@@ -1,5 +1,11 @@
-Version 0.0.23
+Version 0.0.24
 ================================================================================
+
+* Add intro for Number Crush and fix border flickering
+* Add total score for Number Crush
+
+Version 0.0.23
+--------------------------------------------------------------------------------
 
 * Fix weird bug for macBook Pro
 * Revert back to Chooser
