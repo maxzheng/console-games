@@ -3,7 +3,7 @@ import setuptools
 
 setuptools.setup(
     name='console-games',
-    version='0.0.23',
+    version='0.0.24',
 
     author='Max Zheng',
     author_email='maxzheng.os@gmail.com',

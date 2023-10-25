@@ -1,5 +1,11 @@
-Version 0.0.22
+Version 0.0.23
 ================================================================================
+
+* Fix weird bug for macBook Pro
+* Revert back to Chooser
+
+Version 0.0.22
+--------------------------------------------------------------------------------
 
 * Fix one more bug
 * Fix some bugs
