@@ -11,6 +11,7 @@ class Player(ScreenObject, KeyListener):
         self.name = name
         self.shape = shape
         self.high_score = 0
+        self.total_score = 0
         self.is_playing = False
         self.char = shape.char
         self.controller = controller
@@ -35,8 +36,13 @@ class Player(ScreenObject, KeyListener):
         self.shape.render(screen)
         self.coords = self.shape.coords
 
-        self.screen.border.status['crushed'] = ('{} (High: {})'.format(
-            self.score, self.high_score) if self.score < self.high_score else self.score)
+        crushed = str(self.score)
+        if self.score < self.high_score:
+            crushed += ' | High: {}'.format(self.high_score)
+        if self.score < self.total_score:
+            crushed += ' | Total: {}'.format(self.total_score)
+
+        self.screen.border.status['crushed'] = crushed
 
     def got_crushed(self):
         self.is_visible = False
@@ -94,7 +100,7 @@ class Numbers(ScreenObject, KeyListener):
     def number_pressed(self, number):
         if self.kids:
             self.numbers_pressed.append(number)
-            answer = eval(self.numbers_text.text)
+            answer = int(eval(self.numbers_text.text))
             player_answer = eval(''.join([str(n) for n in self.numbers_pressed[-len(str(answer)):]]).lstrip('0') or '0')
             if player_answer == answer:
                 self.kids.remove(self.numbers_text)
@@ -103,6 +109,7 @@ class Numbers(ScreenObject, KeyListener):
                                           self.numbers_text.y, size=25, on_finish=self.next))
 
                 self.player.score += 1
+                self.player.total_score += 1
                 if self.player.score > self.player.high_score:
                     self.player.high_score = self.player.score
 
