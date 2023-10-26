@@ -1,5 +1,4 @@
 from random import randint, random
-from time import time
 
 from games.screen import Screen
 from games.listeners import KeyListener
@@ -135,7 +134,6 @@ class Border(ScreenObject):
 
     def reset(self):
         super().reset()
-        self._start_time = time()
         self.status = {}
 
     def render(self, screen: Screen):
@@ -150,9 +148,8 @@ class Border(ScreenObject):
             for x_offset in range(len(padded_title)):
                 screen.draw(start_x + x_offset, 0, padded_title[x_offset], color=self.color)
 
-        if self.show_fps:
-            fps = round(screen.renders / (time() - self._start_time))
-            self.status['FPS'] = fps
+        if self.show_fps and screen.fps:
+            self.status['FPS'] = screen.fps
 
         if self.status:
             debug_text = ' ' + ' | '.join(

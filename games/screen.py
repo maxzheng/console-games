@@ -7,7 +7,7 @@ from games.listeners import KeyListener
 class Screen:
     def __init__(self, border=None, fps=30, debug=False):
         #: FPS limit to render
-        self.fps = fps
+        self._fps = fps
 
         #: Width of the screen
         self._width = None
@@ -58,6 +58,11 @@ class Screen:
     @property
     def key(self):
         return self._screen.getch()
+
+    @property
+    def fps(self):
+        if self.renders > 30:
+            return round(self.renders / (time() - self._start_time))
 
     def __enter__(self):
         self._screen = curses.initscr()
@@ -118,6 +123,7 @@ class Screen:
     def reset(self, border=False):
         self._objects = []
         self.renders = 0
+        self._start_time = time()
         if self.border and border:
             self.border.reset()
 
@@ -139,9 +145,9 @@ class Screen:
         self._render()
 
         render_time = time() - start_time
-        # self.debug(rsecs=round(render_time * self.fps, 1))
-        if render_time < 1/self.fps:
-            sleep(1/self.fps - render_time)
+        # self.debug(rsecs=round(render_time * self._fps, 1))
+        if render_time < 1/self._fps:
+            sleep(1/self._fps - render_time)
 
     def _render(self):
         self.renders += 1
@@ -165,7 +171,7 @@ class Screen:
             self.border.render(self)
 
         try:
-            self.buffer.render(self._screen)
+            self.buffer.render(self._screen, self)
         except Exception:
             if self._debug:
                 raise
@@ -196,18 +202,27 @@ class ScreenBuffer:
     def clear(self):
         self.buffer = self._new_buffer()
 
-    def render(self, curses_screen):
+    def render(self, curses_screen, screen: Screen):
+        blanks = set()
         for x in range(self.width):
             for y in range(self.height):
                 if self.buffer[y][x] != self.screen[y][x]:
                     self.screen[y][x] = self.buffer[y][x]
                     char, color = self.buffer[y][x]
-                    if color:
-                        curses_screen.addstr(y, x, char or ' ', color)
+                    if char:
+                        if color:
+                            curses_screen.addch(y, x, char, color)
+                        else:
+                            curses_screen.addch(y, x, char)
                     else:
-                        curses_screen.addstr(y, x, char or ' ')
+                        curses_screen.addch(y, x, '.')  # Need to write something before erasing to work 100%
+                        blanks.add((y, x))
 
         curses_screen.refresh()
+        if blanks:
+            for y, x in blanks:
+                curses_screen.addch(y, x, ' ')  # for macBook Pro console, otherwise some artifacts are left behind.
+            curses_screen.refresh()
 
 
 class Scene(KeyListener):
