@@ -146,10 +146,6 @@ class Screen:
     def _render(self):
         self.renders += 1
 
-        # Hack to fix weird bug with leftover artifacts on macBook Pro
-        if self.renders % self.fps == 0:
-            self.resize_screen()
-
         self.buffer.clear()
 
         for obj in list(self):
