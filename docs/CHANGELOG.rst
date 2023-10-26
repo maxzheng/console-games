@@ -1,5 +1,10 @@
-Version 0.0.26
+Version 0.0.27
 ================================================================================
+
+* Finally, got a hack that works for screen glitch
+
+Version 0.0.26
+--------------------------------------------------------------------------------
 
 * Remove hack as it seems to get worse
 
