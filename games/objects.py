@@ -66,6 +66,33 @@ class ScreenObject:
         self.kids = set()
 
 
+class Bitmap(ScreenObject):
+    def __init__(self, *args, char='#', **kwargs):
+        super().__init__(*args, **kwargs)
+        self.char = char
+        self._bitmap = getattr(self, 'bitmap', """\
+#####
+#####
+#####
+#####
+#####
+""").strip('\n').split('\n')  # noqa
+        self.size = len(self._bitmap)
+
+    def render(self, screen: Screen):
+        super().render(screen)
+
+        start_x = int(self.x - self.size / 2)
+        start_y = int(self.y - self.size / 2)
+        self.coords = set()
+
+        for x in range(start_x, start_x + self.size):
+            for y in range(start_y, start_y + self.size):
+                if self._bitmap[y-start_y][x-start_x] == '#':
+                    screen.draw(x, y, self.char, color=self.color)
+                    self.coords.add((x, y))
+
+
 class Text(ScreenObject):
     def __init__(self, x: int, y: int, text: str, x_delta=0, y_delta=0, is_centered=False, color=None):
         super().__init__(x, y, size=int(len(text) / 2), x_delta=x_delta, y_delta=y_delta, color=color)
@@ -384,82 +411,155 @@ class Choice(ScreenObject, KeyListener):
         self.enter_pressed()
 
 
-class One(ScreenObject):
-    def __init__(self, x: int, y: int, char='#', x_delta=0, y_delta=0, color=None):
-        super().__init__(x, y, x_delta=x_delta, y_delta=y_delta, color=color,
-                         size=5)
-        self.char = char
-        self.matrix = """\
+class One(Bitmap):
+    represents = '1'
+    bitmap = """
  ##  
   #  
   #  
   #  
  ### 
-""".split('\n')  # noqa
-
-    def render(self, screen: Screen):
-        super().render(screen)
-
-        start_x = int(self.x - self.size / 2)
-        start_y = int(self.y - self.size / 2)
-        self.coords = set()
-
-        for x in range(start_x, start_x + self.size):
-            for y in range(start_y, start_y + self.size):
-                if self.matrix[y-start_y][x-start_x] == '#':
-                    screen.draw(x, y, self.char, color=self.color)
-                    self.coords.add((x, y))
+"""  # noqa
 
 
-class Two(ScreenObject):
-    def __init__(self, x: int, y: int, char='#', x_delta=0, y_delta=0, color=None):
-        super().__init__(x, y, x_delta=x_delta, y_delta=y_delta, color=color,
-                         size=5)
-        self.char = char
-        self.matrix = """\
+class Two(Bitmap):
+    represents = '2'
+    bitmap = """
  ### 
 #   #
    # 
  ##  
 #####
-""".split('\n')  # noqa
-
-    def render(self, screen: Screen):
-        super().render(screen)
-
-        start_x = int(self.x - self.size / 2)
-        start_y = int(self.y - self.size / 2)
-        self.coords = set()
-
-        for x in range(start_x, start_x + self.size):
-            for y in range(start_y, start_y + self.size):
-                if self.matrix[y-start_y][x-start_x] == '#':
-                    screen.draw(x, y, self.char, color=self.color)
-                    self.coords.add((x, y))
+"""  # noqa
 
 
-class Three(ScreenObject):
-    def __init__(self, x: int, y: int, char='#', x_delta=0, y_delta=0, color=None):
-        super().__init__(x, y, x_delta=x_delta, y_delta=y_delta, color=color,
-                         size=5)
-        self.char = char
-        self.matrix = """\
+class Three(Bitmap):
+    represents = '3'
+    bitmap = """
  ### 
 #   #
    # 
 #   #
  ### 
-""".split('\n')  # noqa
+"""  # noqa
 
-    def render(self, screen: Screen):
-        super().render(screen)
 
-        start_x = int(self.x - self.size / 2)
-        start_y = int(self.y - self.size / 2)
-        self.coords = set()
+class Four(Bitmap):
+    represents = '4'
+    bitmap = """\
+   # 
+  ## 
+ # # 
+#####
+   # 
+"""  # noqa
 
-        for x in range(start_x, start_x + self.size):
-            for y in range(start_y, start_y + self.size):
-                if self.matrix[y-start_y][x-start_x] == '#':
-                    screen.draw(x, y, self.char, color=self.color)
-                    self.coords.add((x, y))
+
+class Five(Bitmap):
+    represents = '5'
+    bitmap = """\
+#####
+#    
+#### 
+    #
+#### 
+"""  # noqa
+
+
+class Six(Bitmap):
+    represents = '6'
+    bitmap = """\
+ ### 
+#    
+#### 
+#   #
+ ### 
+"""  # noqa
+
+
+class Seven(Bitmap):
+    represents = '7'
+    bitmap = """\
+#####
+   # 
+  #  
+ #   
+#    
+"""  # noqa
+
+
+class Eight(Bitmap):
+    represents = '8'
+    bitmap = """\
+ ### 
+#   #
+ ### 
+#   #
+ ### 
+"""  # noqa
+
+
+class Nine(Bitmap):
+    represents = '9'
+    bitmap = """\
+ ### 
+#   #
+ ####
+    #
+ ### 
+"""  # noqa
+
+
+class Zero(Bitmap):
+    represents = '0'
+    bitmap = """\
+ ### 
+#   #
+#   #
+#   #
+ ### 
+"""  # noqa
+
+
+class Plus(Bitmap):
+    represents = '+'
+    bitmap = """\
+     
+  #  
+ ### 
+  #  
+     
+"""  # noqa
+
+
+class Minus(Bitmap):
+    represents = '-'
+    bitmap = """\
+     
+     
+ ### 
+     
+     
+"""  # noqa
+
+
+class Multiply(Bitmap):
+    represents = '*'
+    bitmap = """\
+     
+ # # 
+  #  
+ # # 
+     
+"""  # noqa
+
+
+class Divide(Bitmap):
+    represents = '/'
+    bitmap = """\
+     
+   # 
+  #  
+ #   
+     
+"""  # noqa

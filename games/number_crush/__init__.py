@@ -1,6 +1,6 @@
 from games.controller import Controller
 from games.screen import Screen
-from games.objects import Diamond, ScreenObject, Text, One, Two, Three
+from games.objects import Diamond, ScreenObject, Text, One, Two, Plus
 from games.number_crush.scenes import Crush, Intro
 from games.number_crush.objects import Player
 
@@ -32,9 +32,9 @@ class NumberCrush(Controller):
                 screen.add(self.one)
 
             if not self.two:
-                self.two = Two(self.x, self.y)
+                self.two = Plus(self.x, self.y)
                 screen.add(self.two)
 
             if not self.three:
-                self.three = Three(self.x + 6, self.y)
+                self.three = Two(self.x + 6, self.y)
                 screen.add(self.three)

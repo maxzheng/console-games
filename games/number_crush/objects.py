@@ -1,7 +1,8 @@
 from random import randint, choice
 
 from games.screen import Screen
-from games.objects import ScreenObject, KeyListener, Explosion, Text
+from games.objects import (ScreenObject, KeyListener, Explosion, Text, Zero, One, Two, Three, Four, Five, Six,  # noqa
+                           Seven, Eight, Nine, Plus, Minus, Multiply, Divide)  # noqa
 
 
 class Player(ScreenObject, KeyListener):

@@ -114,7 +114,7 @@ class Screen:
             try:
                 index = self._objects.index(screen_object)
             except ValueError:
-                return
+                continue
 
             obj = self._objects.pop(index)
             for kid in obj.kids:
