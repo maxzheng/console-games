@@ -44,7 +44,7 @@ class ScreenObject:
 
     @property
     def is_out(self):
-        """ Indicates if the projectile center is outside of the screen border """
+        """ Indicates if the object center is outside of the screen border """
         try:
             return (self.x + self.size < 0 or self.x - self.size > self.screen.width
                     or self.y + self.size < 0 or self.y - self.size > self.screen.height)
@@ -113,13 +113,13 @@ class ScreenObjectGroup(ScreenObject):
                 self.kids.add(obj)
 
             if self.add_bar:
-                divider = Bar(self.x + 1, self.y + 3, size=width)
+                divider = Bar(self.x, self.y + 3, size=width + 1)
                 screen.add(divider)
                 self.kids.add(divider)
 
 
 class Bitmap(ScreenObject):
-    def __init__(self, *args, char='#', **kwargs):
+    def __init__(self, *args, char=None, **kwargs):
         super().__init__(*args, **kwargs)
         self.char = getattr(self, 'char', char)
         self._bitmap = getattr(self, 'bitmap', """\
@@ -140,8 +140,8 @@ class Bitmap(ScreenObject):
 
         for x in range(start_x, start_x + self.size):
             for y in range(start_y, start_y + self.size):
-                if self._bitmap[y-start_y][x-start_x] == '#':
-                    screen.draw(x, y, self.char, color=self.color)
+                if self._bitmap[y-start_y][x-start_x] != ' ':
+                    screen.draw(x, y, self.char or self._bitmap[y-start_y][x-start_x], color=self.color)
                     self.coords.add((x, y))
 
 
@@ -574,49 +574,45 @@ class Zero(Bitmap):
 
 
 class Plus(Bitmap):
-    char = '+'
     represents = '+'
     bitmap = """\
      
-  #  
- ### 
-  #  
+  |  
+ -+- 
+  |  
      
 """  # noqa
 
 
 class Minus(Bitmap):
-    char = '-'
     represents = '-'
     bitmap = """\
      
      
- ### 
+ --- 
      
      
 """  # noqa
 
 
 class Multiply(Bitmap):
-    char = '*'
     represents = '*'
     bitmap = """\
      
- # # 
-  #  
- # # 
+ \ / 
+  X  
+ / \ 
      
 """  # noqa
 
 
 class Divide(Bitmap):
-    char = '/'
     represents = '/'
     bitmap = """\
      
-   # 
-  #  
- #   
+   / 
+  /  
+ /   
      
 """  # noqa
 
