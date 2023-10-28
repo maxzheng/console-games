@@ -82,6 +82,8 @@ class ScreenObject:
 
 
 class ScreenObjectGroup(ScreenObject):
+    """ Group of objects that move together as one """
+
     def __init__(self, *args, add_bar=False, **kwargs):
         super().__init__(*args, **kwargs)
         self.ordered_objects = []
@@ -95,7 +97,7 @@ class ScreenObjectGroup(ScreenObject):
 
         if self.kids:
             for kid in self.kids:
-                kid.y += self.y_delta
+                kid.y = int(self.y + 3 if isinstance(kid, Bar) else self.y)
 
         else:
             padding = 1
@@ -111,7 +113,7 @@ class ScreenObjectGroup(ScreenObject):
                 self.kids.add(obj)
 
             if self.add_bar:
-                divider = Bar(self.x, self.y + 3.3, size=width)
+                divider = Bar(self.x + 1, self.y + 3, size=width)
                 screen.add(divider)
                 self.kids.add(divider)
 
