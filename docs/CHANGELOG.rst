@@ -1,5 +1,11 @@
-Version 0.0.27
+Version 0.0.28
 ================================================================================
+
+* Use big numbers
+* Add bitmaps for numbers and change logo
+
+Version 0.0.27
+--------------------------------------------------------------------------------
 
 * Finally, got a hack that works for screen glitch
 
