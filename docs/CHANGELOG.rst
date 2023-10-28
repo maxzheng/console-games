@@ -1,5 +1,10 @@
-Version 0.0.28
+Version 0.0.29
 ================================================================================
+
+* Attach the bar more precisely
+
+Version 0.0.28
+--------------------------------------------------------------------------------
 
 * Use big numbers
 * Add bitmaps for numbers and change logo
