@@ -103,7 +103,7 @@ class ScreenObjectGroup(ScreenObject):
             padding = 1
             width = sum((o.size + padding) for o in self.ordered_objects)
             block_size = width / len(self.ordered_objects)
-            start_x = self.x - width / 2 - len(self.ordered_objects) / 2
+            start_x = int(self.x - width / 2) - 2
 
             for obj in self.ordered_objects:
                 start_x += block_size
@@ -113,7 +113,7 @@ class ScreenObjectGroup(ScreenObject):
                 self.kids.add(obj)
 
             if self.add_bar:
-                divider = Bar(self.x, self.y + 3, size=width + 1)
+                divider = Bar(self.x + 1, self.y + 3, size=width + 1)
                 screen.add(divider)
                 self.kids.add(divider)
 
