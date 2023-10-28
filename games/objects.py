@@ -20,12 +20,27 @@ class ScreenObject:
         self.screen = None
 
     @property
+    def all_kids(self):
+        kids = self.kids.copy()
+        all_kids = set()
+
+        while kids:
+            kid = kids.pop()
+            all_kids.add(kid)
+
+            if kid.kids:
+                kids.update(kid.kids)
+
+        return all_kids
+
+    @property
     def all_coords(self):
         """ All coords of this object and its kids """
-        all_coords = set(self.coords)
-        for kid in self.kids:
-            all_coords.update(kid.coords)
-        return all_coords
+        coords = set()
+        for kid in self.all_kids:
+            coords.update(kid.coords)
+
+        return coords
 
     @property
     def is_out(self):
@@ -66,10 +81,45 @@ class ScreenObject:
         self.kids = set()
 
 
+class ScreenObjectGroup(ScreenObject):
+    def __init__(self, *args, add_bar=False, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.ordered_objects = []
+        self.add_bar = add_bar
+
+    def add(self, *screen_objects):
+        self.ordered_objects.extend(screen_objects)
+
+    def render(self, screen):
+        super().render(screen)
+
+        if self.kids:
+            for kid in self.kids:
+                kid.y += self.y_delta
+
+        else:
+            padding = 1
+            width = sum((o.size + padding) for o in self.ordered_objects)
+            block_size = width / len(self.ordered_objects)
+            start_x = self.x - width / 2 - len(self.ordered_objects) / 2
+
+            for obj in self.ordered_objects:
+                start_x += block_size
+                obj.x = start_x
+
+                screen.add(obj)
+                self.kids.add(obj)
+
+            if self.add_bar:
+                divider = Bar(self.x, self.y + 3.3, size=width)
+                screen.add(divider)
+                self.kids.add(divider)
+
+
 class Bitmap(ScreenObject):
     def __init__(self, *args, char='#', **kwargs):
         super().__init__(*args, **kwargs)
-        self.char = char
+        self.char = getattr(self, 'char', char)
         self._bitmap = getattr(self, 'bitmap', """\
 #####
 #####
@@ -522,6 +572,7 @@ class Zero(Bitmap):
 
 
 class Plus(Bitmap):
+    char = '+'
     represents = '+'
     bitmap = """\
      
@@ -533,6 +584,7 @@ class Plus(Bitmap):
 
 
 class Minus(Bitmap):
+    char = '-'
     represents = '-'
     bitmap = """\
      
@@ -544,6 +596,7 @@ class Minus(Bitmap):
 
 
 class Multiply(Bitmap):
+    char = '*'
     represents = '*'
     bitmap = """\
      
@@ -555,6 +608,7 @@ class Multiply(Bitmap):
 
 
 class Divide(Bitmap):
+    char = '/'
     represents = '/'
     bitmap = """\
      
@@ -563,3 +617,18 @@ class Divide(Bitmap):
  #   
      
 """  # noqa
+
+
+class Space(Bitmap):
+    represents = ' '
+    bitmap = """
+     
+     
+     
+     
+     
+"""  # noqa
+
+
+BITMAPS = dict((b.represents, b) for b in [Zero, One, Two, Three, Four, Five, Six, Seven, Eight, Nine, Plus, Minus,
+                                           Multiply, Divide, Space])

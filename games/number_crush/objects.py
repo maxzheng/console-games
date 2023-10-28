@@ -1,8 +1,7 @@
 from random import randint, choice
 
 from games.screen import Screen
-from games.objects import (ScreenObject, KeyListener, Explosion, Text, Zero, One, Two, Three, Four, Five, Six,  # noqa
-                           Seven, Eight, Nine, Plus, Minus, Multiply, Divide)  # noqa
+from games.objects import (ScreenObject, KeyListener, Explosion, Text, ScreenObjectGroup, BITMAPS, Bitmap)  # noqa
 
 
 class Player(ScreenObject, KeyListener):
@@ -53,13 +52,21 @@ class Player(ScreenObject, KeyListener):
                                   on_finish=self.controller.reset_scene))
 
 
+class Formula(ScreenObjectGroup):
+    def __init__(self, *args, text, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.text = text
+        for char in text:
+            self.add(BITMAPS[char](self.x, self.y))
+
+
 class Numbers(ScreenObject, KeyListener):
     def __init__(self, x, y, player: Player = None):
         super().__init__(x, y)
         self.player = player
         self.a = None
         self.b = None
-        self.numbers_text = None
+        self.formula = None
         self.operand_ranges = {
             '-': (0, 100),
             '+': (0, 100),
@@ -89,9 +96,9 @@ class Numbers(ScreenObject, KeyListener):
 
             # Set text and display
             formula = '{} {} {}'.format(self.a, self.operand, self.b)
-            self.numbers_text = Text(self.x - len(formula) / 2 + 1, 0, formula, y_delta=0.1)
-            self.kids.add(self.numbers_text)
-            screen.add(self.numbers_text)
+            self.formula = Formula(self.x, -1, text=formula, y_delta=0.1, add_bar=True)
+            self.kids.add(self.formula)
+            screen.add(self.formula)
 
             self.ready_for_next = False
 
@@ -101,13 +108,14 @@ class Numbers(ScreenObject, KeyListener):
     def number_pressed(self, number):
         if self.kids:
             self.numbers_pressed.append(number)
-            answer = int(eval(self.numbers_text.text))
+            answer = int(eval(self.formula.text))
             player_answer = eval(''.join([str(n) for n in self.numbers_pressed[-len(str(answer)):]]).lstrip('0') or '0')
             if player_answer == answer:
-                self.kids.remove(self.numbers_text)
-                self.screen.remove(self.numbers_text)
-                self.screen.add(Explosion(self.numbers_text.x + len(self.numbers_text.text) / 2,
-                                          self.numbers_text.y, size=15, on_finish=self.next))
+                self.kids.remove(self.formula)
+                self.screen.remove(self.formula)
+                for i, kid in enumerate(self.formula.kids):
+                    if isinstance(kid, Bitmap):
+                        self.screen.add(Explosion(kid.x, kid.y, size=kid.size * 2, on_finish=self.next))
 
                 self.player.score += 1
                 self.player.total_score += 1
@@ -115,5 +123,6 @@ class Numbers(ScreenObject, KeyListener):
                     self.player.high_score = self.player.score
 
     def next(self):
-        self.ready_for_next = True
-        self.numbers_pressed = []
+        if not self.kids:
+            self.ready_for_next = True
+            self.numbers_pressed = []
