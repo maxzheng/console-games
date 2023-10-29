@@ -47,7 +47,7 @@ class Player(ScreenObject, KeyListener):
     def got_crushed(self):
         self.is_visible = False
 
-        self.screen.add(Text((self.screen.width - 10) / 2, self.screen.height / 2, 'You got CRUSHED!!'))
+        self.screen.add(Text((self.screen.width - 16) / 2, self.screen.height / 2, 'You got CRUSHED!!'))
         self.screen.add(Explosion(self.x, self.y, size=20,
                                   on_finish=self.controller.reset_scene))
 
@@ -68,8 +68,8 @@ class Numbers(ScreenObject, KeyListener):
         self.b = None
         self.formula = None
         self.operand_ranges = {
-            '-': (0, 100),
-            '+': (0, 100),
+            '-': (0, 99),  # Keep it 2 digits for better fit on small screens
+            '+': (0, 99),
             '/': (0, 10),
             '*': (0, 10)
         }
