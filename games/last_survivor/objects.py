@@ -31,6 +31,7 @@ class Player(ScreenObject, KeyListener):
         self.score = 0
         self.shape = self.original_shape
         self.sync(self.shape)
+        self.color = None
         self.delta_index = 0
 
         # Machine gun upgrade when score reaches 50
