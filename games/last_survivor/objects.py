@@ -109,7 +109,7 @@ class Player(ScreenObject, KeyListener):
             screen.border.status['Machine Gun Ammos'] = self.gun_ammos
         if self.enabled_grenades:
             screen.border.status['Grenades'] = self.grenades
-            if self.grenades:
+            if self.grenades and self.is_alive:
                 self.color = screen.COLOR_RAINBOW
             else:
                 self.color = None
@@ -154,7 +154,7 @@ class Player(ScreenObject, KeyListener):
         if self.enabled_grenades and self.grenades > 0 and self.is_alive:
             self.grenades -= 1
             x_delta, y_delta, shape = self.deltas[self.delta_index]
-            explosion = Explosion(self.x, self.y, size=max(self.screen.width, self.screen.height),
+            explosion = Explosion(self.x, self.y, size=min(self.screen.width, self.screen.height),
                                   parent=self)
             projectile = Projectile(self.x, self.y, shape='@', parent=self,
                                     x_delta=x_delta, y_delta=y_delta, color=self.color,
