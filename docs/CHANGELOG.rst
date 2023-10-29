@@ -1,5 +1,16 @@
-Version 0.0.32
+Version 0.0.33
 ================================================================================
+
+* Implement zombified
+* Change zombie to magenta
+* Fix selection bar
+* Add HP to zombie Boss
+* Prototype THE LAST SURVIVOR!! game
+* Reduce # of digits and center crushed msg
+* Show numbers immediately
+
+Version 0.0.32
+--------------------------------------------------------------------------------
 
 * Even better 3
 * Add description for games
