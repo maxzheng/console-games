@@ -46,7 +46,7 @@ class Player(ScreenObject, KeyListener):
         if self.screen:
             self.x = self.screen.width / 2
             self.y = self.screen.height / 2
-            self.screen.border.status.pop('Machine Gun Ammos', None)
+            self.screen.border.status.pop('Ammos', None)
             self.screen.border.status.pop('Grenades', None)
 
     def render(self, screen: Screen):
@@ -107,7 +107,7 @@ class Player(ScreenObject, KeyListener):
             self.grenades = self.grenades_limit
 
         if self.enabled_machine_gun:
-            screen.border.status['Machine Gun Ammos'] = self.gun_ammos
+            screen.border.status['Ammos'] = self.gun_ammos
         if self.enabled_grenades:
             screen.border.status['Grenades'] = self.grenades
             if self.grenades and self.is_alive:
