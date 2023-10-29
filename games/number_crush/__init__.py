@@ -24,7 +24,7 @@ class NumberCrush(Controller):
             super().render(screen)
 
             if not self.text:
-                self.text = Text(self.x, self.y + 4, self.name, is_centered=True, color=self.color)
+                self.text = Text(self.x, self.y + 3, self.name, is_centered=True, color=self.color)
                 screen.add(self.text)
 
             if not self.one:

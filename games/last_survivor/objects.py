@@ -44,7 +44,7 @@ class Player(ScreenObject, KeyListener):
         if (self.screen.renders % 2 == 0) and self.is_alive:
             x_delta, y_delta, shape = self.deltas[self.delta_index]
             projectile = Projectile(self.x, self.y, shape=shape, parent=self,
-                                    x_delta=x_delta, y_delta=y_delta)
+                                    x_delta=x_delta, y_delta=y_delta, color=screen.COLOR_YELLOW)
 
             self.kids.add(projectile)
             self.screen.add(projectile)
@@ -78,7 +78,7 @@ class Player(ScreenObject, KeyListener):
 
 
 class Boss(ScreenObject):
-    def __init__(self, name, shape: ScreenObject, player: Player = None):
+    def __init__(self, name, shape: ScreenObject, player: Player = None, hp=5):
         super().__init__(shape.x, shape.y, size=shape.size, color=shape.color)
         self.shape = shape
         self.player = player
@@ -88,6 +88,7 @@ class Boss(ScreenObject):
         self.x_delta = max(random() * 0.5, 0.2)
         self.is_hit = False
         self.char = shape.char
+        self.hp = hp
 
     def render(self, screen: Screen):
         super().render(screen)
@@ -159,7 +160,8 @@ class Enemies(ScreenObject):
                 self.boss = Boss('Max',
                                  Zombie(randint(5, screen.width - 5), -5,
                                         y_delta=0.1, color=screen.COLOR_GREEN),
-                                 player=self.player)
+                                 player=self.player,
+                                 hp=self.player.score/5)
                 self.enemies.add(self.boss)
                 screen.add(self.boss)
 
@@ -172,7 +174,8 @@ class Enemies(ScreenObject):
             else:
                 for projectile in list(self.player.kids):
                     if projectile.coords & enemy.coords:
-                        if enemy == self.boss:
+                        if enemy == self.boss and self.boss.hp > 0:
+                            self.boss.hp -= 1
                             self.boss.is_hit = True
                             break
 
