@@ -40,5 +40,5 @@ setuptools.setup(
       'Programming Language :: Python :: 3',
     ],
 
-    keywords='games terminal console',
+    keywords='games terminal console geometry bash number crush math training',
 )
