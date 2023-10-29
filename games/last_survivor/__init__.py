@@ -9,8 +9,7 @@ class LastSurvivor(Controller):
     name = "THE LAST SURVIVOR!!"
 
     def init(self):
-        self.player = Player('Jon', Char(self.screen.width / 2, self.screen.height / 2, char='O',
-                                         color=self.screen.COLOR_RAINBOW))
+        self.player = Player('Jon', Char(self.screen.width / 2, self.screen.height / 2, char='O'))
         self.player.controller = self
         self.scenes = [Intro, Survive]
 

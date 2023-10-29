@@ -19,6 +19,15 @@ class ScreenObject:
         self.is_visible = True
         self.screen = None
 
+    def copy(self):
+        obj = self.__class__(self.x, self.y, x_delta=self.x_delta, y_delta=self.y_delta,
+                             color=self.color, size=self.size, parent=self.parent)
+        obj.coords = self.coords
+        obj.kids = self.kids
+        obj.is_visible = self.is_visible
+        obj.screen = self.screen
+        return obj
+
     @property
     def all_kids(self):
         kids = self.kids.copy()
@@ -79,6 +88,17 @@ class ScreenObject:
                 if kid in self.screen:
                     self.screen.remove(kid)
         self.kids = set()
+
+    def add_kid(self, screen_object):
+        self.kids.add(screen_object)
+
+    def remove_kid(self, screen_object):
+        if screen_object in self.kids:
+            self.kids.remove(screen_object)
+
+    def replace_kid(self, old_object, new_object):
+        self.remove_kid(old_object)
+        self.add_kid(new_object)
 
 
 class ScreenObjectGroup(ScreenObject):
@@ -254,17 +274,46 @@ class Char(ScreenObject):
 
 class Projectile(ScreenObject):
     def __init__(self, x: int, y: int, shape='^', x_delta=0, y_delta=-1, color=None, size=1,
-                 parent=None):
+                 parent=None, explode_after_renders=None, explosion=None, explosions=1):
         super().__init__(x, y, color=color, x_delta=x_delta, y_delta=y_delta, size=size, parent=parent)
         self.shape = shape
+        self.explode_after_renders = explode_after_renders
+        self.renders = 0
+        self.explosion = explosion
+        self.explosions = explosions
+
+    @property
+    def char(self):
+        return self.shape
 
     def render(self, screen: Screen):
         super().render(screen)
+
+        self.renders += 1
 
         self.coords = {(int(self.x), int(self.y))}
 
         if not self.is_out and self.shape is not None:
             screen.draw(self.x, self.y, self.shape, color=self.color)
+
+        if (self.explode_after_renders and self.renders >= self.explode_after_renders):
+            self.explode()
+
+    def explode(self):
+        if self.explosion:
+            if self.explosions:
+                explosion = self.explosion.copy()
+                self.x_delta = 0
+                self.y_delta = 0
+                explosion.x = self.x
+                explosion.y = self.y
+                self.screen.add(explosion)
+                self.parent.add_kid(explosion)
+                self.explosions -= 1
+
+            else:
+                self.screen.remove(self)
+                self.parent.remove_kid(self)
 
 
 class Circle(ScreenObject):
@@ -330,12 +379,19 @@ class Square(ScreenObject):
 
 
 class Explosion(ScreenObject):
-    def __init__(self, x: int, y: int, size=10, char='*', color=None, on_finish=None):
-        super().__init__(x, y, color=color, size=size)
+    def __init__(self, x: int, y: int, size=10, char='*', on_finish=None, **kwargs):
+        super().__init__(x, y, size=size, **kwargs)
 
         self.current_size = 2
         self.char = char
         self.on_finish = on_finish
+
+    def copy(self):
+        obj = super().copy()
+        obj.current_size = self.current_size
+        obj.char = self.char
+        obj.on_finish = self.on_finish
+        return obj
 
     def render(self, screen: Screen):
         super().render(screen)
@@ -357,6 +413,8 @@ class Explosion(ScreenObject):
         self.current_size += 1
         if self.current_size > self.size:
             screen.remove(self)
+            if self.parent:
+                self.parent.remove_kid(self)
             if self.on_finish:
                 self.on_finish()
 

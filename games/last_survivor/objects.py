@@ -16,6 +16,7 @@ class Player(ScreenObject, KeyListener):
         self.char = shape.char
         self.delta_index = 0
         self.gun_ammos_limit = 1000
+        self.grenades_limit = 10
         self.deltas = ((0, -1, '|'), (1, -1, '/'), (1, 0, '-'), (1, 1, '\\'), (0, 1, '|'), (-1, 1, '/'),
                        (-1, 0, '-'), (-1, -1, '\\'))
 
@@ -32,15 +33,20 @@ class Player(ScreenObject, KeyListener):
         self.sync(self.shape)
         self.delta_index = 0
 
-        # Machine gun upgrade when score reaches 100
+        # Machine gun upgrade when score reaches 50
         self.gun_ammos = self.gun_ammos_limit
         self.using_machine_gun = False
         self.enabled_machine_gun = False
+
+        # Grenade upgrade when score reaches 100
+        self.grenades = self.grenades_limit
+        self.enabled_grenades = False
 
         if self.screen:
             self.x = self.screen.width / 2
             self.y = self.screen.height / 2
             self.screen.border.status.pop('Machine Gun Ammos', None)
+            self.screen.border.status.pop('Grenades', None)
 
     def render(self, screen: Screen):
         super().render(screen)
@@ -77,7 +83,12 @@ class Player(ScreenObject, KeyListener):
                                                                 'Wait for reload before upgrading.']))
         elif self.gun_ammos < self.gun_ammos_limit:
             self.gun_ammos += 1
-        if self.score >= 100 and not self.enabled_machine_gun:
+
+        if self.enabled_grenades:
+            if self.grenades < self.grenades_limit and self.screen.renders % 100 == 0:
+                self.grenades += 1
+
+        if self.score > 50 and not self.enabled_machine_gun:
             self.enabled_machine_gun = True
             self.using_machine_gun = True
             screen.add(Monologue(self.x, self.y - 1, ['New weapon unlocked: MACHINE GUN!!',
@@ -86,8 +97,22 @@ class Player(ScreenObject, KeyListener):
                                                       'Press up/down to switch your weapon']))
             self.gun_ammos = self.gun_ammos_limit
 
+        if self.score > 100 and not self.enabled_grenades:
+            self.enabled_grenades = True
+            screen.add(Monologue(self.x, self.y - 1, ['New weapon unlocked: GRENADES!!',
+                                                      'You got 10 of them.',
+                                                      'It explodes on impact.',
+                                                      'Press Space to launch a grenade']))
+            self.grenades = self.grenades_limit
+
         if self.enabled_machine_gun:
             screen.border.status['Machine Gun Ammos'] = self.gun_ammos
+        if self.enabled_grenades:
+            screen.border.status['Grenades'] = self.grenades
+            if self.grenades:
+                self.color = screen.COLOR_RAINBOW
+            else:
+                self.color = None
 
     def got_zombified(self):
         self.is_playing = False
@@ -124,6 +149,19 @@ class Player(ScreenObject, KeyListener):
 
     def down_pressed(self):
         self.using_machine_gun = False
+
+    def space_pressed(self):
+        if self.enabled_grenades and self.grenades > 0 and self.is_alive:
+            self.grenades -= 1
+            x_delta, y_delta, shape = self.deltas[self.delta_index]
+            explosion = Explosion(self.x, self.y, size=max(self.screen.width, self.screen.height),
+                                  parent=self)
+            projectile = Projectile(self.x, self.y, shape='@', parent=self,
+                                    x_delta=x_delta, y_delta=y_delta, color=self.color,
+                                    explode_after_renders=10,
+                                    explosion=explosion, explosions=5)
+            self.kids.add(projectile)
+            self.screen.add(projectile)
 
 
 class Boss(ScreenObject):
@@ -235,7 +273,11 @@ class Enemies(ScreenObject):
                         self.screen.remove(projectile)
 
                         explosion_size = 25 if enemy == self.boss else enemy.size * 3
-                        self.screen.add(Explosion(enemy.x, enemy.y, size=explosion_size))
+                        explosion = Explosion(enemy.x, enemy.y, size=explosion_size)
+                        self.screen.add(explosion)
+
+                        if hasattr(projectile, 'explode'):
+                            projectile.explode()
 
                         self.player.score += 5 if enemy == self.boss else 1
                         if self.player.score > self.player.high_score:
