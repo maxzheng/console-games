@@ -17,7 +17,7 @@ class Choose(Scene):
     def init(self):
         self.game_classes = [GeoBash, NumberCrush, LastSurvivor]
         self.game_texts = [g.Logo(0, 0, g.name) for g in self.game_classes]
-        self.game_choice = Choice(x=self.screen.width / 2, y=self.screen.height / 2,
+        self.game_choice = Choice(x=self.screen.width / 2, y=int(self.screen.height / 2),
                                   choices=self.game_texts, on_select=self.play,
                                   current=getattr(self.controller, '_last_game_index', None))
 
