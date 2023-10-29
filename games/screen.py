@@ -1,10 +1,14 @@
 import curses
+from random import choice
 from time import sleep, time
 
 from games.listeners import KeyListener
 
 
 class Screen:
+    #: Special rainbow color
+    COLOR_RAINBOW = -1
+
     def __init__(self, border=None, fps=30, debug=False):
         #: FPS limit to render
         self._fps = fps
@@ -137,6 +141,8 @@ class Screen:
     def draw(self, x: int, y: int, char: str, color=None):
         """ Draw character on the given position """
         if x >= 0 and x < self._width and y >= 0 and y < self._height:
+            if color == self.COLOR_RAINBOW:
+                color = choice(self.colors)
             self.buffer.add(x, y, char, color)
 
     def render(self):

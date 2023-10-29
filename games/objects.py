@@ -238,6 +238,20 @@ class Border(ScreenObject):
                 screen.draw(start_x + x_offset, screen.height - 1, debug_text[x_offset], color=self.color)
 
 
+class Char(ScreenObject):
+    def __init__(self, *args, char, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.char = char
+
+    def render(self, screen: Screen):
+        super().render(screen)
+
+        self.coords = {(int(self.x), int(self.y))}
+
+        if not self.is_out:
+            screen.draw(self.x, self.y, self.char, color=self.color)
+
+
 class Projectile(ScreenObject):
     def __init__(self, x: int, y: int, shape='^', x_delta=0, y_delta=-1, color=None, size=1,
                  parent=None):
@@ -625,6 +639,16 @@ class Space(Bitmap):
      
      
      
+"""  # noqa
+
+
+class Zombie(Bitmap):
+    bitmap = """
+   O 
+ \-/\\
+  / |
+ /\  
+/ |  
 """  # noqa
 
 

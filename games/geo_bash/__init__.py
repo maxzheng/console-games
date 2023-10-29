@@ -23,7 +23,7 @@ class GeoBash(Controller):
             super().render(screen)
 
             if not self.text:
-                self.text = Text(self.x, self.y + 3, self.name, is_centered=True, color=self.color)
+                self.text = Text(self.x, self.y + 4, self.name, is_centered=True, color=self.color)
             if not self.triangle:
                 self.triangle = Triangle(self.x - 6, self.y, size=3, color=screen.COLOR_BLUE)
             if not self.circle:

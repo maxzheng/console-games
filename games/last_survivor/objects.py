@@ -1,7 +1,7 @@
-from random import randint, random
+from random import randint, random, choice
 
 from games.screen import Screen
-from games.objects import ScreenObject, KeyListener, Square, Explosion, Text, Projectile, Bar
+from games.objects import ScreenObject, KeyListener, Zombie, Explosion, Text, Projectile
 
 
 class Player(ScreenObject, KeyListener):
@@ -13,6 +13,9 @@ class Player(ScreenObject, KeyListener):
         self.high_score = 0
         self.is_playing = False
         self.char = shape.char
+        self.delta_index = 0
+        self.deltas = ((0, -1, '|'), (1, -1, '/'), (1, 0, '-'), (1, 1, '\\'), (0, 1, '|'), (-1, 1, '/'),
+                       (-1, 0, '-'), (-1, -1, '\\'))
 
         self.reset()
 
@@ -24,11 +27,10 @@ class Player(ScreenObject, KeyListener):
         super().reset()
         self.score = 0
         self.is_visible = True
-        self.continuous_moves = 0
-        self.size = 3
+        self.size = 1
         if self.screen:
             self.x = self.screen.width / 2
-            self.y = self.screen.height - self.size
+            self.y = self.screen.height / 2
 
     def render(self, screen: Screen):
         super().render(screen)
@@ -36,71 +38,43 @@ class Player(ScreenObject, KeyListener):
         self.shape.render(screen)
         self.coords = self.shape.coords
 
-        if self.continuous_moves % 30 == 0 and self.char == '^':
-            self.size = max(1, 3 - self.continuous_moves / 30)
-
-            # Cap it
-            if self.continuous_moves > 100:
-                self.continuous_moves = 100
-
-        self.screen.border.status['bashed'] = ('{} (High: {})'.format(
+        self.screen.border.status['killed'] = ('{} (High: {})'.format(
             self.score, self.high_score) if self.score < self.high_score else self.score)
 
-        if (self.screen.renders % 2 == 0 or self.char == '!') and self.is_alive:
-            if self.char == '!':
-                color = self.screen.colors[int(self.screen.renders / 2) % len(self.screen.colors)]
-            else:
-                color = self.color
-
-            if self.char == 'O':
-                projectile = Bar(self.x+1, self.y-1, char=self.char, parent=self, color=color,
-                                 y_delta=-1)
-            else:
-                projectile = Projectile(self.x, self.y-1, shape=self.char, parent=self, color=color)
+        if (self.screen.renders % 2 == 0) and self.is_alive:
+            x_delta, y_delta, shape = self.deltas[self.delta_index]
+            projectile = Projectile(self.x, self.y, shape=shape, parent=self,
+                                    x_delta=x_delta, y_delta=y_delta)
 
             self.kids.add(projectile)
             self.screen.add(projectile)
 
-    def got_bashed(self):
+    def got_zombified(self):
         self.is_visible = False
 
-        self.screen.add(Text((self.screen.width - 10) / 2, self.screen.height / 2, 'You got BASHED!!'))
+        self.screen.add(Text((self.screen.width - 10) / 2, self.screen.height / 2, 'You got ZOMBIFIED!!'))
         self.screen.add(Explosion(self.x, self.y, size=20,
                                   on_finish=self.controller.reset_scene))
 
     def left_pressed(self):
-        speed = 3 if self.char == '!' else 2
         if self.is_alive:
-            if self.x - speed >= 1:
-                self.x -= speed
-                self.continuous_moves += 1
-            elif self.x - 1 >= 1:
-                self.x -= 1
-                self.continuous_moves += 1
+            if self.delta_index > 0:
+                self.delta_index -= 1
+            else:
+                self.delta_index = len(self.deltas) - 1
 
     def right_pressed(self):
-        speed = 3 if self.char == '!' else 2
         if self.is_alive:
-            if self.x + speed < self.screen.width - 1:
-                self.x += speed
-                self.continuous_moves += 1
-            elif self.x + 1 < self.screen.width - 1:
-                self.x += 1
-                self.continuous_moves += 1
+            if self.delta_index < len(self.deltas) - 1:
+                self.delta_index += 1
+            else:
+                self.delta_index = 0
 
     def up_pressed(self):
-        if self.is_alive and self.y >= self.size:
-            self.y -= 1
-            self.continuous_moves += 1
+        pass
 
     def down_pressed(self):
-        if self.is_alive and self.y < self.screen.height - self.size:
-            self.y += 1
-            self.continuous_moves += 1
-
-    def key_released(self):
-        if self.continuous_moves >= 1:
-            self.continuous_moves -= 1
+        pass
 
 
 class Boss(ScreenObject):
@@ -127,16 +101,10 @@ class Boss(ScreenObject):
         if self in screen:
             for projectile in self.kids:
                 if projectile.coords & self.player.coords:
-                    self.player.got_bashed()
+                    self.player.got_zombified()
 
         if self in self.screen:
-            if self.player.score < 100 or self.player.char == '^':
-                self.x_delta = 0
-
             # self.screen.border.status['boss'] = str((int(self.x), int(self.y), self.size))
-            if self.player.char == '^':
-                self.x_delta = 0
-
             if self.x > self.player.x:
                 self.x_delta = -1 * abs(self.x_delta)
             else:
@@ -147,24 +115,10 @@ class Boss(ScreenObject):
 
             if self.is_hit:
                 self.color = self.screen.colors[self.screen.renders % len(self.screen.colors)]
-                if self.screen.renders % 10 == 0:
-                    if self.size >= 4:
-                        self.color = self.screen.COLOR_GREEN
-                    elif self.size >= 3:
-                        self.color = self.screen.COLOR_YELLOW
-                    else:
-                        self.color = self.screen.COLOR_RED
-                    self.is_hit = False
+                self.is_hit = False
 
             # else:
             #   self.screen.border.status['boss'] = 'Dead'
-
-            if self.screen.renders % 60 == 0 and self in self.screen:
-                projectile = Bar(self.x, self.y+self.size/2, size=self.size,
-                                 parent=self, color=self.color, y_delta=0.5,
-                                 char=self.char)
-                self.kids.add(projectile)
-                self.screen.add(projectile)
 
 
 class Enemies(ScreenObject):
@@ -180,26 +134,36 @@ class Enemies(ScreenObject):
 
         # Create enemies
         if len(self.enemies) < self.max_enemies + int(self.player.score / 100):
-            enemy = Square(randint(3, self.screen.width-3), -3, size=randint(2, 4),
-                           y_delta=random() * self.player.score / 200 + 0.2)
+            if random() < 0.5:
+                x = choice([0, screen.width])
+                y = randint(0, screen.height)
+            else:
+                y = choice([0, screen.height])
+                x = randint(0, screen.width)
+
+            speed = random() * self.player.score / 200 + 0.2
+            x_sign = 1 if x < self.player.x else -1
+            y_sign = 1 if y < self.player.y else -1
+            enemy = Zombie(x, y, x_delta=x_sign * speed, y_delta=y_sign * speed)
             self.enemies.add(enemy)
             self.screen.add(enemy)
 
         for enemy in list(self.enemies):
-            # Make them go fast when player got bashed
+            # Make them go fast when player got zombified
             if not self.player.is_visible:
-                enemy.y_delta += 0.5
+                enemy.y_delta *= 1.1
+                enemy.x_delta *= 1.1
 
-            # Add boss every 50 bashes
+            # Add boss every 50 killed
             if self.player.score and self.player.score % 50 == 0 and self.boss not in screen and self.player.is_alive:
                 self.boss = Boss('Max',
-                                 Square(randint(5, screen.width - 5), -5, size=5, char='$',
-                                        y_delta=0.1, solid=True, color=screen.COLOR_GREEN),
+                                 Zombie(randint(5, screen.width - 5), -5,
+                                        y_delta=0.1, color=screen.COLOR_GREEN),
                                  player=self.player)
                 self.enemies.add(self.boss)
                 screen.add(self.boss)
 
-            # If it is out of the screen, remove it (except for boss or player has been bashed)
+            # If it is out of the screen, remove it (except for boss or player has been zombified)
             if enemy.is_out and (enemy != self.boss and self.player.is_alive):
                 self.enemies.remove(enemy)
                 screen.remove(enemy)
@@ -208,8 +172,7 @@ class Enemies(ScreenObject):
             else:
                 for projectile in list(self.player.kids):
                     if projectile.coords & enemy.coords:
-                        if enemy == self.boss and self.boss.size > 2.05:
-                            self.boss.size -= 0.05
+                        if enemy == self.boss:
                             self.boss.is_hit = True
                             break
 
@@ -229,4 +192,4 @@ class Enemies(ScreenObject):
                         break
                 else:
                     if enemy.coords & self.player.coords:
-                        self.player.got_bashed()
+                        self.player.got_zombified()

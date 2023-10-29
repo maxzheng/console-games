@@ -3,6 +3,7 @@ from games.objects import Choice
 from games.screen import Scene
 from games.geo_bash import GeoBash
 from games.number_crush import NumberCrush
+from games.last_survivor import LastSurvivor
 
 
 class Chooser(Controller):
@@ -14,7 +15,7 @@ class Chooser(Controller):
 
 class Choose(Scene):
     def init(self):
-        self.game_classes = [GeoBash, NumberCrush]
+        self.game_classes = [GeoBash, NumberCrush, LastSurvivor]
         self.game_texts = [g.Logo(0, 0, g.name) for g in self.game_classes]
         self.game_choice = Choice(x=self.screen.width / 2, y=self.screen.height / 2,
                                   choices=self.game_texts, on_select=self.play,
