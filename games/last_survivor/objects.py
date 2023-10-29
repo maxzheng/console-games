@@ -79,6 +79,7 @@ class Player(ScreenObject, KeyListener):
             self.gun_ammos += 1
         if self.score >= 100 and not self.enabled_machine_gun:
             self.enabled_machine_gun = True
+            self.using_machine_gun = True
             screen.add(Monologue(self.x, self.y - 1, ['New weapon unlocked: MACHINE GUN!!',
                                                       'It shoots and moves twice as fast,',
                                                       'but watch out as ammos are limited.',
