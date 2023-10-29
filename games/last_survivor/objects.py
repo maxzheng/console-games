@@ -1,7 +1,7 @@
 from random import randint, random, choice
 
 from games.screen import Screen
-from games.objects import ScreenObject, KeyListener, Zombie, Explosion, Text, Projectile
+from games.objects import ScreenObject, KeyListener, Zombie, Explosion, Text, Projectile, Monologue
 
 
 class Player(ScreenObject, KeyListener):
@@ -15,6 +15,7 @@ class Player(ScreenObject, KeyListener):
         self.is_playing = False
         self.char = shape.char
         self.delta_index = 0
+        self.gun_ammos_limit = 1000
         self.deltas = ((0, -1, '|'), (1, -1, '/'), (1, 0, '-'), (1, 1, '\\'), (0, 1, '|'), (-1, 1, '/'),
                        (-1, 0, '-'), (-1, -1, '\\'))
 
@@ -30,9 +31,16 @@ class Player(ScreenObject, KeyListener):
         self.shape = self.original_shape
         self.sync(self.shape)
         self.delta_index = 0
+
+        # Machine gun upgrade when score reaches 100
+        self.gun_ammos = self.gun_ammos_limit
+        self.using_machine_gun = False
+        self.enabled_machine_gun = False
+
         if self.screen:
             self.x = self.screen.width / 2
             self.y = self.screen.height / 2
+            self.screen.border.status.pop('Machine Gun Ammos', None)
 
     def render(self, screen: Screen):
         super().render(screen)
@@ -43,13 +51,42 @@ class Player(ScreenObject, KeyListener):
         self.screen.border.status['killed'] = ('{} (High: {})'.format(
             self.score, self.high_score) if self.score < self.high_score else self.score)
 
-        if (self.screen.renders % 2 == 0) and self.is_alive:
+        if (self.screen.renders % 2 == 0 or self.using_machine_gun) and self.is_alive:
             x_delta, y_delta, shape = self.deltas[self.delta_index]
-            projectile = Projectile(self.x, self.y, shape=shape, parent=self,
-                                    x_delta=x_delta, y_delta=y_delta, color=screen.COLOR_YELLOW)
+            if self.using_machine_gun:
+                x_delta *= 2
+                y_delta *= 2
+                color = screen.COLOR_YELLOW
+            else:
+                shape = chr(183)
+                color = None
+            if not self.using_machine_gun or self.gun_ammos > 0:
+                projectile = Projectile(self.x, self.y, shape=shape, parent=self,
+                                        x_delta=x_delta, y_delta=y_delta, color=color)
 
-            self.kids.add(projectile)
-            self.screen.add(projectile)
+                self.kids.add(projectile)
+                self.screen.add(projectile)
+
+        if self.using_machine_gun:
+            if self.gun_ammos > 0:
+                self.gun_ammos -= 1
+            else:
+                self.using_machine_gun = False
+                screen.add(Monologue(self.x, self.y - 1, texts=['Out of ammo!!!',
+                                                                'Weapon has been downgraded.',
+                                                                'Wait for reload before upgrading.']))
+        elif self.gun_ammos < self.gun_ammos_limit:
+            self.gun_ammos += 1
+        if self.score >= 100 and not self.enabled_machine_gun:
+            self.enabled_machine_gun = True
+            screen.add(Monologue(self.x, self.y - 1, ['New weapon unlocked: MACHINE GUN!!',
+                                                      'It shoots and moves twice as fast,',
+                                                      'but watch out as ammos are limited.',
+                                                      'Press up/down to switch your weapon']))
+            self.gun_ammos = self.gun_ammos_limit
+
+        if self.enabled_machine_gun:
+            screen.border.status['Machine Gun Ammos'] = self.gun_ammos
 
     def got_zombified(self):
         self.is_playing = False
@@ -81,10 +118,11 @@ class Player(ScreenObject, KeyListener):
                 self.delta_index = 0
 
     def up_pressed(self):
-        pass
+        if self.enabled_machine_gun:
+            self.using_machine_gun = True
 
     def down_pressed(self):
-        pass
+        self.using_machine_gun = False
 
 
 class Boss(ScreenObject):
