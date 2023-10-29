@@ -26,7 +26,7 @@ class LastSurvivor(Controller):
             if not self.text:
                 self.text = Text(self.x, self.y + 3, self.name, is_centered=True, color=self.color)
             if not self.zombie:
-                self.zombie = Zombie(self.x, self.y, color=screen.COLOR_MAGENTA)
+                self.zombie = Zombie(self.x, self.y, color=screen.COLOR_GREEN)
 
             self.zombie.render(screen)
             self.text.render(screen)

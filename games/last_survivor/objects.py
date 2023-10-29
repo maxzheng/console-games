@@ -10,6 +10,7 @@ class Player(ScreenObject, KeyListener):
 
         self.name = name
         self.shape = shape
+        self.original_shape = shape
         self.high_score = 0
         self.is_playing = False
         self.char = shape.char
@@ -21,13 +22,14 @@ class Player(ScreenObject, KeyListener):
 
     @property
     def is_alive(self):
-        return self.is_visible and self.is_playing
+        return self.is_playing
 
     def reset(self):
         super().reset()
         self.score = 0
-        self.is_visible = True
-        self.size = 1
+        self.shape = self.original_shape
+        self.sync(self.shape)
+        self.delta_index = 0
         if self.screen:
             self.x = self.screen.width / 2
             self.y = self.screen.height / 2
@@ -50,11 +52,19 @@ class Player(ScreenObject, KeyListener):
             self.screen.add(projectile)
 
     def got_zombified(self):
-        self.is_visible = False
+        self.is_playing = False
 
-        self.screen.add(Text((self.screen.width - 10) / 2, self.screen.height / 2, 'You got ZOMBIFIED!!'))
-        self.screen.add(Explosion(self.x, self.y, size=20,
+        self.screen.add(Explosion(self.x, self.y, size=30,
                                   on_finish=self.controller.reset_scene))
+        zombie = Zombie(self.shape.x, self.shape.y, color=self.screen.COLOR_GREEN)
+        self.screen.replace(self.shape, zombie)
+        self.shape = zombie
+        self.screen.add(Text(self.screen.width / 2, self.screen.height / 2, 'You got ZOMBIFIED!!', is_centered=True))
+
+        # These get sync'ed to `zombie` in render()
+        self.y_delta = -0.1
+        self.size = zombie.size
+        self.color = self.screen.COLOR_GREEN
 
     def left_pressed(self):
         if self.is_alive:
@@ -145,16 +155,15 @@ class Enemies(ScreenObject):
             speed = random() * self.player.score / 200 + 0.2
             x_sign = 1 if x < self.player.x else -1
             y_sign = 1 if y < self.player.y else -1
-            enemy = Zombie(x, y, x_delta=x_sign * speed, y_delta=y_sign * speed,
-                           color=screen.COLOR_MAGENTA)
+            enemy = Zombie(x, y, x_delta=x_sign * speed, y_delta=y_sign * speed)
             self.enemies.add(enemy)
             self.screen.add(enemy)
 
         for enemy in list(self.enemies):
             # Make them go fast when player got zombified
-            if not self.player.is_visible:
-                enemy.y_delta *= 1.1
-                enemy.x_delta *= 1.1
+            if not self.player.is_alive:
+                enemy.y_delta *= 1.2
+                enemy.x_delta *= 1.2
 
             # Add boss every 50 killed
             if self.player.score and self.player.score % 50 == 0 and self.boss not in screen and self.player.is_alive:

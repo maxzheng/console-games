@@ -11,7 +11,7 @@ class Screen:
 
     def __init__(self, border=None, fps=30, debug=False):
         #: FPS limit to render
-        self._fps = fps
+        self.fps_limit = fps
 
         #: Width of the screen
         self._width = None
@@ -124,6 +124,10 @@ class Screen:
             for kid in obj.kids:
                 self.remove(kid)
 
+    def replace(self, old_object, new_object):
+        self.remove(old_object)
+        self.add(new_object)
+
     def reset(self, border=False):
         self._objects = []
         self.renders = 0
@@ -151,9 +155,9 @@ class Screen:
         self._render()
 
         render_time = time() - start_time
-        # self.debug(rsecs=round(render_time * self._fps, 1))
-        if render_time < 1/self._fps:
-            sleep(1/self._fps - render_time)
+        # self.debug(rsecs=round(render_time * self.fps_limit, 1))
+        if render_time < 1/self.fps_limit:
+            sleep(1/self.fps_limit - render_time)
 
     def _render(self):
         self.renders += 1
