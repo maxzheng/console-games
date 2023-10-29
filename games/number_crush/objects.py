@@ -96,7 +96,7 @@ class Numbers(ScreenObject, KeyListener):
 
             # Set text and display
             formula = '{} {} {}'.format(self.a, self.operand, self.b)
-            self.formula = Formula(self.x, -1, text=formula, y_delta=0.1, add_bar=True)
+            self.formula = Formula(self.x, 5, text=formula, y_delta=0.1, add_bar=True)
             self.kids.add(self.formula)
             screen.add(self.formula)
 
