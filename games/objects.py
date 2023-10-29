@@ -489,9 +489,9 @@ class Three(Bitmap):
     represents = '3'
     bitmap = """
  ### 
-#   #
+    #
    # 
-#   #
+    #
  ### 
 """  # noqa
 
