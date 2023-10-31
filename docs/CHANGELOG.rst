@@ -1,5 +1,11 @@
-Version 0.1.1
+Version 0.1.2
 ================================================================================
+
+* Slow things down and more grenades!
+* Check in higher resolution images for game
+
+Version 0.1.1
+--------------------------------------------------------------------------------
 
 * Update readme
 
