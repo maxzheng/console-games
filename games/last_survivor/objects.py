@@ -154,7 +154,7 @@ class Player(ScreenObject, KeyListener):
             else:
                 self.color = None
         if self.flamethrower_enabled:
-            screen.border.status['Gas'] = int(self.gas)
+            screen.border.status['Gas'] = '{}%'.format(int(self.gas))
 
     def got_zombified(self):
         self.is_playing = False
