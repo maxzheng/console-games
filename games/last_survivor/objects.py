@@ -54,6 +54,7 @@ class Player(ScreenObject, KeyListener):
             self.y = self.screen.height / 2
             self.screen.border.status.pop('Ammos', None)
             self.screen.border.status.pop('Grenades', None)
+            self.screen.border.status.pop('Gas', None)
 
     def render(self, screen: Screen):
         super().render(screen)
@@ -98,19 +99,17 @@ class Player(ScreenObject, KeyListener):
             else:
                 self.using_machine_gun = False
                 screen.add(Monologue(self.x, self.y - 1, texts=['Out of ammo!!!',
-                                                                'Weapon has been downgraded.',
                                                                 'Wait for reload before upgrading.']))
         elif self.ammos < self.ammos_limit:
             self.ammos += 1
 
         if self.using_flamethrower:
             if self.gas > 0:
-                self.gas -= 1
+                self.gas -= 0.5
             else:
                 self.using_flamethrower = False
                 self.using_machine_gun = True
                 screen.add(Monologue(self.x, self.y - 1, texts=['Out of gas!!!',
-                                                                'Weapon has been downgraded.',
                                                                 'Wait for refill before upgrading.']))
         elif self.gas < self.gas_limit:
             self.gas += 0.1
