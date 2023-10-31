@@ -16,7 +16,6 @@ class Player(ScreenObject, KeyListener):
         self.char = shape.char
         self.delta_index = 0
         self.gun_ammos_limit = 1000
-        self.grenades_limit = 10
         self.deltas = ((0, -1, '|'), (1, -1, '/'), (1, 0, '-'), (1, 1, '\\'), (0, 1, '|'), (-1, 1, '/'),
                        (-1, 0, '-'), (-1, -1, '\\'))
 
@@ -40,6 +39,7 @@ class Player(ScreenObject, KeyListener):
         self.enabled_machine_gun = False
 
         # Grenade upgrade when score reaches 100
+        self.grenades_limit = 10
         self.grenades = self.grenades_limit
         self.enabled_grenades = False
 
@@ -86,7 +86,8 @@ class Player(ScreenObject, KeyListener):
             self.gun_ammos += 1
 
         if self.enabled_grenades:
-            if self.grenades < self.grenades_limit and self.screen.renders % 100 == 0:
+            self.grenades_limit = 10 + int((self.score - 100) / 10)
+            if self.grenades < self.grenades_limit and self.screen.renders % 30 == 0:
                 self.grenades += 1
 
         if self.score > 50 and not self.enabled_machine_gun:
@@ -101,7 +102,7 @@ class Player(ScreenObject, KeyListener):
         if self.score > 100 and not self.enabled_grenades:
             self.enabled_grenades = True
             screen.add(Monologue(self.x, self.y - 1, ['New weapon unlocked: GRENADES!!',
-                                                      'You got 10 of them.',
+                                                      'You got {} of them.'.format(self.grenades_limit),
                                                       'It explodes on impact.',
                                                       'Press Space to launch a grenade']))
             self.grenades = self.grenades_limit
@@ -230,7 +231,7 @@ class Enemies(ScreenObject):
                 y = choice([0, screen.height])
                 x = randint(0, screen.width)
 
-            speed = random() * self.player.score / 500 + 0.2
+            speed = random() * self.player.score / 10000 + 0.2
             x_sign = 1 if x < self.player.x else -1
             y_sign = 1 if y < self.player.y else -1
             enemy = Zombie(x, y, x_delta=x_sign * speed, y_delta=y_sign * speed)
@@ -249,7 +250,7 @@ class Enemies(ScreenObject):
                                  Zombie(randint(5, screen.width - 5), -5,
                                         y_delta=0.1, color=screen.COLOR_GREEN),
                                  player=self.player,
-                                 hp=self.player.score/5)
+                                 hp=self.player.score/25)
                 self.enemies.add(self.boss)
                 screen.add(self.boss)
 
