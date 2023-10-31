@@ -1,5 +1,10 @@
-Version 0.1.2
+Version 0.1.3
 ================================================================================
+
+* Add flamethrower
+
+Version 0.1.2
+--------------------------------------------------------------------------------
 
 * Slow things down and more grenades!
 * Check in higher resolution images for game
