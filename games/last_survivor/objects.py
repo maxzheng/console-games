@@ -15,7 +15,8 @@ class Player(ScreenObject, KeyListener):
         self.is_playing = False
         self.char = shape.char
         self.delta_index = 0
-        self.gun_ammos_limit = 1000
+        self.ammos_limit = 1000
+        self.gas_limit = 100
         self.deltas = ((0, -1, '|'), (1, -1, '/'), (1, 0, '-'), (1, 1, '\\'), (0, 1, '|'), (-1, 1, '/'),
                        (-1, 0, '-'), (-1, -1, '\\'))
 
@@ -34,14 +35,19 @@ class Player(ScreenObject, KeyListener):
         self.delta_index = 0
 
         # Machine gun upgrade when score reaches 50
-        self.gun_ammos = self.gun_ammos_limit
+        self.ammos = self.ammos_limit
         self.using_machine_gun = False
-        self.enabled_machine_gun = False
+        self.machine_gun_enabled = False
 
         # Grenade upgrade when score reaches 100
         self.grenades_limit = 10
         self.grenades = self.grenades_limit
-        self.enabled_grenades = False
+        self.grenades_enabled = False
+
+        # Machine gun upgrade when score reaches 50
+        self.gas = self.gas_limit
+        self.using_flamethrower = False
+        self.flamethrower_enabled = False
 
         if self.screen:
             self.x = self.screen.width / 2
@@ -58,63 +64,98 @@ class Player(ScreenObject, KeyListener):
         self.screen.border.status['killed'] = ('{} (High: {})'.format(
             self.score, self.high_score) if self.score < self.high_score else self.score)
 
-        if (self.screen.renders % 2 == 0 or self.using_machine_gun) and self.is_alive:
+        if (self.screen.renders % 2 == 0 or self.using_machine_gun or self.using_flamethrower) and self.is_alive:
             x_delta, y_delta, shape = self.deltas[self.delta_index]
-            if self.using_machine_gun:
+            if self.using_machine_gun or self.using_flamethrower:
                 x_delta *= 2
                 y_delta *= 2
                 color = screen.COLOR_YELLOW
+                if self.using_flamethrower:
+                    shape = None
             else:
                 shape = chr(183)
                 color = None
-            if not self.using_machine_gun or self.gun_ammos > 0:
-                projectile = Projectile(self.x, self.y, shape=shape, parent=self,
-                                        x_delta=x_delta, y_delta=y_delta, color=color)
-
-                self.kids.add(projectile)
-                self.screen.add(projectile)
+            if (not self.using_machine_gun or self.using_machine_gun and self.ammos > 0
+                    or self.using_flamethrower and self.gas > 0):
+                if self.using_flamethrower:
+                    for flame_size in range(10):
+                        explosion = Explosion(self.x, self.y, size=flame_size, parent=self)
+                        projectile = Projectile(self.x, self.y, shape=shape, parent=self,
+                                                x_delta=x_delta, y_delta=y_delta, color=color,
+                                                explode_after_renders=flame_size,
+                                                explosion=explosion)
+                        self.kids.add(projectile)
+                        self.screen.add(projectile)
+                else:
+                    projectile = Projectile(self.x, self.y, shape=shape, parent=self,
+                                            x_delta=x_delta, y_delta=y_delta, color=color)
+                    self.kids.add(projectile)
+                    self.screen.add(projectile)
 
         if self.using_machine_gun:
-            if self.gun_ammos > 0:
-                self.gun_ammos -= 1
+            if self.ammos > 0:
+                self.ammos -= 1
             else:
                 self.using_machine_gun = False
                 screen.add(Monologue(self.x, self.y - 1, texts=['Out of ammo!!!',
                                                                 'Weapon has been downgraded.',
                                                                 'Wait for reload before upgrading.']))
-        elif self.gun_ammos < self.gun_ammos_limit:
-            self.gun_ammos += 1
+        elif self.ammos < self.ammos_limit:
+            self.ammos += 1
 
-        if self.enabled_grenades:
+        if self.using_flamethrower:
+            if self.gas > 0:
+                self.gas -= 1
+            else:
+                self.using_flamethrower = False
+                self.using_machine_gun = True
+                screen.add(Monologue(self.x, self.y - 1, texts=['Out of gas!!!',
+                                                                'Weapon has been downgraded.',
+                                                                'Wait for refill before upgrading.']))
+        elif self.gas < self.gas_limit:
+            self.gas += 0.1
+
+        if self.grenades_enabled:
             self.grenades_limit = 10 + int((self.score - 100) / 10)
             if self.grenades < self.grenades_limit and self.screen.renders % 30 == 0:
                 self.grenades += 1
 
-        if self.score > 50 and not self.enabled_machine_gun:
-            self.enabled_machine_gun = True
+        if self.score > 50 and not self.machine_gun_enabled:
+            self.machine_gun_enabled = True
             self.using_machine_gun = True
             screen.add(Monologue(self.x, self.y - 1, ['New weapon unlocked: MACHINE GUN!!',
                                                       'It shoots and moves twice as fast,',
                                                       'but watch out as ammos are limited.',
                                                       'Press up/down to switch your weapon']))
-            self.gun_ammos = self.gun_ammos_limit
+            self.ammos = self.ammos_limit
 
-        if self.score > 100 and not self.enabled_grenades:
-            self.enabled_grenades = True
+        if self.score > 100 and not self.grenades_enabled:
+            self.grenades_enabled = True
             screen.add(Monologue(self.x, self.y - 1, ['New weapon unlocked: GRENADES!!',
                                                       'You got {} of them.'.format(self.grenades_limit),
-                                                      'It explodes on impact.',
+                                                      'It EXPLODES on impact.',
                                                       'Press Space to launch a grenade']))
             self.grenades = self.grenades_limit
 
-        if self.enabled_machine_gun:
-            screen.border.status['Ammos'] = self.gun_ammos
-        if self.enabled_grenades:
+        if self.score > 150 and not self.flamethrower_enabled:
+            self.flamethrower_enabled = True
+            self.using_flamethrower = True
+            self.using_machine_gun = False
+            screen.add(Monologue(self.x, self.y - 1, ['New weapon unlocked: FLAMETHROWER!!',
+                                                      'Destroy everything before the gas runs out!',
+                                                      'Press up/down to switch your weapon']))
+            self.gas = self.gas_limit
+
+        if self.machine_gun_enabled:
+            screen.border.status['Ammos'] = self.ammos
+        if self.grenades_enabled:
             screen.border.status['Grenades'] = self.grenades
             if self.grenades and self.is_alive:
                 self.color = screen.COLOR_RAINBOW
             else:
                 self.color = None
+        if self.flamethrower_enabled:
+            screen.border.status['Gas'] = int(self.gas)
 
     def got_zombified(self):
         self.is_playing = False
@@ -146,14 +187,20 @@ class Player(ScreenObject, KeyListener):
                 self.delta_index = 0
 
     def up_pressed(self):
-        if self.enabled_machine_gun:
+        if self.using_machine_gun and self.flamethrower_enabled:
+            self.using_flamethrower = True
+        elif self.machine_gun_enabled:
             self.using_machine_gun = True
 
     def down_pressed(self):
-        self.using_machine_gun = False
+        if self.using_flamethrower:
+            self.using_flamethrower = False
+            self.using_machine_gun = True
+        else:
+            self.using_machine_gun = False
 
     def space_pressed(self):
-        if self.enabled_grenades and self.grenades > 0 and self.is_alive:
+        if self.grenades_enabled and self.grenades > 0 and self.is_alive:
             self.grenades -= 1
             x_delta, y_delta, shape = self.deltas[self.delta_index]
             explosion = Explosion(self.x, self.y, size=min(self.screen.width, self.screen.height),
