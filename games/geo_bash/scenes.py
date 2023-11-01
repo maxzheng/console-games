@@ -35,9 +35,15 @@ class ChoosePlayer(Scene):
 
 class Intro(Scene):
     def init(self):
+        if self.controller.player.name == 'Jon':
+            intro = 'the fastest shape'
+        elif self.controller.player.name == 'Kate':
+            intro = 'the stealthiest shape'
+        else:
+            intro = 'the most powerful shape'
         self.intro = Monologue(self.controller.player.x, self.controller.player.y - 2,
                                on_finish=self.next,
-                               texts=["Hi, I am {}!".format(self.controller.player.name),
+                               texts=["Hi, I am {} -- {}!".format(self.controller.player.name, intro),
                                       "Most people don't like geometry, but not me.",
                                       "I LOVE to bash them!! :D",
                                       "Move me using arrow keys.",
