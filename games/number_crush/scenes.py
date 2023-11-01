@@ -18,7 +18,7 @@ class Crush(Scene):
 
 class Intro(Scene):
     def init(self):
-        self.intro = Monologue(self.controller.player.x, self.controller.player.y - 2,
+        self.intro = Monologue(self.controller.player.x, self.controller.player.y - 3,
                                on_finish=self.next,
                                texts=["Hi, I am {}!".format(self.controller.player.name),
                                       "Most people don't like math, but not me.",

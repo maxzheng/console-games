@@ -27,8 +27,8 @@ class Player(ScreenObject, KeyListener):
         self.is_visible = True
         self.size = 3
         if self.screen:
-            self.x = self.screen.width / 2
-            self.y = self.screen.height - self.size
+            self.x = self.screen.width / 2 + 1
+            self.y = self.screen.height - 2
 
     def render(self, screen: Screen):
         super().render(screen)
@@ -74,6 +74,7 @@ class Numbers(ScreenObject, KeyListener):
             '*': (0, 10)
         }
         self.next()
+        self.last_answer = None
 
     def render(self, screen: Screen):
         super().render(screen)
@@ -104,23 +105,37 @@ class Numbers(ScreenObject, KeyListener):
 
         if self.all_coords & self.player.coords:
             self.player.got_crushed()
+        else:
+            answer = int(eval(self.formula.text))
+            for answer_text in list(self.player.kids):
+                if answer_text.y <= self.formula.y + 5:
+                    self.player.kids.remove(answer_text)
+                    self.screen.remove(answer_text)
+
+                    player_answer = int(answer_text.text)
+                    if player_answer == answer:
+                        self.kids.remove(self.formula)
+                        self.screen.remove(self.formula)
+                        for i, kid in enumerate(self.formula.kids):
+                            if isinstance(kid, Bitmap):
+                                self.screen.add(Explosion(kid.x, kid.y, size=kid.size * 2, on_finish=self.next))
+
+                        self.player.score += 1
+                        self.player.total_score += 1
+                        if self.player.score > self.player.high_score:
+                            self.player.high_score = self.player.score
 
     def number_pressed(self, number):
         if self.kids:
             self.numbers_pressed.append(number)
             answer = int(eval(self.formula.text))
             player_answer = eval(''.join([str(n) for n in self.numbers_pressed[-len(str(answer)):]]).lstrip('0') or '0')
-            if player_answer == answer:
-                self.kids.remove(self.formula)
-                self.screen.remove(self.formula)
-                for i, kid in enumerate(self.formula.kids):
-                    if isinstance(kid, Bitmap):
-                        self.screen.add(Explosion(kid.x, kid.y, size=kid.size * 2, on_finish=self.next))
 
-                self.player.score += 1
-                self.player.total_score += 1
-                if self.player.score > self.player.high_score:
-                    self.player.high_score = self.player.score
+            if self.last_answer != player_answer and len(str(player_answer)) == len(str(answer)):
+                answer = Text(self.player.x - 1, self.player.y - 2, str(player_answer), y_delta=-1)
+                self.screen.add(answer)
+                self.player.kids.add(answer)
+            self.last_answer = player_answer
 
     def next(self):
         if not self.kids:

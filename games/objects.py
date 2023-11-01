@@ -45,7 +45,7 @@ class ScreenObject:
     @property
     def all_coords(self):
         """ All coords of this object and its kids """
-        coords = set()
+        coords = self.coords.copy()
         for kid in self.all_kids:
             coords.update(kid.coords)
 
@@ -707,6 +707,14 @@ class Zombie(Bitmap):
   / |
  /\  
 / |  
+"""  # noqa
+
+
+class Stickman(Bitmap):
+    bitmap = """
+ O 
+/|\\
+/ \\
 """  # noqa
 
 
