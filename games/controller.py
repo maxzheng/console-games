@@ -42,7 +42,11 @@ class Controller(KeyListener):
                 self.current_index = 0
             self.set_scene(self.scenes[self.current_index](self.screen, self))
 
-        key = self.screen.key
+        last_key = key = self.screen.key
+        while key > 0:  # Drain the key buffer to avoid input lag
+            last_key = key
+            key = self.screen.key
+        key = last_key
 
         if key > 0:
             self.key_pressed(key)
