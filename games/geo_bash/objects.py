@@ -40,8 +40,9 @@ class Player(ScreenObject, KeyListener):
             self.size = max(1, 3 - self.continuous_moves / 30)
 
             # Cap it
-            if self.continuous_moves > 100:
-                self.continuous_moves = 100
+            move_cap = 100 if self.char == '^' else 5
+            if self.continuous_moves > move_cap:
+                self.continuous_moves = move_cap
 
         self.screen.border.status['bashed'] = ('{} (High: {})'.format(
             self.score, self.high_score) if self.score < self.high_score else self.score)
@@ -69,7 +70,10 @@ class Player(ScreenObject, KeyListener):
                                   on_finish=self.controller.reset_scene))
 
     def left_pressed(self):
-        speed = 3 if self.char == '!' else 2
+        if self.continuous_moves > 3:
+            speed = 3 if self.char == '!' else 2
+        else:
+            speed = 1
         if self.is_alive:
             if self.x - speed >= 1:
                 self.x -= speed
@@ -79,7 +83,10 @@ class Player(ScreenObject, KeyListener):
                 self.continuous_moves += 1
 
     def right_pressed(self):
-        speed = 3 if self.char == '!' else 2
+        if self.continuous_moves > 3:
+            speed = 3 if self.char == '!' else 2
+        else:
+            speed = 1
         if self.is_alive:
             if self.x + speed < self.screen.width - 1:
                 self.x += speed
