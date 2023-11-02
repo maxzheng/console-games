@@ -142,17 +142,28 @@ class Bitmap(ScreenObject):
     def __init__(self, *args, char=None, **kwargs):
         super().__init__(*args, **kwargs)
         self.char = getattr(self, 'char', char)
+        self._bitmaps = getattr(self, 'bitmaps', [])
+        self._frames_per_bitmap = getattr(self, 'frames_per_bitmap', 10)
+        self._bitmap_index_offset = randint(0, max(len(self._bitmaps), 1) - 1)
+
         self._bitmap = getattr(self, 'bitmap', """\
 #####
 #####
 #####
 #####
 #####
-""").strip('\n').split('\n')  # noqa
-        self.size = len(self._bitmap)
+""")  # noqa
+        self.size = 5
 
     def render(self, screen: Screen):
         super().render(screen)
+
+        if self._bitmaps:
+            index = (self._bitmap_index_offset + int(screen.renders / self._frames_per_bitmap)) % len(self._bitmaps)
+            bitmap = self._bitmaps[index]
+        else:
+            bitmap = self._bitmap
+        bitmap = bitmap.strip('\n').split('\n')
 
         start_x = int(self.x - self.size / 2)
         start_y = int(self.y - self.size / 2)
@@ -160,8 +171,8 @@ class Bitmap(ScreenObject):
 
         for x in range(start_x, start_x + self.size):
             for y in range(start_y, start_y + self.size):
-                if self._bitmap[y-start_y][x-start_x] != ' ':
-                    screen.draw(x, y, self.char or self._bitmap[y-start_y][x-start_x], color=self.color)
+                if bitmap[y-start_y][x-start_x] != ' ':
+                    screen.draw(x, y, self.char or bitmap[y-start_y][x-start_x], color=self.color)
                     self.coords.add((x, y))
 
 
@@ -701,13 +712,41 @@ class Space(Bitmap):
 
 
 class Zombie(Bitmap):
-    bitmap = """
+    bitmaps = ("""
    O 
  \-/\\
   / |
  /\  
 / |  
-"""  # noqa
+""",  # noqa
+"""
+  O  
+\-/\\ 
+  | |
+ /\  
+/ |  
+""",  # noqa
+"""
+  O  
+ -|\\_
+/ |  
+ /\  
+ | \\ 
+""",  # noqa
+"""
+  O  
+ -|\\|
+/ |  
+ /\  
+ | \\ 
+""",  # noqa
+"""
+  O  
+ -|\\_
+/ /   
+ /\  
+/ \\  
+""") # noqa
 
 
 class Stickman(Bitmap):

@@ -27,7 +27,7 @@ class Player(ScreenObject, KeyListener):
         self.is_visible = True
         self.size = 3
         if self.screen:
-            self.x = self.screen.width / 2 + 1
+            self.x = int(self.screen.width / 2) + 1
             self.y = self.screen.height - 2
 
     def render(self, screen: Screen):

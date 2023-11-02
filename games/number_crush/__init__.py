@@ -9,7 +9,7 @@ class NumberCrush(Controller):
     name = "Number Crush"
 
     def init(self):
-        self.player = Player('Jon', Stickman(self.screen.width / 2 + 1, self.screen.height - 2, size=3),
+        self.player = Player('Jon', Stickman(int(self.screen.width / 2) + 1, self.screen.height - 2, size=3),
                              controller=self)
 
         self.scenes = [Intro, Crush]
