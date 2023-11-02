@@ -1,5 +1,10 @@
-Version 0.1.7
+Version 0.1.8
 ================================================================================
+
+* Drain input buffer to avoid lag
+
+Version 0.1.7
+--------------------------------------------------------------------------------
 
 * Shoot numbers as stickman
 * Add intro for each shape
