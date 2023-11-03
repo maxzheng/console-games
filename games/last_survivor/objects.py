@@ -278,8 +278,9 @@ class Enemies(ScreenObject):
                 x = randint(0, screen.width)
 
             speed = random() * self.player.score / 10000 + 0.2
-            x_sign = 1 if x < self.player.x else -1
-            y_sign = 1 if y < self.player.y else -1
+            x_sign = (1 if x < self.player.x else -1) * random()
+            y_sign = (1 if y < self.player.y else -1) * random()
+
             enemy = Zombie(x, y, x_delta=x_sign * speed, y_delta=y_sign * speed)
             self.enemies.add(enemy)
             self.screen.add(enemy)
