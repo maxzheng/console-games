@@ -149,10 +149,11 @@ class Player(ScreenObject, KeyListener):
             screen.border.status['Ammos'] = self.ammos
         if self.grenades_enabled:
             screen.border.status['Grenades'] = self.grenades
-            if self.grenades and self.is_alive:
-                self.color = screen.COLOR_RAINBOW
-            else:
-                self.color = None
+            if self.is_alive:
+                if self.grenades:
+                    self.color = screen.COLOR_RAINBOW
+                else:
+                    self.color = None
         if self.flamethrower_enabled:
             screen.border.status['Gas'] = '{}%'.format(int(self.gas))
 
