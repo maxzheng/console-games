@@ -1,5 +1,11 @@
-Version 0.1.10
+Version 0.1.11
 ================================================================================
+
+* Cap continuous move for other chars
+  to allow them to move at one speed
+
+Version 0.1.10
+--------------------------------------------------------------------------------
 
 * Randomize zombie movements
 * Allow other chars to move slower
