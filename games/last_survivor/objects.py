@@ -1,7 +1,7 @@
 from random import randint, random, choice
 
 from games.screen import Screen
-from games.objects import ScreenObject, KeyListener, Zombie, Explosion, Text, Projectile, Monologue
+from games.objects import ScreenObject, KeyListener, Zombie, Explosion, Text, Projectile, Monologue, DyingZombie
 
 
 class Player(ScreenObject, KeyListener):
@@ -162,7 +162,7 @@ class Player(ScreenObject, KeyListener):
 
         self.screen.add(Explosion(self.x, self.y, size=30,
                                   on_finish=self.controller.reset_scene))
-        zombie = Zombie(self.shape.x, self.shape.y, color=self.screen.COLOR_GREEN)
+        zombie = Zombie(self.shape.x, self.shape.y, color=self.screen.COLOR_GREEN, random_start=True)
         self.screen.replace(self.shape, zombie)
         self.shape = zombie
         self.screen.add(Text(self.screen.width / 2, self.screen.height / 2, 'You got ZOMBIFIED!!', is_centered=True))
@@ -282,7 +282,7 @@ class Enemies(ScreenObject):
             x_sign = (1 if x < self.player.x else -1) * random()
             y_sign = (1 if y < self.player.y else -1) * random()
 
-            enemy = Zombie(x, y, x_delta=x_sign * speed, y_delta=y_sign * speed)
+            enemy = Zombie(x, y, x_delta=x_sign * speed, y_delta=y_sign * speed, random_start=True)
             self.enemies.add(enemy)
             self.screen.add(enemy)
 
@@ -296,7 +296,7 @@ class Enemies(ScreenObject):
             if self.player.score and self.player.score % 50 == 0 and self.boss not in screen and self.player.is_alive:
                 self.boss = Boss('Max',
                                  Zombie(randint(5, screen.width - 5), -5,
-                                        y_delta=0.1, color=screen.COLOR_GREEN),
+                                        y_delta=0.1, color=screen.COLOR_GREEN, random_start=True),
                                  player=self.player,
                                  hp=self.player.score/25)
                 self.enemies.add(self.boss)
@@ -317,14 +317,12 @@ class Enemies(ScreenObject):
                             break
 
                         self.enemies.remove(enemy)
-                        self.screen.remove(enemy)
 
                         self.player.kids.remove(projectile)
                         self.screen.remove(projectile)
 
-                        explosion_size = 25 if enemy == self.boss else enemy.size * 3
-                        explosion = Explosion(enemy.x, enemy.y, size=explosion_size)
-                        self.screen.add(explosion)
+                        zombie = DyingZombie(enemy.x, enemy.y, color=self.screen.COLOR_RED)
+                        self.screen.replace(enemy, zombie)
 
                         if hasattr(projectile, 'explode'):
                             projectile.explode()

@@ -139,12 +139,13 @@ class ScreenObjectGroup(ScreenObject):
 
 
 class Bitmap(ScreenObject):
-    def __init__(self, *args, char=None, **kwargs):
+    def __init__(self, *args, char=None, random_start=False, **kwargs):
         super().__init__(*args, **kwargs)
         self.char = getattr(self, 'char', char)
         self._bitmaps = getattr(self, 'bitmaps', [])
         self._frames_per_bitmap = getattr(self, 'frames_per_bitmap', 10)
-        self._bitmap_index_offset = randint(0, max(len(self._bitmaps), 1) - 1)
+        self._bitmap_index_offset = randint(0, max(len(self._bitmaps), 1) - 1) if random_start else 0
+        self.renders = 0
 
         self._bitmap = getattr(self, 'bitmap', """\
 #####
@@ -157,9 +158,10 @@ class Bitmap(ScreenObject):
 
     def render(self, screen: Screen):
         super().render(screen)
+        self.renders += 1
 
         if self._bitmaps:
-            index = (self._bitmap_index_offset + int(screen.renders / self._frames_per_bitmap)) % len(self._bitmaps)
+            index = (self._bitmap_index_offset + int(self.renders / self._frames_per_bitmap)) % len(self._bitmaps)
             bitmap = self._bitmaps[index]
         else:
             bitmap = self._bitmap
@@ -747,6 +749,60 @@ class Zombie(Bitmap):
  /\  
 / \\  
 """) # noqa
+
+
+class DyingZombie(Bitmap):
+    frames_per_bitmap = 3
+    bitmaps = ("""
+   O 
+ \-/\\
+  / |
+ /\  
+/ |  
+""",  # noqa
+"""
+     
+  O  
+\-/\\ 
+ /\  
+/ |  
+""",  # noqa
+"""
+     
+     
+ O   
+\-|\\_
+_| \\_
+""",  # noqa
+"""
+     
+     
+     
+| O\ 
+\-|\\|
+""",  # noqa
+"""
+     
+     
+     
+_  \\  
+\-O-/
+""",  # noqa
+"""
+     
+     
+     
+     
+\-O-/
+""") # noqa
+
+    def render(self, screen: Screen):
+        super().render(screen)
+
+        if self.renders > self._frames_per_bitmap * (len(self._bitmaps) - 1):
+            screen.remove(self)
+            if self.parent:
+                self.parent.remove_kid(self)
 
 
 class Stickman(Bitmap):
