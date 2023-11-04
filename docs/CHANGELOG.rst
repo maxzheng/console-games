@@ -1,5 +1,11 @@
-Version 0.1.11
+Version 0.1.12
 ================================================================================
+
+* Animate dying zombie
+* Fix color changing
+
+Version 0.1.11
+--------------------------------------------------------------------------------
 
 * Cap continuous move for other chars
   to allow them to move at one speed
