@@ -1,7 +1,9 @@
 from random import randint, choice
 
 from games.screen import Screen
-from games.objects import (ScreenObject, KeyListener, Explosion, Text, ScreenObjectGroup, BITMAPS, Bitmap)  # noqa
+from games.objects import (ScreenObject, KeyListener, Explosion, Text, ScreenObjectGroup, Bitmap,
+                           One, Two, Three, Four, Five, Six, Seven, Eight, Nine, Zero,
+                           Plus, Minus, Multiply, Divide, Space)
 
 
 class Player(ScreenObject, KeyListener):
@@ -53,11 +55,14 @@ class Player(ScreenObject, KeyListener):
 
 
 class Formula(ScreenObjectGroup):
+    BITMAPS = dict((b.represents, b) for b in [Zero, One, Two, Three, Four, Five, Six, Seven, Eight,
+                                               Nine, Plus, Minus, Multiply, Divide, Space])
+
     def __init__(self, *args, text, **kwargs):
         super().__init__(*args, **kwargs)
         self.text = text
         for char in text:
-            self.add(BITMAPS[char](self.x, self.y))
+            self.add(self.BITMAPS[char](self.x, self.y))
 
 
 class Numbers(ScreenObject, KeyListener):

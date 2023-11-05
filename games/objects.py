@@ -830,7 +830,3 @@ class Stickman(Bitmap):
 /|\\
 / \\
 """  # noqa
-
-
-BITMAPS = dict((b.represents, b) for b in [Zero, One, Two, Three, Four, Five, Six, Seven, Eight, Nine, Plus, Minus,
-                                           Multiply, Divide, Space])
