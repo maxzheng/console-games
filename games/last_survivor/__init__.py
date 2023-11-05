@@ -10,5 +10,5 @@ class LastSurvivor(Controller):
     def init(self):
         self.scenes = [Intro, Survive]
         self.logo = Zombie(0, 0, color=self.screen.COLOR_GREEN)
-        self.player = Player('Jon', Char(self.screen.width / 2, self.screen.height / 2, char='O'))
+        self.player = Player('Jon', Char(self.screen.width / 2, self.screen.height / 2, char='☻'))
         self.player.controller = self

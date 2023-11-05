@@ -894,7 +894,7 @@ _  \\
 
 class Stickman(Bitmap):
     bitmap = """
- O 
+ ☻ 
 /|\\
 / \\
 """  # noqa
@@ -902,7 +902,7 @@ class Stickman(Bitmap):
 
 class StickmanWorried(Bitmap):
     bitmap = """
- O 
+ ☺ 
 \|/
 / \\
 """  # noqa
@@ -910,7 +910,7 @@ class StickmanWorried(Bitmap):
 
 class StickmanScared(Bitmap):
     bitmap = """
-\O/
+\☹/
  | 
 / \\
 """  # noqa
