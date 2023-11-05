@@ -1,5 +1,14 @@
-Version 0.1.17
+Version 0.1.18
 ================================================================================
+
+* Switch to use full square char for bitmap
+* Better mock for Screen
+* Add tests for Player
+* Rename is_visible to visible
+* Abstract Player class
+
+Version 0.1.17
+--------------------------------------------------------------------------------
 
 * Center text and disable shooting once crushed
 
