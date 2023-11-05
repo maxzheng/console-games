@@ -256,7 +256,7 @@ class Monologue(Text):
 
 
 class Border(ScreenObject):
-    def __init__(self, char: str, show_fps=False, title=None):
+    def __init__(self, char: str = None, show_fps=False, title=None):
         super().__init__(0, 0)
         self.char = char
         self.show_fps = show_fps
@@ -271,7 +271,14 @@ class Border(ScreenObject):
         for x in range(screen.width):
             for y in range(screen.height):
                 if x == 0 or y == 0 or x == screen.width - 1 or y == screen.height - 1:
-                    screen.draw(x, y, self.char, color=self.color)
+                    char = (self.char
+                            or (x == 0 and y == 0) and chr(0x250C)
+                            or (x == screen.width - 1 and y == 0) and chr(0x2510)
+                            or (x == 0 and y == screen.height - 1) and chr(0x2514)
+                            or (x == screen.width - 1 and y == screen.height - 1) and chr(0x2518)
+                            or (y == 0 or y == screen.height - 1) and chr(0x2500)
+                            or (x == 0 or x == screen.width - 1) and chr(0x2502))
+                    screen.draw(x, y, char, color=self.color)
 
         if self.title:
             padded_title = ' ' + self.title + ' '
