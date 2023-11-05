@@ -61,15 +61,17 @@ class ScreenObject:
         except Exception:
             return False
 
-    def sync(self, screen_object):
+    def sync(self, screen_object, location_only=False):
         self.x = screen_object.x
         self.y = screen_object.y
-        self.x_delta = screen_object.x_delta
-        self.y_delta = screen_object.y_delta
-        self.size = screen_object.size
-        self.color = screen_object.color
-        self.is_visible = screen_object.is_visible
-        self.coords = screen_object.coords
+
+        if not location_only:
+            self.x_delta = screen_object.x_delta
+            self.y_delta = screen_object.y_delta
+            self.size = screen_object.size
+            self.color = screen_object.color
+            self.is_visible = screen_object.is_visible
+            self.coords = screen_object.coords
 
     def render(self, screen: Screen):
         """ Render object onto the given screen """
@@ -104,9 +106,9 @@ class ScreenObject:
 class ScreenObjectGroup(ScreenObject):
     """ Group of objects that move together as one """
 
-    def __init__(self, *args, add_bar=False, **kwargs):
+    def __init__(self, *args, objects=None, add_bar=False, **kwargs):
         super().__init__(*args, **kwargs)
-        self.ordered_objects = []
+        self.ordered_objects = list(objects) if objects else []
         self.add_bar = add_bar
 
     def add(self, *screen_objects):
@@ -193,6 +195,23 @@ class Text(ScreenObject):
             for offset, char in enumerate(self.text):
                 screen.draw(x + offset, self.y, char, color=self.color)
                 self.coords.add((int(x + offset), int(self.y)))
+
+
+class Logo(ScreenObject):
+    def __init__(self, x, y, name: str, shape: ScreenObject, color=None):
+        super().__init__(x, y, size=7, color=color)
+        self.text = Text(self.x, self.y + 3, name, is_centered=True, color=self.color)
+        self.shape = shape
+
+    def render(self, screen: Screen):
+        super().render(screen)
+
+        self.text.sync(self, location_only=True)
+        self.text.y += 3
+        self.shape.sync(self, location_only=True)
+
+        self.text.render(screen)
+        self.shape.render(screen)
 
 
 class BouncyText(Text):
@@ -330,7 +349,7 @@ class Projectile(ScreenObject):
 
 
 class Circle(ScreenObject):
-    def __init__(self, x: int, y: int, size=3, char='O', x_delta=0, y_delta=0, color=None,
+    def __init__(self, x: int, y: int, size=5, char='O', x_delta=0, y_delta=0, color=None,
                  name=None):
         super().__init__(x, y, x_delta=x_delta, y_delta=y_delta, color=color,
                          size=size)
@@ -350,7 +369,7 @@ class Circle(ScreenObject):
 
 
 class Diamond(ScreenObject):
-    def __init__(self, x: int, y: int, size=3, char='!', x_delta=0, y_delta=0, color=None,
+    def __init__(self, x: int, y: int, size=2, char='!', x_delta=0, y_delta=0, color=None,
                  name=None):
         super().__init__(x, y, x_delta=x_delta, y_delta=y_delta, color=color,
                          size=size)
@@ -433,7 +452,7 @@ class Explosion(ScreenObject):
 
 
 class Triangle(ScreenObject):
-    def __init__(self, x: int, y: int, size=3, char='^', x_delta=0, y_delta=0, color=None,
+    def __init__(self, x: int, y: int, size=5, char='^', x_delta=0, y_delta=0, color=None,
                  name=None):
         super().__init__(x, y, x_delta=x_delta, y_delta=y_delta, color=color,
                          size=size)

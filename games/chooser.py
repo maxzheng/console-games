@@ -1,5 +1,5 @@
 from games.controller import Controller
-from games.objects import Choice
+from games.objects import Choice, Logo
 from games.screen import Scene
 from games.geo_bash import GeoBash
 from games.number_crush import NumberCrush
@@ -15,8 +15,8 @@ class Chooser(Controller):
 
 class Choose(Scene):
     def init(self):
-        self.game_classes = [GeoBash, NumberCrush, LastSurvivor]
-        self.game_logos = [g.Logo(0, 0, g.name) for g in self.game_classes]
+        self.games = [GeoBash(self.screen), NumberCrush(self.screen), LastSurvivor(self.screen)]
+        self.game_logos = [Logo(0, 0, g.name, g.logo) for g in self.games]
         self.game_choice = Choice(x=self.screen.width / 2, y=int(self.screen.height / 2),
                                   choices=self.game_logos, on_select=self.play,
                                   current=getattr(self.controller, '_last_game_index', None))
@@ -29,8 +29,9 @@ class Choose(Scene):
         self.controller.done = True
 
     def play(self, game_logo):
-        game_class = self.game_classes[self.game_logos.index(game_logo)]
-        game = game_class(self.screen)
+        game = self.games[self.game_logos.index(game_logo)]
+        game.init()
+
         self.screen.controller = game
         self.screen.reset()
 

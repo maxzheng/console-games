@@ -10,6 +10,9 @@ class Controller(KeyListener):
     name = None
 
     def __init__(self, screen: Screen):
+        if not self.name:
+            raise ValueError('Please set class attribute `name` to the name of the game')
+
         self.screen = screen
         self.screen.border.title = self.name
         self.key_listeners = set()
@@ -18,22 +21,35 @@ class Controller(KeyListener):
         self.last_key_pressed = None
         self.last_key_time = None
         self.done = False
+        self.scenes = []
+        self.logo = ScreenObject(0, 0)
         self.init()
 
     def init(self):
-        """ Initialize the game """
+        """ Initialize the game with scenes and other global objects used across scenes:
+
+                self.scenes = [SceneClass1, SceneClass2]    # Required
+                self.logo = AnyScreenObjectClass()          # Optional
+                self.player = ...                           # Optional
+
+            :raises ValueError: `self.scenes` must be set by overriding this function.
+        """
+        raise ValueError('Please override init() to set self.scenes to a list of Scene classes')
 
     def set_scene(self, scene: Scene):
+        """ Set the given scene as the active scene to be rendered """
         self.screen.reset()
         self.current_scene = scene
         self.key_listeners = {scene}
         scene.start()
 
     def reset_scene(self):
+        """ Restart the current scene """
         if self.current_scene:
             self.set_scene(self.current_scene.__class__(self.screen, self))
 
     def play(self):
+        """ Handle play logic, such as key presses """
         if not self.current_scene:
             self.set_scene(self.scenes[self.current_index](self.screen, self))
         elif self.current_scene.done:
