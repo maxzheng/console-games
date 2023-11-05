@@ -1,3 +1,4 @@
+from collections import deque
 from time import time
 import curses
 
@@ -18,6 +19,7 @@ class Controller(KeyListener):
 
     def reset(self):
         self.key_listeners = set()
+        self._key_presses = deque()
         self.current_index = 0
         self.current_scene = None
         self.last_key_pressed = None
@@ -43,6 +45,7 @@ class Controller(KeyListener):
         self.screen.reset()
         self.current_scene = scene
         self.key_listeners = {scene}
+        self._key_presses = deque()
         scene.start()
 
     def reset_scene(self):
@@ -62,13 +65,9 @@ class Controller(KeyListener):
                 self.current_index = 0
             self.set_scene(self.scenes[self.current_index](self.screen, self))
 
-        last_key = key = self.screen.key
-        while key > 0:  # Drain the key buffer to avoid input lag
-            last_key = key
-            key = self.screen.key
-        key = last_key
+        key = self.next_key()
 
-        if key > 0:
+        if key:
             self.key_pressed(key)
         elif self.last_key_time and (time() - self.last_key_time) > 0.5:
             self.key_released()
@@ -99,6 +98,19 @@ class Controller(KeyListener):
 
         elif key == 45:
             self.minus_pressed()
+
+    def next_key(self):
+        """ Get the next unique key from a series of presses """
+        key = self.screen.key
+        last_key = None
+        while key > 0:  # Drain the key buffer to avoid input lag
+            if key != last_key:
+                self._key_presses.append(key)
+                last_key = key
+            key = self.screen.key
+
+        self.screen.debug(keys=len(self._key_presses))
+        return self._key_presses.popleft() if self._key_presses else -1
 
     def key_pressed(self, key):
         # self.screen.debug(key=key)
