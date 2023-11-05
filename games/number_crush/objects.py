@@ -3,7 +3,8 @@ from random import randint, choice
 from games.screen import Screen
 from games.objects import (ScreenObject, KeyListener, Explosion, Text, ScreenObjectGroup, Bitmap,
                            One, Two, Three, Four, Five, Six, Seven, Eight, Nine, Zero,
-                           Plus, Minus, Multiply, Divide, Space)
+                           Plus, Minus, Multiply, Divide, Space, Stickman, StickmanScared,
+                           StickmanWorried)
 
 
 class Player(ScreenObject, KeyListener):
@@ -107,6 +108,14 @@ class Numbers(ScreenObject, KeyListener):
             screen.add(self.formula)
 
             self.ready_for_next = False
+
+        distance = (self.player.y - self.formula.y)
+        if distance < 10:
+            self.player.shape = StickmanScared(self.player.x, self.player.y)
+        elif distance < 15:
+            self.player.shape = StickmanWorried(self.player.x, self.player.y)
+        else:
+            self.player.shape = Stickman(self.player.x, self.player.y)
 
         if self.all_coords & self.player.coords:
             self.player.got_crushed()

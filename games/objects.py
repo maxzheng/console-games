@@ -532,7 +532,7 @@ class Choice(ScreenObject, KeyListener):
             start_x = int(self.x - width / 2)
             end_x = start_x + width
 
-            self.bar = Bar(self.x, self.y + max_size / 2 + 1, size=bar_size, color=self.color)
+            self.bar = Bar(self.x, self.y + max_size / 2 + 1, size=bar_size, color=self.color or screen.COLOR_CYAN)
             screen.add(self.bar)
             self.kids.add(self.bar)
 
@@ -835,5 +835,21 @@ class Stickman(Bitmap):
     bitmap = """
  O 
 /|\\
+/ \\
+"""  # noqa
+
+
+class StickmanWorried(Bitmap):
+    bitmap = """
+ O 
+\|/
+/ \\
+"""  # noqa
+
+
+class StickmanScared(Bitmap):
+    bitmap = """
+\O/
+ | 
 / \\
 """  # noqa
