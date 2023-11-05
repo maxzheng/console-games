@@ -1,5 +1,10 @@
-Version 0.1.13
+Version 0.1.14
 ================================================================================
+
+* Use single border
+
+Version 0.1.13
+--------------------------------------------------------------------------------
 
 * Turn off machine gun when upgrading to flamethrower
 * Add sanity tests for manager/controller
