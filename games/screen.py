@@ -120,6 +120,9 @@ class Screen:
             except ValueError:
                 continue
 
+            if screen_object and self.controller and screen_object in self.controller.key_listeners:
+                self.controller.key_listeners.remove(screen_object)
+
             obj = self._objects.pop(index)
             for kid in obj.kids:
                 self.remove(kid)
