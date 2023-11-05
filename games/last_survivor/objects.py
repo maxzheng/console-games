@@ -189,6 +189,7 @@ class Player(ScreenObject, KeyListener):
     def up_pressed(self):
         if self.using_machine_gun and self.flamethrower_enabled:
             self.using_flamethrower = True
+            self.using_machine_gun = False
         elif self.machine_gun_enabled:
             self.using_machine_gun = True
 
