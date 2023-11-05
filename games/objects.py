@@ -749,9 +749,9 @@ class Plus(Bitmap):
     represents = '+'
     bitmap = """\
      
-  ▓  
- ▓▓▓ 
-  ▓  
+  │  
+ ─┼─ 
+  │  
      
 """  # noqa
 
@@ -761,7 +761,7 @@ class Minus(Bitmap):
     bitmap = """\
      
      
- ▓▓▓ 
+ ─── 
      
      
 """  # noqa
@@ -771,9 +771,9 @@ class Multiply(Bitmap):
     represents = '*'
     bitmap = """\
      
- ▓ ▓ 
-  ▓  
- ▓ ▓ 
+ ╲ ╱ 
+  ╳  
+ ╱ ╲ 
      
 """  # noqa
 
@@ -782,9 +782,9 @@ class Divide(Bitmap):
     represents = '/'
     bitmap = """\
      
-   ▓ 
-  ▓  
- ▓   
+   ╱ 
+  ╱  
+ ╱   
      
 """  # noqa
 
