@@ -71,32 +71,33 @@ class Controller(KeyListener):
         elif self.last_key_time and (time() - self.last_key_time) > 0.5:
             self.key_released()
 
-        if key == curses.KEY_LEFT or key == ord('h'):
-            self.left_pressed()
+        if key:
+            if key == curses.KEY_LEFT or key == ord('h'):
+                self.left_pressed()
 
-        elif key == curses.KEY_RIGHT or key == ord('l'):
-            self.right_pressed()
+            elif key == curses.KEY_RIGHT or key == ord('l'):
+                self.right_pressed()
 
-        elif key == curses.KEY_UP or key == ord('k'):
-            self.up_pressed()
+            elif key == curses.KEY_UP or key == ord('k'):
+                self.up_pressed()
 
-        elif key == curses.KEY_DOWN or key == ord('j'):
-            self.down_pressed()
+            elif key == curses.KEY_DOWN or key == ord('j'):
+                self.down_pressed()
 
-        elif key == 27 or key == ord('q'):
-            self.escape_pressed()
+            elif key == 27 or key == ord('q'):
+                self.escape_pressed()
 
-        elif key == ord(' ') or key == ord('f'):
-            self.space_pressed()
+            elif key == ord(' ') or key == ord('f'):
+                self.space_pressed()
 
-        elif key == 10:
-            self.enter_pressed()
+            elif key == 10:
+                self.enter_pressed()
 
-        elif key >= 48 and key <= 57:
-            self.number_pressed(key - 48)
+            elif key >= 48 and key <= 57:
+                self.number_pressed(key - 48)
 
-        elif key == 45:
-            self.minus_pressed()
+            elif key == 45:
+                self.minus_pressed()
 
     def next_key(self):
         """ Get the next unique key from a series of presses """
@@ -108,7 +109,7 @@ class Controller(KeyListener):
                 last_key = key
             key = self.screen.key
 
-        return self._key_presses.pop() if self._key_presses else -1
+        return self._key_presses.pop() if self._key_presses else None
 
     def key_pressed(self, key):
         # self.screen.debug(key=key)
