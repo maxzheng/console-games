@@ -1,5 +1,10 @@
-Version 0.1.18
+Version 0.1.19
 ================================================================================
+
+* Use line chars for operands
+
+Version 0.1.18
+--------------------------------------------------------------------------------
 
 * Switch to use full square char for bitmap
 * Better mock for Screen
