@@ -50,7 +50,8 @@ class Player(ScreenObject, KeyListener):
     def got_crushed(self):
         self.is_visible = False
 
-        self.screen.add(Text((self.screen.width - 16) / 2, self.screen.height / 2, 'You got CRUSHED!!'))
+        self.screen.add(Text(self.x, self.screen.height / 2, 'You got CRUSHED!!',
+                             is_centered=True))
         self.screen.add(Explosion(self.x, self.y, size=20,
                                   on_finish=self.controller.reset_scene))
 
@@ -127,7 +128,7 @@ class Numbers(ScreenObject, KeyListener):
                     self.screen.remove(answer_text)
 
                     player_answer = int(answer_text.text)
-                    if player_answer == answer:
+                    if player_answer == answer and self.formula in self.screen:
                         self.kids.remove(self.formula)
                         self.screen.remove(self.formula)
                         for i, kid in enumerate(self.formula.kids):
@@ -140,13 +141,14 @@ class Numbers(ScreenObject, KeyListener):
                             self.player.high_score = self.player.score
 
     def number_pressed(self, number):
-        if self.kids:
+        if self.kids and self.player.is_alive:
             self.numbers_pressed.append(number)
             answer = int(eval(self.formula.text))
             player_answer = eval(''.join([str(n) for n in self.numbers_pressed[-len(str(answer)):]]).lstrip('0') or '0')
 
             if self.last_answer != player_answer and len(str(player_answer)) == len(str(answer)):
-                answer = Text(self.player.x - 1, self.player.y - 2, str(player_answer), y_delta=-1)
+                answer = Text(self.player.x, self.player.y - 2, str(player_answer), y_delta=-1,
+                              is_centered=True)
                 self.screen.add(answer)
                 self.player.kids.add(answer)
             self.last_answer = player_answer
