@@ -1,4 +1,3 @@
-from collections import deque
 from time import time
 import curses
 
@@ -19,7 +18,7 @@ class Controller(KeyListener):
 
     def reset(self):
         self.key_listeners = set()
-        self._key_presses = deque()
+        self._key_presses = set()
         self.current_index = 0
         self.current_scene = None
         self.last_key_pressed = None
@@ -45,7 +44,7 @@ class Controller(KeyListener):
         self.screen.reset()
         self.current_scene = scene
         self.key_listeners = {scene}
-        self._key_presses = deque()
+        self._key_presses = set()
         scene.start()
 
     def reset_scene(self):
@@ -104,13 +103,12 @@ class Controller(KeyListener):
         key = self.screen.key
         last_key = None
         while key > 0:  # Drain the key buffer to avoid input lag
-            if key != last_key:
-                self._key_presses.append(key)
+            if key != last_key and key not in self._key_presses:
+                self._key_presses.add(key)
                 last_key = key
             key = self.screen.key
 
-        self.screen.debug(keys=len(self._key_presses))
-        return self._key_presses.popleft() if self._key_presses else -1
+        return self._key_presses.pop() if self._key_presses else -1
 
     def key_pressed(self, key):
         # self.screen.debug(key=key)
