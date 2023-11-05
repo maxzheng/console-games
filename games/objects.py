@@ -17,14 +17,14 @@ class ScreenObject:
         self.parent = parent
         self.kids = set()
         self.screen = None
-        self.is_visible = True
+        self.visible = True
 
     def copy(self):
         obj = self.__class__(self.x, self.y, x_delta=self.x_delta, y_delta=self.y_delta,
                              color=self.color, size=self.size, parent=self.parent)
         obj.coords = self.coords
         obj.kids = self.kids
-        obj.is_visible = self.is_visible
+        obj.visible = self.visible
         obj.screen = self.screen
         return obj
 
@@ -70,7 +70,7 @@ class ScreenObject:
             self.y_delta = screen_object.y_delta
             self.size = screen_object.size
             self.color = screen_object.color
-            self.is_visible = screen_object.is_visible
+            self.visible = screen_object.visible
             self.coords = screen_object.coords
 
     def render(self, screen: Screen):
@@ -155,11 +155,11 @@ class Player(ScreenObject, KeyListener):
         self.reset()
 
     @property
-    def is_visible(self):
+    def visible(self):
         return self.alive
 
-    @is_visible.setter
-    def is_visible(self, visible):
+    @visible.setter
+    def visible(self, visible):
         self.alive = visible
 
     def reset(self):

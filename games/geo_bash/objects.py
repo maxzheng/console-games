@@ -18,12 +18,12 @@ class Player(ScreenObject, KeyListener):
 
     @property
     def is_alive(self):
-        return self.is_visible and self.is_playing
+        return self.visible and self.is_playing
 
     def reset(self):
         super().reset()
         self.score = 0
-        self.is_visible = True
+        self.visible = True
         self.continuous_moves = 0
         self.size = 3
         if self.screen:
@@ -63,7 +63,7 @@ class Player(ScreenObject, KeyListener):
             self.screen.add(projectile)
 
     def got_bashed(self):
-        self.is_visible = False
+        self.visible = False
 
         self.screen.add(Text((self.screen.width - 10) / 2, self.screen.height / 2, 'You got BASHED!!'))
         self.screen.add(Explosion(self.x, self.y, size=20,
@@ -194,7 +194,7 @@ class Enemies(ScreenObject):
 
         for enemy in list(self.enemies):
             # Make them go fast when player got bashed
-            if not self.player.is_visible:
+            if not self.player.visible:
                 enemy.y_delta += 0.5
 
             # Add boss every 50 bashes

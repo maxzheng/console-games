@@ -179,7 +179,7 @@ class Screen:
                     except Exception:
                         pass
                 self.remove(obj)
-            elif obj.is_visible:
+            elif obj.visible:
                 obj.render(self)
 
         if self.border:
