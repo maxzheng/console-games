@@ -206,7 +206,7 @@ class Player(ScreenObject, KeyListener):
             x_delta, y_delta, shape = self.deltas[self.delta_index]
             explosion = Explosion(self.x, self.y, size=min(self.screen.width, self.screen.height),
                                   parent=self)
-            projectile = Projectile(self.x, self.y, shape='@', parent=self,
+            projectile = Projectile(self.x, self.y, shape=chr(0x274d), parent=self,
                                     x_delta=x_delta, y_delta=y_delta, color=self.color,
                                     explode_after_renders=10,
                                     explosion=explosion, explosions=5)
