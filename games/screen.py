@@ -195,6 +195,12 @@ class Screen:
         if self._debug:
             self.border.status.update(debug_info)
 
+    def d(self):
+        """ Start debugger """
+        self.__exit__()
+        import pdb
+        pdb.set_trace()
+
 
 class ScreenBuffer:
     def __init__(self, width: int, height: int):
