@@ -14,7 +14,9 @@ class Controller(KeyListener):
             raise ValueError('Please set class attribute `name` to the name of the game')
 
         self.screen = screen
-        self.screen.border.title = self.name
+        self.reset()
+
+    def reset(self):
         self.key_listeners = set()
         self.current_index = 0
         self.current_scene = None
@@ -50,6 +52,8 @@ class Controller(KeyListener):
 
     def play(self):
         """ Handle play logic, such as key presses """
+        self.screen.border.title = self.name
+
         if not self.current_scene:
             self.set_scene(self.scenes[self.current_index](self.screen, self))
         elif self.current_scene.done:

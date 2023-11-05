@@ -272,12 +272,12 @@ class Border(ScreenObject):
             for y in range(screen.height):
                 if x == 0 or y == 0 or x == screen.width - 1 or y == screen.height - 1:
                     char = (self.char
-                            or (x == 0 and y == 0) and chr(0x250C)
-                            or (x == screen.width - 1 and y == 0) and chr(0x2510)
-                            or (x == 0 and y == screen.height - 1) and chr(0x2514)
-                            or (x == screen.width - 1 and y == screen.height - 1) and chr(0x2518)
-                            or (y == 0 or y == screen.height - 1) and chr(0x2500)
-                            or (x == 0 or x == screen.width - 1) and chr(0x2502))
+                            or (x == 0 and y == 0) and chr(0x2554)
+                            or (x == screen.width - 1 and y == 0) and chr(0x2557)
+                            or (x == 0 and y == screen.height - 1) and chr(0x255A)
+                            or (x == screen.width - 1 and y == screen.height - 1) and chr(0x255D)
+                            or (y == 0 or y == screen.height - 1) and chr(0x2550)
+                            or (x == 0 or x == screen.width - 1) and chr(0x2551))
                     screen.draw(x, y, char, color=self.color)
 
         if self.title:

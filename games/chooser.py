@@ -30,7 +30,7 @@ class Choose(Scene):
 
     def play(self, game_logo):
         game = self.games[self.game_logos.index(game_logo)]
-        game.init()
+        game.reset()
 
         self.screen.controller = game
         self.screen.reset()
