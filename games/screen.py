@@ -68,6 +68,10 @@ class Screen:
         if self.renders > 30:
             return round(self.renders / (time() - self._start_time))
 
+    @property
+    def status(self):
+        return self.border and self.border.status
+
     def __enter__(self):
         self._screen = curses.initscr()
         self._screen.keypad(True)

@@ -1,7 +1,6 @@
 from games.controller import Controller
-from games.objects import One, Two, Plus, Stickman, ScreenObjectGroup
+from games.objects import One, Two, Plus, Stickman, ScreenObjectGroup, Player
 from games.number_crush.scenes import Crush, Intro
-from games.number_crush.objects import Player
 
 
 class NumberCrush(Controller):
@@ -14,5 +13,7 @@ class NumberCrush(Controller):
             Plus(0, 0),
             Two(0, 0)
         ])
-        self.player = Player('Jon', Stickman(int(self.screen.width / 2) + 1, self.screen.height - 2, size=3),
-                             controller=self)
+        self.player = Player('Jon',
+                             Stickman(int(self.screen.width / 2) + 1, self.screen.height - 2),
+                             controller=self,
+                             score_title='Crushed')

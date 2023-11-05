@@ -4,56 +4,7 @@ from games.screen import Screen
 from games.objects import (ScreenObject, KeyListener, Explosion, Text, ScreenObjectGroup, Bitmap,
                            One, Two, Three, Four, Five, Six, Seven, Eight, Nine, Zero,
                            Plus, Minus, Multiply, Divide, Space, Stickman, StickmanScared,
-                           StickmanWorried)
-
-
-class Player(ScreenObject, KeyListener):
-    def __init__(self, name, shape: ScreenObject, controller: None):
-        super().__init__(shape.x, shape.y, size=shape.size, color=shape.color)
-
-        self.name = name
-        self.shape = shape
-        self.high_score = 0
-        self.total_score = 0
-        self.is_playing = False
-        self.char = shape.char
-        self.controller = controller
-
-        self.reset()
-
-    @property
-    def is_alive(self):
-        return self.is_visible and self.is_playing
-
-    def reset(self):
-        self.score = 0
-        self.is_visible = True
-        self.size = 3
-        if self.screen:
-            self.x = int(self.screen.width / 2) + 1
-            self.y = self.screen.height - 2
-
-    def render(self, screen: Screen):
-        super().render(screen)
-        self.shape.sync(self)
-        self.shape.render(screen)
-        self.coords = self.shape.coords
-
-        crushed = str(self.score)
-        if self.score < self.high_score:
-            crushed += ' | High: {}'.format(self.high_score)
-        if self.score < self.total_score:
-            crushed += ' | Total: {}'.format(self.total_score)
-
-        self.screen.border.status['crushed'] = crushed
-
-    def got_crushed(self):
-        self.is_visible = False
-
-        self.screen.add(Text(self.x, self.screen.height / 2, 'You got CRUSHED!!',
-                             is_centered=True))
-        self.screen.add(Explosion(self.x, self.y, size=20,
-                                  on_finish=self.controller.reset_scene))
+                           StickmanWorried, Player)
 
 
 class Formula(ScreenObjectGroup):
@@ -119,7 +70,7 @@ class Numbers(ScreenObject, KeyListener):
             self.player.shape = Stickman(self.player.x, self.player.y)
 
         if self.all_coords & self.player.coords:
-            self.player.got_crushed()
+            self.player.destroy(msg='You got CRUSHED!!')
         else:
             answer = int(eval(self.formula.text))
             for answer_text in list(self.player.kids):
@@ -135,13 +86,10 @@ class Numbers(ScreenObject, KeyListener):
                             if isinstance(kid, Bitmap):
                                 self.screen.add(Explosion(kid.x, kid.y, size=kid.size * 2, on_finish=self.next))
 
-                        self.player.score += 1
-                        self.player.total_score += 1
-                        if self.player.score > self.player.high_score:
-                            self.player.high_score = self.player.score
+                        self.player.scored()
 
     def number_pressed(self, number):
-        if self.kids and self.player.is_alive:
+        if self.kids and self.player.alive:
             self.numbers_pressed.append(number)
             answer = int(eval(self.formula.text))
             player_answer = eval(''.join([str(n) for n in self.numbers_pressed[-len(str(answer)):]]).lstrip('0') or '0')

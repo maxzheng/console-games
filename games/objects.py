@@ -16,8 +16,8 @@ class ScreenObject:
         self.coords = set()
         self.parent = parent
         self.kids = set()
-        self.is_visible = True
         self.screen = None
+        self.is_visible = True
 
     def copy(self):
         obj = self.__class__(self.x, self.y, x_delta=self.x_delta, y_delta=self.y_delta,
@@ -140,6 +140,67 @@ class ScreenObjectGroup(ScreenObject):
                 self.kids.add(divider)
 
 
+class Player(ScreenObject, KeyListener):
+    def __init__(self, name, shape: ScreenObject, controller, score_title='score'):
+        super().__init__(shape.x, shape.y, size=shape.size, color=shape.color)
+
+        self.name = name
+        self.shape = shape
+        self.high_score = 0
+        self.total_score = 0
+        self.char = shape.char
+        self.controller = controller
+        self.score_title = score_title
+
+        self.reset()
+
+    @property
+    def is_visible(self):
+        return self.alive
+
+    @is_visible.setter
+    def is_visible(self, visible):
+        self.alive = visible
+
+    def reset(self):
+        self.score = 0
+        self.alive = True
+        self.size = self.shape.size
+        if self.screen:
+            self.x = int(self.screen.width / 2) + 1
+            self.y = self.screen.height - int(self.size / 2) - 1
+
+    def render(self, screen: Screen):
+        super().render(screen)
+
+        self.shape.sync(self)
+        self.shape.render(screen)
+        self.coords = self.shape.coords
+
+        score = str(self.score)
+        if self.score < self.high_score:
+            score += ' | High: {}'.format(self.high_score)
+        if self.score < self.total_score:
+            score += ' | Total: {}'.format(self.total_score)
+
+        self.screen.status[self.score_title] = score
+
+    def scored(self, points=1):
+        """ Add given points, defaults to 1, to the player's score """
+        self.score += points
+        self.total_score += points
+        if self.score > self.high_score:
+            self.high_score = self.score
+
+    def destroy(self, msg='The End', explode=True):
+        self.alive = False
+        self.screen.add(Text(self.x, self.screen.height / 2, msg,
+                             is_centered=True))
+        if explode:
+            self.screen.add(Explosion(self.x, self.y, size=20,
+                                      on_finish=self.controller.reset_scene))
+
+
 class Bitmap(ScreenObject):
     def __init__(self, *args, char=None, random_start=False, **kwargs):
         super().__init__(*args, **kwargs)
@@ -149,14 +210,14 @@ class Bitmap(ScreenObject):
         self._bitmap_index_offset = randint(0, max(len(self._bitmaps), 1) - 1) if random_start else 0
         self.renders = 0
 
-        self._bitmap = getattr(self, 'bitmap', """\
+        self._bitmap = self._bitmaps and self._bitmaps[0] or getattr(self, 'bitmap', """\
 #####
 #####
 #####
 #####
 #####
 """)  # noqa
-        self.size = 5
+        self.size = len(self._bitmap.strip('\n').split('\n'))
 
     def render(self, screen: Screen):
         super().render(screen)
