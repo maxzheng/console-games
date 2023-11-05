@@ -1,5 +1,16 @@
-Version 0.1.12
+Version 0.1.13
 ================================================================================
+
+* Turn off machine gun when upgrading to flamethrower
+* Add sanity tests for manager/controller
+* Add debugger shortcut
+* Remove key listeners when removed from screen
+* Move formula bitmaps to where it is used
+* Abstract logo configuration
+* Rename text to logo
+
+Version 0.1.12
+--------------------------------------------------------------------------------
 
 * Animate dying zombie
 * Fix color changing
