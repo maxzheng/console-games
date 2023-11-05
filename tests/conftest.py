@@ -1,8 +1,13 @@
-from unittest.mock import Mock
-
 import pytest
+
+from games.screen import Screen, ScreenBuffer
+from games.objects import Border
 
 
 @pytest.fixture
 def screen():
-    return Mock(status={}, width=80, height=20)
+    screen = Screen(border=Border())
+    screen._width = 80
+    screen._height = 20
+    screen.buffer = ScreenBuffer(80, 20)
+    return screen
