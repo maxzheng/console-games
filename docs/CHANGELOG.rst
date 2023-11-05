@@ -1,5 +1,12 @@
-Version 0.1.21
+Version 0.1.22
 ================================================================================
+
+* Return None when no key was pressed
+* Simply to use set instead to avoid input buffer
+* Drain key until key is different to avoid dropping keys
+
+Version 0.1.21
+--------------------------------------------------------------------------------
 
 * Use grenade like symbol for grenade
 
