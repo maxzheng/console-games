@@ -204,18 +204,18 @@ class Player(ScreenObject, KeyListener):
 class Bitmap(ScreenObject):
     def __init__(self, *args, char=None, random_start=False, **kwargs):
         super().__init__(*args, **kwargs)
-        self.char = getattr(self, 'char', char)
+        self.char = getattr(self, 'char', char)  # or chr(0x2588)
         self._bitmaps = getattr(self, 'bitmaps', [])
         self._frames_per_bitmap = getattr(self, 'frames_per_bitmap', 10)
         self._bitmap_index_offset = randint(0, max(len(self._bitmaps), 1) - 1) if random_start else 0
         self.renders = 0
 
         self._bitmap = self._bitmaps and self._bitmaps[0] or getattr(self, 'bitmap', """\
-#####
-#####
-#####
-#####
-#####
+▓▓▓▓▓
+▓▓▓▓▓
+▓▓▓▓▓
+▓▓▓▓▓
+▓▓▓▓▓
 """)  # noqa
         self.size = len(self._bitmap.strip('\n').split('\n'))
 
@@ -638,110 +638,110 @@ class Choice(ScreenObject, KeyListener):
 class One(Bitmap):
     represents = '1'
     bitmap = """
- ##  
-  #  
-  #  
-  #  
- ### 
+ ▓▓  
+  ▓  
+  ▓  
+  ▓  
+ ▓▓▓ 
 """  # noqa
 
 
 class Two(Bitmap):
     represents = '2'
     bitmap = """
- ### 
-#   #
-   # 
- ##  
-#####
+ ▓▓▓ 
+▓   ▓
+   ▓ 
+ ▓▓  
+▓▓▓▓▓
 """  # noqa
 
 
 class Three(Bitmap):
     represents = '3'
     bitmap = """
-#### 
-    #
- ### 
-    #
-#### 
+▓▓▓▓ 
+    ▓
+ ▓▓▓ 
+    ▓
+▓▓▓▓ 
 """  # noqa
 
 
 class Four(Bitmap):
     represents = '4'
     bitmap = """\
-   # 
-  ## 
- # # 
-#####
-   # 
+  ▓▓ 
+ ▓ ▓ 
+▓  ▓ 
+▓▓▓▓▓
+   ▓ 
 """  # noqa
 
 
 class Five(Bitmap):
     represents = '5'
     bitmap = """\
-#####
-#    
-#### 
-    #
-#### 
+▓▓▓▓▓
+▓    
+▓▓▓▓ 
+    ▓
+▓▓▓▓ 
 """  # noqa
 
 
 class Six(Bitmap):
     represents = '6'
     bitmap = """\
- ### 
-#    
-#### 
-#   #
- ### 
+ ▓▓▓ 
+▓    
+▓▓▓▓ 
+▓   ▓
+ ▓▓▓ 
 """  # noqa
 
 
 class Seven(Bitmap):
     represents = '7'
     bitmap = """\
-#####
-   # 
-  #  
- #   
-#    
+▓▓▓▓▓
+   ▓ 
+  ▓  
+ ▓   
+▓    
 """  # noqa
 
 
 class Eight(Bitmap):
     represents = '8'
     bitmap = """\
- ### 
-#   #
- ### 
-#   #
- ### 
+ ▓▓▓ 
+▓   ▓
+ ▓▓▓ 
+▓   ▓
+ ▓▓▓ 
 """  # noqa
 
 
 class Nine(Bitmap):
     represents = '9'
     bitmap = """\
- ### 
-#   #
- ####
-    #
- ### 
+ ▓▓▓ 
+▓   ▓
+ ▓▓▓▓
+    ▓
+ ▓▓▓ 
 """  # noqa
 
 
 class Zero(Bitmap):
     represents = '0'
     bitmap = """\
- ### 
-#   #
-#   #
-#   #
- ### 
+ ▓▓▓ 
+▓   ▓
+▓   ▓
+▓   ▓
+ ▓▓▓ 
 """  # noqa
 
 
@@ -749,9 +749,9 @@ class Plus(Bitmap):
     represents = '+'
     bitmap = """\
      
-  |  
- -+- 
-  |  
+  ▓  
+ ▓▓▓ 
+  ▓  
      
 """  # noqa
 
@@ -761,7 +761,7 @@ class Minus(Bitmap):
     bitmap = """\
      
      
- --- 
+ ▓▓▓ 
      
      
 """  # noqa
@@ -771,9 +771,9 @@ class Multiply(Bitmap):
     represents = '*'
     bitmap = """\
      
- \ / 
-  X  
- / \ 
+ ▓ ▓ 
+  ▓  
+ ▓ ▓ 
      
 """  # noqa
 
@@ -782,9 +782,9 @@ class Divide(Bitmap):
     represents = '/'
     bitmap = """\
      
-   / 
-  /  
- /   
+   ▓ 
+  ▓  
+ ▓   
      
 """  # noqa
 

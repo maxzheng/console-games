@@ -105,3 +105,4 @@ class Numbers(ScreenObject, KeyListener):
         if not self.kids:
             self.ready_for_next = True
             self.numbers_pressed = []
+            self.last_answer = None
