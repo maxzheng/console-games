@@ -4,7 +4,7 @@ from games.objects import Player, Stickman
 
 def test_player(screen):
     controller = Mock()
-    player = Player('Max', Stickman(0, 0), controller, score_title='Wins')
+    player = Player('Max', Stickman(0, 0), controller, score_title='Wins', show_total=True)
 
     assert player.alive
     assert player.visible

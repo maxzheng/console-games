@@ -1,35 +1,22 @@
 from random import randint, random, choice
 
 from games.screen import Screen
-from games.objects import ScreenObject, KeyListener, Zombie, Explosion, Text, Projectile, Monologue, DyingZombie
+from games.objects import (ScreenObject, Zombie, Explosion, Projectile, Monologue,
+                           DyingZombie, Player as BasePlayer)
 
 
-class Player(ScreenObject, KeyListener):
-    def __init__(self, name, shape: ScreenObject):
-        super().__init__(shape.x, shape.y, size=shape.size, color=shape.color)
-
-        self.name = name
-        self.shape = shape
-        self.original_shape = shape
-        self.high_score = 0
-        self.is_playing = False
-        self.char = shape.char
+class Player(BasePlayer):
+    def __init__(self, *args, **kwargs):
         self.delta_index = 0
         self.ammos_limit = 1000
         self.gas_limit = 100
         self.deltas = ((0, -1, '|'), (1, -1, '/'), (1, 0, '-'), (1, 1, '\\'), (0, 1, '|'), (-1, 1, '/'),
                        (-1, 0, '-'), (-1, -1, '\\'))
 
-        self.reset()
-
-    @property
-    def is_alive(self):
-        return self.is_playing
+        super().__init__(*args, score_title='Killed', **kwargs)
 
     def reset(self):
         super().reset()
-        self.score = 0
-        self.shape = self.original_shape
         self.sync(self.shape)
         self.color = None
         self.delta_index = 0
@@ -52,20 +39,14 @@ class Player(ScreenObject, KeyListener):
         if self.screen:
             self.x = self.screen.width / 2
             self.y = self.screen.height / 2
-            self.screen.border.status.pop('Ammos', None)
-            self.screen.border.status.pop('Grenades', None)
-            self.screen.border.status.pop('Gas', None)
+            self.screen.status.pop('Ammos', None)
+            self.screen.status.pop('Grenades', None)
+            self.screen.status.pop('Gas', None)
 
     def render(self, screen: Screen):
         super().render(screen)
-        self.shape.sync(self)
-        self.shape.render(screen)
-        self.coords = self.shape.coords
 
-        self.screen.border.status['killed'] = ('{} (High: {})'.format(
-            self.score, self.high_score) if self.score < self.high_score else self.score)
-
-        if (self.screen.renders % 2 == 0 or self.using_machine_gun or self.using_flamethrower) and self.is_alive:
+        if (self.screen.renders % 2 == 0 or self.using_machine_gun or self.using_flamethrower) and self.active:
             x_delta, y_delta, shape = self.deltas[self.delta_index]
             if self.using_machine_gun or self.using_flamethrower:
                 x_delta *= 2
@@ -149,7 +130,7 @@ class Player(ScreenObject, KeyListener):
             screen.border.status['Ammos'] = self.ammos
         if self.grenades_enabled:
             screen.border.status['Grenades'] = self.grenades
-            if self.is_alive:
+            if self.alive:
                 if self.grenades:
                     self.color = screen.COLOR_RAINBOW
                 else:
@@ -157,30 +138,19 @@ class Player(ScreenObject, KeyListener):
         if self.flamethrower_enabled:
             screen.border.status['Gas'] = '{}%'.format(int(self.gas))
 
-    def got_zombified(self):
-        self.is_playing = False
-
-        self.screen.add(Explosion(self.x, self.y, size=30,
-                                  on_finish=self.controller.reset_scene))
-        zombie = Zombie(self.shape.x, self.shape.y, color=self.screen.COLOR_GREEN, random_start=True)
-        self.screen.replace(self.shape, zombie)
-        self.shape = zombie
-        self.screen.add(Text(self.screen.width / 2, self.screen.height / 2, 'You got ZOMBIFIED!!', is_centered=True))
-
-        # These get sync'ed to `zombie` in render()
-        self.y_delta = -0.1
-        self.size = zombie.size
-        self.color = self.screen.COLOR_GREEN
+    def destroy(self):
+        super().destroy(msg='You got ZOMBIFIED!!', explosion_size=30)
+        self.screen.add(Zombie(self.shape.x, self.shape.y, color=self.screen.COLOR_GREEN, y_delta=-0.1))
 
     def left_pressed(self):
-        if self.is_alive:
+        if self.alive:
             if self.delta_index > 0:
                 self.delta_index -= 1
             else:
                 self.delta_index = len(self.deltas) - 1
 
     def right_pressed(self):
-        if self.is_alive:
+        if self.alive:
             if self.delta_index < len(self.deltas) - 1:
                 self.delta_index += 1
             else:
@@ -201,7 +171,7 @@ class Player(ScreenObject, KeyListener):
             self.using_machine_gun = False
 
     def space_pressed(self):
-        if self.grenades_enabled and self.grenades > 0 and self.is_alive:
+        if self.grenades_enabled and self.grenades > 0 and self.alive:
             self.grenades -= 1
             x_delta, y_delta, shape = self.deltas[self.delta_index]
             explosion = Explosion(self.x, self.y, size=min(self.screen.width, self.screen.height),
@@ -238,8 +208,8 @@ class Boss(ScreenObject):
 
         if self in screen:
             for projectile in self.kids:
-                if projectile.coords & self.player.coords:
-                    self.player.got_zombified()
+                if projectile.coords & self.player.coords and self.player.alive:
+                    self.player.destroy()
 
         if self in self.screen:
             # self.screen.border.status['boss'] = str((int(self.x), int(self.y), self.size))
@@ -248,7 +218,7 @@ class Boss(ScreenObject):
             else:
                 self.x_delta = abs(self.x_delta)
 
-            if self.y > self.screen.height + 2.5 and self.player.is_alive:
+            if self.y > self.screen.height + 2.5 and self.player.alive:
                 self.y = -2.5
 
             if self.is_hit:
@@ -289,12 +259,12 @@ class Enemies(ScreenObject):
 
         for enemy in list(self.enemies):
             # Make them go fast when player got zombified
-            if not self.player.is_alive:
+            if not self.player.alive:
                 enemy.y_delta *= 1.2
                 enemy.x_delta *= 1.2
 
             # Add boss every 50 killed
-            if self.player.score and self.player.score % 50 == 0 and self.boss not in screen and self.player.is_alive:
+            if self.player.score and self.player.score % 50 == 0 and self.boss not in screen and self.player.alive:
                 self.boss = Boss('Max',
                                  Zombie(randint(5, screen.width - 5), -5,
                                         y_delta=0.1, color=screen.COLOR_GREEN, random_start=True),
@@ -304,7 +274,7 @@ class Enemies(ScreenObject):
                 screen.add(self.boss)
 
             # If it is out of the screen, remove it (except for boss or player has been zombified)
-            if enemy.is_out and (enemy != self.boss and self.player.is_alive):
+            if enemy.is_out and (enemy != self.boss and self.player.alive):
                 self.enemies.remove(enemy)
                 screen.remove(enemy)
 
@@ -328,11 +298,9 @@ class Enemies(ScreenObject):
                         if hasattr(projectile, 'explode'):
                             projectile.explode()
 
-                        self.player.score += 5 if enemy == self.boss else 1
-                        if self.player.score > self.player.high_score:
-                            self.player.high_score = self.player.score
+                        self.player.scored(points=5 if enemy == self.boss else 1)
 
                         break
                 else:
-                    if enemy.coords & self.player.coords:
-                        self.player.got_zombified()
+                    if enemy.coords & self.player.coords and self.player.alive:
+                        self.player.destroy()

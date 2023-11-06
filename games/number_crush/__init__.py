@@ -16,4 +16,5 @@ class NumberCrush(Controller):
         self.player = Player('Jon',
                              Stickman(int(self.screen.width / 2) + 1, self.screen.height - 2),
                              controller=self,
-                             score_title='Crushed')
+                             score_title='Crushed',
+                             show_total=True)

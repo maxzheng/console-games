@@ -195,15 +195,14 @@ class Screen:
             self.resize_screen()
 
     def debug(self, **debug_info):
-        """ Show debug info (enabled when --debug flag is used) """
-        if self._debug:
-            self.border.status.update(debug_info)
-
-    def d(self):
-        """ Start debugger """
-        self.__exit__()
-        import pdb
-        pdb.set_trace()
+        """ Show debug info (enabled when --debug flag is used) or start debugger """
+        if debug_info:
+            if self._debug:
+                self.border.status.update(debug_info)
+        else:
+            self.__exit__()
+            import pdb
+            pdb.set_trace()
 
 
 class ScreenBuffer:

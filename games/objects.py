@@ -141,13 +141,15 @@ class ScreenObjectGroup(ScreenObject):
 
 
 class Player(ScreenObject, KeyListener):
-    def __init__(self, name, shape: ScreenObject, controller, score_title='score'):
+    def __init__(self, name, shape: ScreenObject, controller, score_title='score', show_total=False):
         super().__init__(shape.x, shape.y, size=shape.size, color=shape.color)
 
         self.name = name
         self.shape = shape
+        self._original_shape = shape
         self.high_score = 0
         self.total_score = 0
+        self.show_total = show_total
         self.char = shape.char
         self.controller = controller
         self.score_title = score_title
@@ -163,15 +165,20 @@ class Player(ScreenObject, KeyListener):
         self.alive = visible
 
     def reset(self):
+        super().reset()
         self.score = 0
         self.alive = True
+        self.active = True  # Indicates if the player is taking action, such as shooting
         self.size = self.shape.size
+        self.shape = self._original_shape
         if self.screen:
             self.x = int(self.screen.width / 2) + 1
             self.y = self.screen.height - int(self.size / 2) - 1
 
     def render(self, screen: Screen):
         super().render(screen)
+
+        # screen.debug(kids=len(self.kids))
 
         self.shape.sync(self)
         self.shape.render(screen)
@@ -180,7 +187,7 @@ class Player(ScreenObject, KeyListener):
         score = str(self.score)
         if self.score < self.high_score:
             score += ' | High: {}'.format(self.high_score)
-        if self.score < self.total_score:
+        if self.show_total and self.score < self.total_score:
             score += ' | Total: {}'.format(self.total_score)
 
         self.screen.status[self.score_title] = score
@@ -192,12 +199,13 @@ class Player(ScreenObject, KeyListener):
         if self.score > self.high_score:
             self.high_score = self.score
 
-    def destroy(self, msg='The End', explode=True):
+    def destroy(self, msg='The End', explode=True, explosion_size=20):
         self.alive = False
+        self.active = False
         self.screen.add(Text(self.x, self.screen.height / 2, msg,
                              is_centered=True))
         if explode:
-            self.screen.add(Explosion(self.x, self.y, size=20,
+            self.screen.add(Explosion(self.x, self.y, size=explosion_size,
                                       on_finish=self.controller.reset_scene))
 
 

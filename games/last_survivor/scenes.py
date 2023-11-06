@@ -17,6 +17,7 @@ class Intro(Scene):
                                       "Oh no! Here they come. GET READY!!",
                                       "Move your weapon using left/right keys."])
         self.controller.player.reset()
+        self.controller.player.active = False
 
     def start(self):
         self.screen.add(self.intro, self.controller.player)
@@ -29,7 +30,6 @@ class Survive(Scene):
     def init(self):
         self.enemies = Enemies(player=self.controller.player)
         self.player.reset()
-        self.player.is_playing = True
 
     def start(self):
         self.screen.add(self.player, self.enemies)
