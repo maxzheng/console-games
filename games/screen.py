@@ -142,12 +142,15 @@ class Screen:
         if self.border and border:
             self.border.reset()
 
-    def resize_screen(self):
+    def resize_screen(self, when_changed=False):
         max_height, max_width = self._screen.getmaxyx()
-        self._height = max_height - 1
-        self._width = max_width - 1
-        self._screen.clear()
-        self.buffer = ScreenBuffer(max_width, max_height)
+        max_height -= 1  # Seems to be off by one
+
+        if (not when_changed or max_width != self._width or max_height != self._height):
+            self._height = max_height
+            self._width = max_width
+            self._screen.clear()
+            self.buffer = ScreenBuffer(max_width, max_height)
 
     def draw(self, x: int, y: int, char: str, color=None):
         """ Draw character on the given position """
@@ -168,6 +171,9 @@ class Screen:
 
     def _render(self):
         self.renders += 1
+
+        if self.renders % self.fps_limit == 0:
+            self.resize_screen(when_changed=True)
 
         self.buffer.clear()
 

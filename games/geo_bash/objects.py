@@ -115,7 +115,7 @@ class Boss(CompassionateBoss):
                 if projectile.coords & self.player.coords:
                     self.player.destroy()
 
-            if self.player.size == 1:
+            if self.player.size == 1 or not self.player.alive:
                 self.x_delta = 0
             elif not self.x_delta:
                 self.x_delta = self.initial_x_delta
