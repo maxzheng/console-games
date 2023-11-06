@@ -1,5 +1,15 @@
-Version 0.1.22
+Version 0.1.23
 ================================================================================
+
+* Reset scene on screen size change
+* Resize buffer when screen dimensions change
+* Switch Geometric Bash to use AbstractEnemies
+* Abstract enemies logic
+* Switch Geometry Bash to use Player class
+* Switch to use Player class
+
+Version 0.1.22
+--------------------------------------------------------------------------------
 
 * Return None when no key was pressed
 * Simply to use set instead to avoid input buffer
