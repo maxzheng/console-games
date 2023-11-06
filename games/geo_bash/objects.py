@@ -1,40 +1,24 @@
 from random import randint, random
 
 from games.screen import Screen
-from games.objects import ScreenObject, KeyListener, Square, Explosion, Text, Projectile, Bar
+from games.objects import ScreenObject, Square, Explosion, Projectile, Bar, Player as BasePlayer
 
 
-class Player(ScreenObject, KeyListener):
-    def __init__(self, name, shape: ScreenObject):
-        super().__init__(shape.x, shape.y, size=shape.size, color=shape.color)
-
-        self.name = name
-        self.shape = shape
-        self.high_score = 0
-        self.is_playing = False
-        self.char = shape.char
-
-        self.reset()
-
-    @property
-    def is_alive(self):
-        return self.visible and self.is_playing
+class Player(BasePlayer):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, score_title='Bashed', **kwargs)
 
     def reset(self):
         super().reset()
-        self.score = 0
-        self.visible = True
         self.continuous_moves = 0
         self.size = 3
+        self.active = False
         if self.screen:
-            self.x = self.screen.width / 2
+            self.x = int(self.screen.width / 2)
             self.y = self.screen.height - self.size
 
     def render(self, screen: Screen):
         super().render(screen)
-        self.shape.sync(self)
-        self.shape.render(screen)
-        self.coords = self.shape.coords
 
         # Cap it
         move_cap = 100 if self.char == '^' else 5
@@ -44,10 +28,7 @@ class Player(ScreenObject, KeyListener):
         if self.continuous_moves % 30 == 0 and self.char == '^':
             self.size = max(1, 3 - self.continuous_moves / 30)
 
-        self.screen.border.status['bashed'] = ('{} (High: {})'.format(
-            self.score, self.high_score) if self.score < self.high_score else self.score)
-
-        if (self.screen.renders % 2 == 0 or self.char == '!') and self.is_alive:
+        if (self.screen.renders % 2 == 0 or self.char == '!') and self.active:
             if self.char == '!':
                 color = self.screen.colors[int(self.screen.renders / 2) % len(self.screen.colors)]
             else:
@@ -62,19 +43,15 @@ class Player(ScreenObject, KeyListener):
             self.kids.add(projectile)
             self.screen.add(projectile)
 
-    def got_bashed(self):
-        self.visible = False
-
-        self.screen.add(Text((self.screen.width - 10) / 2, self.screen.height / 2, 'You got BASHED!!'))
-        self.screen.add(Explosion(self.x, self.y, size=20,
-                                  on_finish=self.controller.reset_scene))
+    def destroy(self):
+        super().destroy(msg='You got BASHED!!')
 
     def left_pressed(self):
         if self.continuous_moves >= 5:
             speed = 3 if self.char == '!' else 2
         else:
             speed = 1
-        if self.is_alive:
+        if self.active:
             if self.x - speed >= 1:
                 self.x -= speed
                 self.continuous_moves += 1
@@ -87,7 +64,7 @@ class Player(ScreenObject, KeyListener):
             speed = 3 if self.char == '!' else 2
         else:
             speed = 1
-        if self.is_alive:
+        if self.active:
             if self.x + speed < self.screen.width - 1:
                 self.x += speed
                 self.continuous_moves += 1
@@ -96,12 +73,12 @@ class Player(ScreenObject, KeyListener):
                 self.continuous_moves += 1
 
     def up_pressed(self):
-        if self.is_alive and self.y >= self.size:
+        if self.active and self.y >= self.size:
             self.y -= 1
             self.continuous_moves += 1
 
     def down_pressed(self):
-        if self.is_alive and self.y < self.screen.height - self.size:
+        if self.active and self.y < self.screen.height - self.size:
             self.y += 1
             self.continuous_moves += 1
 
@@ -134,7 +111,7 @@ class Boss(ScreenObject):
         if self in screen:
             for projectile in self.kids:
                 if projectile.coords & self.player.coords:
-                    self.player.got_bashed()
+                    self.player.destroy()
 
         if self in self.screen:
             if self.player.score < 100 or self.player.char == '^':
@@ -149,7 +126,7 @@ class Boss(ScreenObject):
             else:
                 self.x_delta = abs(self.x_delta)
 
-            if self.y > self.screen.height + 2.5 and self.player.is_alive:
+            if self.y > self.screen.height + 2.5 and self.player.alive:
                 self.y = -2.5
 
             if self.is_hit:
@@ -198,7 +175,7 @@ class Enemies(ScreenObject):
                 enemy.y_delta += 0.5
 
             # Add boss every 50 bashes
-            if self.player.score and self.player.score % 50 == 0 and self.boss not in screen and self.player.is_alive:
+            if self.player.score and self.player.score % 50 == 0 and self.boss not in screen and self.player.alive:
                 self.boss = Boss('Max',
                                  Square(randint(5, screen.width - 5), -5, size=5, char='$',
                                         y_delta=0.1, solid=True, color=screen.COLOR_GREEN),
@@ -207,7 +184,7 @@ class Enemies(ScreenObject):
                 screen.add(self.boss)
 
             # If it is out of the screen, remove it (except for boss or player has been bashed)
-            if enemy.is_out and (enemy != self.boss and self.player.is_alive):
+            if enemy.is_out and (enemy != self.boss and self.player.alive):
                 self.enemies.remove(enemy)
                 screen.remove(enemy)
 
@@ -236,4 +213,4 @@ class Enemies(ScreenObject):
                         break
                 else:
                     if enemy.coords & self.player.coords:
-                        self.player.got_bashed()
+                        self.player.destroy()

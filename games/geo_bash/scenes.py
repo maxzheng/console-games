@@ -6,12 +6,12 @@ from games.geo_bash.objects import Player, Enemies
 class ChoosePlayer(Scene):
     def init(self):
         choices = [
-            Player('Kate', Triangle(self.screen.width / 2, self.screen.height - 3, size=3,
-                                    color=self.screen.COLOR_BLUE)),
-            Player('Nina', Circle(self.screen.width / 2, self.screen.height - 3, size=3,
-                                  color=self.screen.COLOR_RED)),
-            Player('Jon', Diamond(self.screen.width / 2, self.screen.height - 3, size=3,
-                                  color=self.screen.COLOR_YELLOW))
+            Player('Kate', Triangle(int(self.screen.width / 2), self.screen.height - 3, size=3,
+                                    color=self.screen.COLOR_BLUE), self.controller),
+            Player('Nina', Circle(int(self.screen.width / 2), self.screen.height - 3, size=3,
+                                  color=self.screen.COLOR_RED), self.controller),
+            Player('Jon', Diamond(int(self.screen.width / 2), self.screen.height - 3, size=3,
+                                  color=self.screen.COLOR_YELLOW), self.controller)
         ]
         self.choice = Choice(self.screen.width / 2, self.screen.height / 2,
                              choices=choices, color=self.screen.COLOR_CYAN,
@@ -61,7 +61,7 @@ class Bash(Scene):
     def init(self):
         self.enemies = Enemies(player=self.controller.player)
         self.player.reset()
-        self.player.is_playing = True
+        self.controller.player.active = True
 
     def start(self):
         self.screen.add(self.player, self.enemies)
