@@ -151,6 +151,8 @@ class Screen:
             self._width = max_width
             self._screen.clear()
             self.buffer = ScreenBuffer(max_width, max_height)
+            if self.controller:
+                self.controller.reset_scene()
 
     def draw(self, x: int, y: int, char: str, color=None):
         """ Draw character on the given position """
