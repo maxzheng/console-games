@@ -209,7 +209,7 @@ class AbstractPlayer(ScreenObject, KeyListener):
                                       on_finish=self.controller.reset_scene))
 
 
-class NeedyBoss(ScreenObject):
+class CompassionateBoss(ScreenObject):
     def __init__(self, name, shape: ScreenObject, player: AbstractPlayer, hp=5):
         super().__init__(shape.x, shape.y, size=shape.size, color=shape.color)
         self.name = name
@@ -217,10 +217,19 @@ class NeedyBoss(ScreenObject):
         self.player = player
         self.y = -5
         self.y_delta = 0.1
-        self.x_delta = max(random() * 0.5, 0.2)
+        self.x_delta = self.initial_x_delta
         self.is_hit = False
         self.char = shape.char
         self.hp = hp
+        self.max_hp = hp
+
+    @property
+    def initial_x_delta(self):
+        return max(random() * 0.5, 0.2)
+
+    def got_hit(self):
+        """ React to getting hit and return state for is_hit """
+        return False
 
     def render(self, screen: Screen):
         super().render(screen)
@@ -239,7 +248,7 @@ class NeedyBoss(ScreenObject):
 
             if self.is_hit:
                 self.color = self.screen.colors[self.screen.renders % len(self.screen.colors)]
-                self.is_hit = False
+                self.is_hit = self.got_hit()
 
 
 class AbstractEnemies(ScreenObject):
@@ -277,7 +286,7 @@ class AbstractEnemies(ScreenObject):
             self.screen.add(enemy)
 
         for enemy in list(self.enemies):
-            # Make them go fast when player got zombified
+            # Make them go fast when player is destroyed
             if not self.player.alive:
                 enemy.y_delta *= 1.2
                 enemy.x_delta *= 1.2
@@ -303,6 +312,7 @@ class AbstractEnemies(ScreenObject):
                             break
 
                         self.enemies.remove(enemy)
+                        self.screen.remove(enemy)
 
                         self.player.kids.remove(projectile)
                         self.screen.remove(projectile)

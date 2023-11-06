@@ -2,7 +2,7 @@ from random import randint, random, choice
 
 from games.screen import Screen
 from games.objects import (Zombie, Explosion, Projectile, Monologue,
-                           DyingZombie, AbstractPlayer, AbstractEnemies, NeedyBoss)
+                           DyingZombie, AbstractPlayer, AbstractEnemies, CompassionateBoss)
 
 
 class Player(AbstractPlayer):
@@ -201,14 +201,14 @@ class Enemies(AbstractEnemies):
 
     def on_death(self, enemy):
         zombie = DyingZombie(enemy.x, enemy.y, color=self.screen.COLOR_RED)
-        self.screen.replace(enemy, zombie)
+        self.screen.add(zombie)
 
     def should_spawn_boss(self):
         return self.player.score and self.player.score % 50 == 0
 
     def create_boss(self):
-        return NeedyBoss('Max',
-                         Zombie(randint(5, self.screen.width - 5), -5,
-                                y_delta=0.1, color=self.screen.COLOR_GREEN, random_start=True),
-                         self.player,
-                         hp=self.player.score/25)
+        return CompassionateBoss('Max',
+                                 Zombie(randint(5, self.screen.width - 5), -5,
+                                        y_delta=0.1, color=self.screen.COLOR_GREEN, random_start=True),
+                                 self.player,
+                                 hp=self.player.score/25)

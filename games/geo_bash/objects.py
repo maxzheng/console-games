@@ -1,7 +1,8 @@
 from random import randint, random
 
 from games.screen import Screen
-from games.objects import ScreenObject, Square, Explosion, Projectile, Bar, AbstractPlayer
+from games.objects import (Square, Explosion, Projectile, Bar, AbstractPlayer,
+                           AbstractEnemies, CompassionateBoss)
 
 
 class Player(AbstractPlayer):
@@ -87,23 +88,24 @@ class Player(AbstractPlayer):
             self.continuous_moves -= 1
 
 
-class Boss(ScreenObject):
-    def __init__(self, name, shape: ScreenObject, player: Player = None):
-        super().__init__(shape.x, shape.y, size=shape.size, color=shape.color)
-        self.shape = shape
-        self.player = player
-        self.size = 5
-        self.y = -5
-        self.y_delta = 0.1
-        self.x_delta = max(random() * 0.5, 0.2)
-        self.is_hit = False
-        self.char = shape.char
+class Boss(CompassionateBoss):
+    def got_hit(self):
+        self.size = int(self.hp / self.max_hp * 3 + 2)
+
+        if self.screen.renders % 10 == 0:
+            if self.size >= 4:
+                self.color = self.screen.COLOR_GREEN
+            elif self.size >= 3:
+                self.color = self.screen.COLOR_YELLOW
+            else:
+                self.color = self.screen.COLOR_RED
+
+            return False
+        else:
+            return True
 
     def render(self, screen: Screen):
         super().render(screen)
-        self.shape.sync(self)
-        self.shape.render(screen)
-        self.coords = self.shape.coords
 
         if not self.color:
             self.color = self.screen.COLOR_GREEN
@@ -113,35 +115,10 @@ class Boss(ScreenObject):
                 if projectile.coords & self.player.coords:
                     self.player.destroy()
 
-        if self in self.screen:
-            if self.player.score < 100 or self.player.char == '^':
+            if self.player.size == 1:
                 self.x_delta = 0
-
-            # self.screen.border.status['boss'] = str((int(self.x), int(self.y), self.size))
-            if self.player.char == '^':
-                self.x_delta = 0
-
-            if self.x > self.player.x:
-                self.x_delta = -1 * abs(self.x_delta)
-            else:
-                self.x_delta = abs(self.x_delta)
-
-            if self.y > self.screen.height + 2.5 and self.player.alive:
-                self.y = -2.5
-
-            if self.is_hit:
-                self.color = self.screen.colors[self.screen.renders % len(self.screen.colors)]
-                if self.screen.renders % 10 == 0:
-                    if self.size >= 4:
-                        self.color = self.screen.COLOR_GREEN
-                    elif self.size >= 3:
-                        self.color = self.screen.COLOR_YELLOW
-                    else:
-                        self.color = self.screen.COLOR_RED
-                    self.is_hit = False
-
-            # else:
-            #   self.screen.border.status['boss'] = 'Dead'
+            elif not self.x_delta:
+                self.x_delta = self.initial_x_delta
 
             if self.screen.renders % 60 == 0 and self in self.screen:
                 projectile = Bar(self.x, self.y+self.size/2, size=self.size,
@@ -151,66 +128,27 @@ class Boss(ScreenObject):
                 self.screen.add(projectile)
 
 
-class Enemies(ScreenObject):
-    def __init__(self, max_enemies=5, player=None):
-        super().__init__(0, 0)
-        self.max_enemies = max_enemies
-        self.enemies = set()
-        self.player = player
-        self.boss = None
+class Enemies(AbstractEnemies):
+    def create_enemy(self):
+        return Square(randint(3, self.screen.width-3), -3, size=randint(2, 4),
+                      y_delta=random() * self.player.score / 200 + 0.2)
 
-    def render(self, screen: Screen):
-        super().render(screen)
+    def on_death(self, enemy):
+        """ Optionally add custom actions when an enemy dies """
+        explosion_size = 25 if enemy == self.boss else enemy.size * 3
+        self.screen.add(Explosion(enemy.x, enemy.y, size=explosion_size))
 
-        # Create enemies
-        if len(self.enemies) < self.max_enemies + int(self.player.score / 100):
-            enemy = Square(randint(3, self.screen.width-3), -3, size=randint(2, 4),
-                           y_delta=random() * self.player.score / 200 + 0.2)
-            self.enemies.add(enemy)
-            self.screen.add(enemy)
+    def should_spawn_boss(self):
+        """ Override this to customize logic for when a boss should be created """
+        return self.player.score and self.player.score % 50 == 0
 
-        for enemy in list(self.enemies):
-            # Make them go fast when player got bashed
-            if not self.player.visible:
-                enemy.y_delta += 0.5
+    def create_boss(self):
+        return Boss('Max',
+                    Square(randint(5, self.screen.width - 5), -5, size=5, char='$',
+                           y_delta=0.1, solid=True, color=self.screen.COLOR_GREEN),
+                    player=self.player,
+                    hp=self.player.score)
 
-            # Add boss every 50 bashes
-            if self.player.score and self.player.score % 50 == 0 and self.boss not in screen and self.player.alive:
-                self.boss = Boss('Max',
-                                 Square(randint(5, screen.width - 5), -5, size=5, char='$',
-                                        y_delta=0.1, solid=True, color=screen.COLOR_GREEN),
-                                 player=self.player)
-                self.enemies.add(self.boss)
-                screen.add(self.boss)
-
-            # If it is out of the screen, remove it (except for boss or player has been bashed)
-            if enemy.is_out and (enemy != self.boss and self.player.alive):
-                self.enemies.remove(enemy)
-                screen.remove(enemy)
-
-            # Otherwise, check if player's projectiles hit the enemies
-            else:
-                for projectile in list(self.player.kids):
-                    if projectile.coords & enemy.coords:
-                        if enemy == self.boss and self.boss.size > 2.05:
-                            self.boss.size -= 0.05
-                            self.boss.is_hit = True
-                            break
-
-                        self.enemies.remove(enemy)
-                        self.screen.remove(enemy)
-
-                        self.player.kids.remove(projectile)
-                        self.screen.remove(projectile)
-
-                        explosion_size = 25 if enemy == self.boss else enemy.size * 3
-                        self.screen.add(Explosion(enemy.x, enemy.y, size=explosion_size))
-
-                        self.player.score += 5 if enemy == self.boss else 1
-                        if self.player.score > self.player.high_score:
-                            self.player.high_score = self.player.score
-
-                        break
-                else:
-                    if enemy.coords & self.player.coords:
-                        self.player.destroy()
+    def additional_enemies(self):
+        """ Increase enemies as the player levels up """
+        return int(self.player.score / 100)

@@ -59,7 +59,7 @@ class Intro(Scene):
 
 class Bash(Scene):
     def init(self):
-        self.enemies = Enemies(player=self.controller.player)
+        self.enemies = Enemies(self.controller.player)
         self.player.reset()
         self.controller.player.active = True
 

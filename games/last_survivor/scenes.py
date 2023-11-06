@@ -28,7 +28,7 @@ class Intro(Scene):
 
 class Survive(Scene):
     def init(self):
-        self.enemies = Enemies(player=self.controller.player)
+        self.enemies = Enemies(self.controller.player)
         self.player.reset()
 
     def start(self):
