@@ -140,7 +140,7 @@ class ScreenObjectGroup(ScreenObject):
                 self.kids.add(divider)
 
 
-class Player(ScreenObject, KeyListener):
+class AbstractPlayer(ScreenObject, KeyListener):
     def __init__(self, name, shape: ScreenObject, controller, score_title='score', show_total=False):
         super().__init__(shape.x, shape.y, size=shape.size, color=shape.color)
 
@@ -207,6 +207,117 @@ class Player(ScreenObject, KeyListener):
         if explode:
             self.screen.add(Explosion(self.x, self.y, size=explosion_size,
                                       on_finish=self.controller.reset_scene))
+
+
+class NeedyBoss(ScreenObject):
+    def __init__(self, name, shape: ScreenObject, player: AbstractPlayer, hp=5):
+        super().__init__(shape.x, shape.y, size=shape.size, color=shape.color)
+        self.name = name
+        self.shape = shape
+        self.player = player
+        self.y = -5
+        self.y_delta = 0.1
+        self.x_delta = max(random() * 0.5, 0.2)
+        self.is_hit = False
+        self.char = shape.char
+        self.hp = hp
+
+    def render(self, screen: Screen):
+        super().render(screen)
+        self.shape.sync(self)
+        self.shape.render(screen)
+        self.coords = self.shape.coords
+
+        if self in self.screen:
+            if self.x > self.player.x:
+                self.x_delta = -1 * abs(self.x_delta)
+            else:
+                self.x_delta = abs(self.x_delta)
+
+            if self.y > self.screen.height + 2.5 and self.player.alive:
+                self.y = -2.5
+
+            if self.is_hit:
+                self.color = self.screen.colors[self.screen.renders % len(self.screen.colors)]
+                self.is_hit = False
+
+
+class AbstractEnemies(ScreenObject):
+    def __init__(self, player: AbstractPlayer, max_enemies=5):
+        super().__init__(0, 0)
+        self.max_enemies = max_enemies
+        self.enemies = set()
+        self.player = player
+        self.boss = None
+
+    def create_enemy(self):
+        raise NotImplementedError
+
+    def on_death(self, enemy):
+        """ Optionally add custom actions when an enemy dies """
+
+    def should_spawn_boss(self):
+        """ Override this to customize logic for when a boss should be created """
+        return False
+
+    def create_boss(self):
+        raise NotImplementedError
+
+    def additional_enemies(self):
+        """ Increase enemies as the player levels up """
+        return int(self.player.score / 100)
+
+    def render(self, screen: Screen):
+        super().render(screen)
+
+        # Create enemies
+        if len(self.enemies) < self.max_enemies + self.additional_enemies():
+            enemy = self.create_enemy()
+            self.enemies.add(enemy)
+            self.screen.add(enemy)
+
+        for enemy in list(self.enemies):
+            # Make them go fast when player got zombified
+            if not self.player.alive:
+                enemy.y_delta *= 1.2
+                enemy.x_delta *= 1.2
+
+            # Add boss every 50 killed
+            if self.should_spawn_boss() and self.boss not in screen and self.player.alive:
+                self.boss = self.create_boss()
+                self.enemies.add(self.boss)
+                screen.add(self.boss)
+
+            # If it is out of the screen, remove it (except for boss or player has been zombified)
+            if enemy.is_out and (enemy != self.boss and self.player.alive):
+                self.enemies.remove(enemy)
+                screen.remove(enemy)
+
+            # Otherwise, check if player's projectiles hit the enemies
+            else:
+                for projectile in list(self.player.kids):
+                    if projectile.coords & enemy.coords:
+                        if enemy == self.boss and self.boss.hp > 0:
+                            self.boss.hp -= 1
+                            self.boss.is_hit = True
+                            break
+
+                        self.enemies.remove(enemy)
+
+                        self.player.kids.remove(projectile)
+                        self.screen.remove(projectile)
+
+                        self.on_death(enemy)
+
+                        if hasattr(projectile, 'explode'):
+                            projectile.explode()
+
+                        self.player.scored(points=5 if enemy == self.boss else 1)
+
+                        break
+                else:
+                    if enemy.all_coords & self.player.coords and self.player.alive:
+                        self.player.destroy()
 
 
 class Bitmap(ScreenObject):

@@ -4,7 +4,31 @@ from games.screen import Screen
 from games.objects import (ScreenObject, KeyListener, Explosion, Text, ScreenObjectGroup, Bitmap,
                            One, Two, Three, Four, Five, Six, Seven, Eight, Nine, Zero,
                            Plus, Minus, Multiply, Divide, Space, Stickman, StickmanScared,
-                           StickmanWorried, Player)
+                           StickmanWorried, AbstractPlayer)
+
+
+class Player(AbstractPlayer):
+    def __init__(self, controller):
+        super().__init__('Jon', Stickman(int(controller.screen.width / 2) + 1, controller.screen.height - 2),
+                         controller, score_title='Crushed', show_total=True)
+
+    def react(self, formula: ScreenObject):
+        distance = self.y - formula.y
+        if distance < 10:
+            self.scared()
+        elif distance < 15:
+            self.worried()
+        else:
+            self.smile()
+
+    def scared(self):
+        self.shape = StickmanScared(self.x, self.y)
+
+    def worried(self):
+        self.shape = StickmanWorried(self.x, self.y)
+
+    def smile(self):
+        self.shape = Stickman(self.x, self.y)
 
 
 class Formula(ScreenObjectGroup):
@@ -19,7 +43,7 @@ class Formula(ScreenObjectGroup):
 
 
 class Numbers(ScreenObject, KeyListener):
-    def __init__(self, x, y, player: Player = None):
+    def __init__(self, x, y, player: Player):
         super().__init__(x, y)
         self.player = player
         self.a = None
@@ -61,13 +85,7 @@ class Numbers(ScreenObject, KeyListener):
 
             self.ready_for_next = False
 
-        distance = (self.player.y - self.formula.y)
-        if distance < 10:
-            self.player.shape = StickmanScared(self.player.x, self.player.y)
-        elif distance < 15:
-            self.player.shape = StickmanWorried(self.player.x, self.player.y)
-        else:
-            self.player.shape = Stickman(self.player.x, self.player.y)
+        self.player.react(self.formula)
 
         if self.all_coords & self.player.coords:
             self.player.destroy(msg='You got CRUSHED!!')

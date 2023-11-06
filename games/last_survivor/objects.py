@@ -1,11 +1,11 @@
 from random import randint, random, choice
 
 from games.screen import Screen
-from games.objects import (ScreenObject, Zombie, Explosion, Projectile, Monologue,
-                           DyingZombie, Player as BasePlayer)
+from games.objects import (Zombie, Explosion, Projectile, Monologue,
+                           DyingZombie, AbstractPlayer, AbstractEnemies, NeedyBoss)
 
 
-class Player(BasePlayer):
+class Player(AbstractPlayer):
     def __init__(self, *args, **kwargs):
         self.delta_index = 0
         self.ammos_limit = 1000
@@ -184,123 +184,31 @@ class Player(BasePlayer):
             self.screen.add(projectile)
 
 
-class Boss(ScreenObject):
-    def __init__(self, name, shape: ScreenObject, player: Player = None, hp=5):
-        super().__init__(shape.x, shape.y, size=shape.size, color=shape.color)
-        self.shape = shape
-        self.player = player
-        self.size = 5
-        self.y = -5
-        self.y_delta = 0.1
-        self.x_delta = max(random() * 0.5, 0.2)
-        self.is_hit = False
-        self.char = shape.char
-        self.hp = hp
+class Enemies(AbstractEnemies):
+    def create_enemy(self):
+        if random() < 0.5:
+            x = choice([0, self.screen.width])
+            y = randint(0, self.screen.height)
+        else:
+            y = choice([0, self.screen.height])
+            x = randint(0, self.screen.width)
 
-    def render(self, screen: Screen):
-        super().render(screen)
-        self.shape.sync(self)
-        self.shape.render(screen)
-        self.coords = self.shape.coords
+        speed = random() * self.player.score / 10000 + 0.2
+        x_sign = (1 if x < self.player.x else -1) * random()
+        y_sign = (1 if y < self.player.y else -1) * random()
 
-        if not self.color:
-            self.color = self.screen.COLOR_GREEN
+        return Zombie(x, y, x_delta=x_sign * speed, y_delta=y_sign * speed, random_start=True)
 
-        if self in screen:
-            for projectile in self.kids:
-                if projectile.coords & self.player.coords and self.player.alive:
-                    self.player.destroy()
+    def on_death(self, enemy):
+        zombie = DyingZombie(enemy.x, enemy.y, color=self.screen.COLOR_RED)
+        self.screen.replace(enemy, zombie)
 
-        if self in self.screen:
-            # self.screen.border.status['boss'] = str((int(self.x), int(self.y), self.size))
-            if self.x > self.player.x:
-                self.x_delta = -1 * abs(self.x_delta)
-            else:
-                self.x_delta = abs(self.x_delta)
+    def should_spawn_boss(self):
+        return self.player.score and self.player.score % 50 == 0
 
-            if self.y > self.screen.height + 2.5 and self.player.alive:
-                self.y = -2.5
-
-            if self.is_hit:
-                self.color = self.screen.colors[self.screen.renders % len(self.screen.colors)]
-                self.is_hit = False
-
-            # else:
-            #   self.screen.border.status['boss'] = 'Dead'
-
-
-class Enemies(ScreenObject):
-    def __init__(self, max_enemies=5, player=None):
-        super().__init__(0, 0)
-        self.max_enemies = max_enemies
-        self.enemies = set()
-        self.player = player
-        self.boss = None
-
-    def render(self, screen: Screen):
-        super().render(screen)
-
-        # Create enemies
-        if len(self.enemies) < self.max_enemies + int(self.player.score / 100):
-            if random() < 0.5:
-                x = choice([0, screen.width])
-                y = randint(0, screen.height)
-            else:
-                y = choice([0, screen.height])
-                x = randint(0, screen.width)
-
-            speed = random() * self.player.score / 10000 + 0.2
-            x_sign = (1 if x < self.player.x else -1) * random()
-            y_sign = (1 if y < self.player.y else -1) * random()
-
-            enemy = Zombie(x, y, x_delta=x_sign * speed, y_delta=y_sign * speed, random_start=True)
-            self.enemies.add(enemy)
-            self.screen.add(enemy)
-
-        for enemy in list(self.enemies):
-            # Make them go fast when player got zombified
-            if not self.player.alive:
-                enemy.y_delta *= 1.2
-                enemy.x_delta *= 1.2
-
-            # Add boss every 50 killed
-            if self.player.score and self.player.score % 50 == 0 and self.boss not in screen and self.player.alive:
-                self.boss = Boss('Max',
-                                 Zombie(randint(5, screen.width - 5), -5,
-                                        y_delta=0.1, color=screen.COLOR_GREEN, random_start=True),
-                                 player=self.player,
-                                 hp=self.player.score/25)
-                self.enemies.add(self.boss)
-                screen.add(self.boss)
-
-            # If it is out of the screen, remove it (except for boss or player has been zombified)
-            if enemy.is_out and (enemy != self.boss and self.player.alive):
-                self.enemies.remove(enemy)
-                screen.remove(enemy)
-
-            # Otherwise, check if player's projectiles hit the enemies
-            else:
-                for projectile in list(self.player.kids):
-                    if projectile.coords & enemy.coords:
-                        if enemy == self.boss and self.boss.hp > 0:
-                            self.boss.hp -= 1
-                            self.boss.is_hit = True
-                            break
-
-                        self.enemies.remove(enemy)
-
-                        self.player.kids.remove(projectile)
-                        self.screen.remove(projectile)
-
-                        zombie = DyingZombie(enemy.x, enemy.y, color=self.screen.COLOR_RED)
-                        self.screen.replace(enemy, zombie)
-
-                        if hasattr(projectile, 'explode'):
-                            projectile.explode()
-
-                        self.player.scored(points=5 if enemy == self.boss else 1)
-
-                        break
-                else:
-                    if enemy.coords & self.player.coords and self.player.alive:
-                        self.player.destroy()
+    def create_boss(self):
+        return NeedyBoss('Max',
+                         Zombie(randint(5, self.screen.width - 5), -5,
+                                y_delta=0.1, color=self.screen.COLOR_GREEN, random_start=True),
+                         self.player,
+                         hp=self.player.score/25)

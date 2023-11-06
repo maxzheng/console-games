@@ -1,10 +1,10 @@
 from unittest.mock import Mock
-from games.objects import Player, Stickman
+from games.objects import AbstractPlayer, Stickman
 
 
 def test_player(screen):
     controller = Mock()
-    player = Player('Max', Stickman(0, 0), controller, score_title='Wins', show_total=True)
+    player = AbstractPlayer('Max', Stickman(0, 0), controller, score_title='Wins', show_total=True)
 
     assert player.alive
     assert player.visible

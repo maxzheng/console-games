@@ -1,10 +1,10 @@
 from random import randint, random
 
 from games.screen import Screen
-from games.objects import ScreenObject, Square, Explosion, Projectile, Bar, Player as BasePlayer
+from games.objects import ScreenObject, Square, Explosion, Projectile, Bar, AbstractPlayer
 
 
-class Player(BasePlayer):
+class Player(AbstractPlayer):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, score_title='Bashed', **kwargs)
 
