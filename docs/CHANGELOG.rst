@@ -1,5 +1,13 @@
-Version 0.1.23
+Version 0.1.24
 ================================================================================
+
+* Test more objects
+* Add more tests and fix bugs
+* Add tests for objects
+* Add tests for Screen and ScreenBuffer
+
+Version 0.1.23
+--------------------------------------------------------------------------------
 
 * Reset scene on screen size change
 * Resize buffer when screen dimensions change
