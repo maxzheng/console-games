@@ -1,6 +1,6 @@
 from unittest.mock import Mock
 from games.objects import (AbstractPlayer, Stickman, ScreenObject, Circle, Char,
-                           ScreenObjectGroup, CompassionateBoss, AbstractEnemies)
+                           ScreenObjectGroup, CompassionateBoss, AbstractEnemies, Bitmap, Text)
 
 
 def test_player(screen):
@@ -54,15 +54,16 @@ def test_all_kids(screen):
 
 
 def test_is_out(screen):
-    so = ScreenObject(0, 0, x_delta=-1)
+    so = Bitmap(0, 0, x_delta=-1)
     assert not so.is_out
 
     so.render(screen)
     assert so.x == -1
     assert not so.is_out
 
-    so.render(screen)
-    assert so.x == -2
+    for i in range(so.size):
+        so.render(screen)
+    assert so.x == -so.size - 1
     assert so.is_out
 
 
@@ -73,7 +74,7 @@ def test_sync(screen):
 
 
 def test_reset(screen):
-    so = ScreenObject(0, 0, size=0)
+    so = Text(0, 0, "Hello")
     circle = Circle(1, 1)
     so.add_kid(circle)
     screen.add(so, circle)
