@@ -404,19 +404,6 @@ class Logo(ScreenObject):
         self.shape.render(screen)
 
 
-class BouncyText(Text):
-    def __init__(self, x: int, y: int, text: str, x_delta=1, y_delta=1):
-        super().__init__(x, y, text, x_delta=x_delta, y_delta=y_delta)
-
-    def render(self, screen: Screen):
-        super().render(screen)
-
-        if self.x + len(self.text) >= screen.width - 1 or self.x == 1:
-            self.x_delta = -self.x_delta
-        if self.y >= screen.height - 1 or self.y == 1:
-            self.y_delta = -self.y_delta
-
-
 class Monologue(Text):
     def __init__(self, x: int, y: int, texts=[], on_finish=None, x_delta=0, y_delta=0):
         super().__init__(x, y, texts[0], x_delta=x_delta, y_delta=y_delta)
@@ -930,81 +917,81 @@ class Space(Bitmap):
 
 
 class Zombie(Bitmap):
-    bitmaps = ("""
+    bitmaps = (r"""
    O 
- \-/\\
+ \-/\
   / |
  /\  
 / |  
 """,  # noqa
-"""
+r"""
   O  
-\-/\\ 
+\-/\ 
   | |
  /\  
 / |  
 """,  # noqa
-"""
+r"""
   O  
- -|\\_
+ -|\_
 / |  
  /\  
- | \\ 
+ | \ 
 """,  # noqa
-"""
+r"""
   O  
- -|\\|
+ -|\|
 / |  
  /\  
- | \\ 
+ | \ 
 """,  # noqa
-"""
+r"""
   O  
- -|\\_
-/ /   
+ -|\_
+/ /  
  /\  
-/ \\  
+/  \ 
 """) # noqa
 
 
 class DyingZombie(Bitmap):
     frames_per_bitmap = 3
-    bitmaps = ("""
+    bitmaps = (r"""
    O 
- \-/\\
+ \-/\
   / |
  /\  
 / |  
 """,  # noqa
-"""
+r"""
      
   O  
-\-/\\ 
+\-/\ 
  /\  
 / |  
 """,  # noqa
-"""
+r"""
      
      
  O   
-\-|\\_
-_| \\_
+\-|\_
+_| \_
 """,  # noqa
-"""
+r"""
      
      
      
 | O\ 
-\-|\\|
+\-|\|
 """,  # noqa
-"""
+r"""
      
      
      
-_  \\  
+_  \ 
 \-O-/
 """,  # noqa
-"""
+r"""
      
      
      
@@ -1022,24 +1009,24 @@ _  \\
 
 
 class Stickman(Bitmap):
-    bitmap = """
+    bitmap = r"""
  ☻ 
-/|\\
-/ \\
+/|\
+/ \
 """  # noqa
 
 
 class StickmanWorried(Bitmap):
-    bitmap = """
+    bitmap = r"""
  ☺ 
 \|/
-/ \\
+/ \
 """  # noqa
 
 
 class StickmanScared(Bitmap):
-    bitmap = """
+    bitmap = r"""
 \☹/
  | 
-/ \\
+/ \
 """  # noqa
