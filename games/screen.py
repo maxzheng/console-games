@@ -93,21 +93,13 @@ class Screen:
             setattr(self, color_name, curses.color_pair(color_id))
             self.colors.append(getattr(self, color_name))
 
-        return self._screen
+        return self
 
     def __exit__(self, *args):
         self._screen.keypad(False)
         curses.nocbreak()
         curses.echo()
         curses.endwin()
-
-    def _new_frame(self):
-        """ Return a new blank frame """
-        frame = []
-        if self._width and self._height:
-            for r in range(self._height):
-                frame.append([' '] * (self._width))
-        return frame
 
     def add(self, *screen_objects):
         """ Add screen objects to the list """
