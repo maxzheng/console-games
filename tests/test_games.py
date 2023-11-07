@@ -1,29 +1,23 @@
-import pytest
-
 from games.manager import Manager
 from games.controller import Controller
-from games.screen import Screen
-from games.objects import Border
+from games.screen import Scene
 
 
 def test_manager():
     Manager()
 
 
-def test_controller():
-    screen = Screen()
-    with pytest.raises(ValueError):
-        controller = Controller(screen)  # noqa
-
-
-def test_game():
-    screen = Screen(border=Border('*'))
-
+def test_game(screen):
     class Game(Controller):
         name = 'Test'
 
         def init(self):
-            self.scenes = []
+            self.scenes = [Scene]
 
-    game = Game(screen)
-    assert not game.done
+    with screen:
+        game = Game(screen)
+        assert not game.done
+
+        game.play()
+        assert game.current_scene
+        game.reset_scene()

@@ -1,5 +1,6 @@
 from unittest.mock import Mock
-from games.objects import AbstractPlayer, Stickman, ScreenObject, Circle, Char
+from games.objects import (AbstractPlayer, Stickman, ScreenObject, Circle, Char,
+                           ScreenObjectGroup, CompassionateBoss, AbstractEnemies)
 
 
 def test_player(screen):
@@ -87,3 +88,100 @@ def test_reset(screen):
     assert len(so.kids) == 0
     assert so in screen
     assert circle not in screen
+
+
+def test_add_remove_kid():
+    so = ScreenObject(0, 0, size=0)
+    kid = Circle(1, 1)
+
+    so.add_kid(kid)
+    assert kid in so.kids
+
+    so.remove_kid(kid)
+    assert kid not in so.kids
+    assert len(so.kids) == 0
+
+    so.remove_kid(kid)   # No op
+
+
+def test_screen_object_group(screen):
+    char = Char(0, 0, char='X')
+    circle = Circle(0, 0)
+    sog = ScreenObjectGroup(10, 10)
+    sog.add(char, circle)
+
+    screen.add(sog)
+    with screen:
+        screen.render()
+        screen.render()
+
+    assert sog.kids == {char, circle}
+
+    assert sog.all_coords == {(14, 10), (11, 11), (10, 10), (11, 9), (8, 10),
+                              (12, 11), (13, 9), (12, 9), (13, 11)}
+
+    sog.y += 10
+    with screen:
+        screen.render()
+    assert sog.all_coords == {(14, 20), (11, 21), (10, 20), (11, 19), (8, 20),
+                              (12, 21), (13, 19), (12, 19), (13, 21)}
+
+
+def test_compassionate_boss(screen, player):
+    boss = CompassionateBoss('Max', Circle(1, 1,), player)
+    screen.add(boss)
+    boss.render(screen)
+    assert boss.y == -4.9
+
+
+def test_enemies(screen, player):
+    class Enemies(AbstractEnemies):
+        def create_enemy(self):
+            return Circle(1, 1, x_delta=1, y_delta=2)
+
+        def should_spawn_boss(self):
+            return self.player.score == 10
+
+        def create_boss(self):
+            return Char(20, 1, char='B', y_delta=1)
+
+    # First render creates 1 enemy
+    enemies = Enemies(player)
+    enemies.render(screen)
+    screen.add(enemies)
+
+    assert len(enemies.enemies) == 1
+    assert len(screen) == 2  # enemies + first_enemy
+    first_enemy = list(enemies.enemies)[0]
+
+    # Next 10 renders will create max of 5 enemies and no more
+    with screen:
+        for i in range(10):
+            screen.render()
+    assert len(enemies.enemies) == 5
+    assert len(screen) == 6
+
+    assert first_enemy.x == 11
+    assert first_enemy.y == 21
+
+    # Satisfy condition to create boss
+    player.score = 10
+    with screen:
+        screen.render()
+    assert len(enemies.enemies) == 6
+    assert len(screen) == 7
+
+    # No more enemies will be created
+    with screen:
+        screen.render()
+    assert len(enemies.enemies) == 6
+    assert len(screen) == 7
+
+    # Next 10 renders will remove all enemies as they get out of screen when player is dead
+    player.alive = False
+    with screen:
+        for i in range(10):
+            screen.render()
+    print(enemies.enemies)
+    assert len(enemies.enemies) == 0
+    assert len(screen) == 1  # Just "enemies" object

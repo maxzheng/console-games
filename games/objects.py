@@ -202,7 +202,7 @@ class AbstractPlayer(ScreenObject, KeyListener):
     def destroy(self, msg='The End', explode=True, explosion_size=20):
         self.alive = False
         self.active = False
-        self.screen.add(Text(self.x, self.screen.height / 2, msg,
+        self.screen.add(Text(self.screen.width / 2, self.screen.height / 2, msg,
                              is_centered=True))
         if explode:
             self.screen.add(Explosion(self.x, self.y, size=explosion_size,
@@ -259,7 +259,8 @@ class AbstractEnemies(ScreenObject):
         self.player = player
         self.boss = None
 
-    def create_enemy(self):
+    def create_enemy(self) -> ScreenObject:
+        """ Create an enemy instance """
         raise NotImplementedError
 
     def on_death(self, enemy):
@@ -269,7 +270,8 @@ class AbstractEnemies(ScreenObject):
         """ Override this to customize logic for when a boss should be created """
         return False
 
-    def create_boss(self):
+    def create_boss(self) -> ScreenObject:
+        """ Create a boss instance """
         raise NotImplementedError
 
     def additional_enemies(self):
@@ -279,11 +281,18 @@ class AbstractEnemies(ScreenObject):
     def render(self, screen: Screen):
         super().render(screen)
 
-        # Create enemies
-        if len(self.enemies) < self.max_enemies + self.additional_enemies():
-            enemy = self.create_enemy()
-            self.enemies.add(enemy)
-            self.screen.add(enemy)
+        if self.player.alive:
+            # Create enemies
+            if len(self.enemies) < self.max_enemies + self.additional_enemies():
+                enemy = self.create_enemy()
+                self.enemies.add(enemy)
+                screen.add(enemy)
+
+            # Create boss
+            if self.should_spawn_boss() and self.boss not in screen:
+                self.boss = self.create_boss()
+                self.enemies.add(self.boss)
+                screen.add(self.boss)
 
         for enemy in list(self.enemies):
             # Make them go fast when player is destroyed
@@ -291,14 +300,8 @@ class AbstractEnemies(ScreenObject):
                 enemy.y_delta *= 1.2
                 enemy.x_delta *= 1.2
 
-            # Add boss every 50 killed
-            if self.should_spawn_boss() and self.boss not in screen and self.player.alive:
-                self.boss = self.create_boss()
-                self.enemies.add(self.boss)
-                screen.add(self.boss)
-
-            # If it is out of the screen, remove it (except for boss or player has been zombified)
-            if enemy.is_out and (enemy != self.boss and self.player.alive):
+            # If it is out of the screen, remove it (except for boss or player is dead)
+            if enemy.is_out and (enemy != self.boss or not self.player.alive):
                 self.enemies.remove(enemy)
                 screen.remove(enemy)
 
@@ -312,10 +315,10 @@ class AbstractEnemies(ScreenObject):
                             break
 
                         self.enemies.remove(enemy)
-                        self.screen.remove(enemy)
+                        screen.remove(enemy)
 
                         self.player.kids.remove(projectile)
-                        self.screen.remove(projectile)
+                        screen.remove(projectile)
 
                         self.on_death(enemy)
 
