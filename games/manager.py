@@ -4,11 +4,11 @@ from games.chooser import Chooser
 
 
 class Manager:
-    def start(self, fps=30, debug=False):
+    def start(self, game_filter=None, fps=30, debug=False):
         screen = Screen(border=Border(show_fps=debug), debug=debug, fps=fps)
 
         with screen:
-            game = Chooser(screen)
+            game = Chooser(screen, game_filter=game_filter)
             screen.controller = game
 
             while not game.done:

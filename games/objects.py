@@ -362,12 +362,14 @@ class Bitmap(ScreenObject):
             bitmap = self._bitmap
         bitmap = bitmap.strip('\n').split('\n')
 
-        start_x = int(self.x - self.size / 2)
+        x_size = len(bitmap[0])
+        start_x = int(self.x - x_size / 2)
         start_y = int(self.y - self.size / 2)
         self.coords = set()
 
-        for x in range(start_x, start_x + self.size):
-            for y in range(start_y, start_y + self.size):
+        for y in range(start_y, start_y + self.size):
+            x_size = len(bitmap[y-start_y])
+            for x in range(start_x, start_x + x_size):
                 if bitmap[y-start_y][x-start_x] != ' ':
                     screen.draw(x, y, self.char or bitmap[y-start_y][x-start_x], color=self.color)
                     self.coords.add((x, y))
@@ -1033,3 +1035,13 @@ class StickmanScared(Bitmap):
  | 
 / \
 """  # noqa
+
+
+class Wasp(Bitmap):
+    bitmap = r"""
+__      __
+  \_--_/
+  \0  0/
+   |  |
+   \\//
+""" # noqa
