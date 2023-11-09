@@ -368,11 +368,17 @@ class Bitmap(ScreenObject):
         self.coords = set()
 
         for y in range(start_y, start_y + self.size):
-            x_size = len(bitmap[y-start_y])
-            for x in range(start_x, start_x + x_size):
-                if bitmap[y-start_y][x-start_x] != ' ':
-                    screen.draw(x, y, self.char or bitmap[y-start_y][x-start_x], color=self.color)
-                    self.coords.add((x, y))
+            try:
+                x_size = len(bitmap[y-start_y])
+                for x in range(start_x, start_x + x_size):
+                    if bitmap[y-start_y][x-start_x] != ' ':
+                        screen.draw(x, y, self.char or bitmap[y-start_y][x-start_x], color=self.color)
+                        self.coords.add((x, y))
+
+            except Exception as e:
+                screen.debug()
+                print(e)
+                print('here')
 
 
 class Text(ScreenObject):
@@ -512,7 +518,7 @@ class Projectile(ScreenObject):
 
         self.renders += 1
 
-        self.coords = {(int(self.x), int(self.y))}
+        self.coords = set() if self.shape is None else {(int(self.x), int(self.y))}
 
         if not self.is_out and self.shape is not None:
             screen.draw(self.x, self.y, self.shape, color=self.color)
@@ -1038,10 +1044,71 @@ class StickmanScared(Bitmap):
 
 
 class Wasp(Bitmap):
-    bitmap = r"""
+    bitmaps = (r"""
 __      __
   \_--_/
-  \0  0/
+  \O  O/
    |  |
    \\//
-""" # noqa
+""",  # noqa noqa
+r"""
+-_      __
+  \_--_/
+  \O  O/
+   |  |
+   \||/
+""",  # noqa noqa
+r"""
+__      _
+  \_--_/ \
+  \O  O/
+   |  |
+   \\//
+""",  # noqa noqa
+r"""
+\_      _
+  \_--_/ \
+  \O  O/
+   |  |
+   \||/
+""")  # noqa noqa
+
+
+class DyingWasp(Bitmap):
+    frames_per_bitmap = 3
+    bitmaps = (r"""
+__      __
+  \_--_/
+  \O  O/
+   |  |
+   \\//
+""",  # noqa noqa
+r"""
+ 
+-_      _-
+  \_--_/
+  \O  O/
+   \||/
+""",  # noqa noqa
+r"""
+ 
+ 
+__      __
+  \O  O/
+   \\//
+""",  # noqa noqa
+r"""
+ 
+ 
+ 
+ _      _
+/ \O--O/ \
+""") # noqa
+
+    def render(self, screen: Screen):
+        super().render(screen)
+
+        if self.renders > self._frames_per_bitmap * (len(self._bitmaps) - 1):
+            screen.remove(self)
+            if self.parent:
+                self.parent.remove_kid(self)
