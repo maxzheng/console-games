@@ -387,21 +387,15 @@ class Bitmap(ScreenObject):
         self.coords = set()
 
         for y in range(start_y, start_y + self.size):
-            try:
-                x_size = len(bitmap[y-start_y])
-                for x in range(start_x, start_x + x_size):
-                    if self.flip:
-                        x_offset = (start_x + x_size - 1) - x
-                    else:
-                        x_offset = x - start_x
-                    if bitmap[y-start_y][x_offset] != ' ':
-                        screen.draw(x, y, self.char or bitmap[y-start_y][x_offset], color=self.color)
-                        self.coords.add((x, y))
-
-            except Exception as e:
-                screen.debug()
-                print(e)
-                print('here')
+            x_size = len(bitmap[y-start_y])
+            for x in range(start_x, start_x + x_size):
+                if self.flip:
+                    x_offset = (start_x + x_size - 1) - x
+                else:
+                    x_offset = x - start_x
+                if bitmap[y-start_y][x_offset] != ' ':
+                    screen.draw(x, y, self.char or bitmap[y-start_y][x_offset], color=self.color)
+                    self.coords.add((x, y))
 
         if self._remove_after_animation and self.renders > self._frames_per_bitmap * (len(self._bitmaps) - 1):
             screen.remove(self)
