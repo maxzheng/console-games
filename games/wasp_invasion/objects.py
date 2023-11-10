@@ -3,20 +3,19 @@ from random import randint, random, choice
 from games.screen import Screen
 from games.objects import (Wasp, Explosion, Projectile, Monologue,
                            Stickman, AbstractPlayer, AbstractEnemies, CompassionateBoss,
-                           WaspKaiju, DyingWaspKaiju)
+                           WaspKaiju, DyingWaspKaiju, Char)
 
 
 class Player(AbstractPlayer):
     def __init__(self, *args, **kwargs):
         self.gas_limit = 100
-        self.left_deltas = (-2, 0)
-        self.upleft_deltas = (-2, -1)
-        self.right_deltas = (2, 0)
-        self.upright_deltas = (2, -1)
+        self.left_deltas = (-2, 0, '⇚')
+        self.upleft_deltas = (-2, -1, '⇖')
+        self.right_deltas = (2, 0, '⇛')
+        self.upright_deltas = (2, -1, '⇗')
         self.projectile_deltas = self.right_deltas
-        self.hp = 100
 
-        super().__init__(*args, score_title='Killed', **kwargs)
+        super().__init__(*args, score_title='Killed', max_hp=100, **kwargs)
 
     def reset(self):
         super().reset()
@@ -28,12 +27,21 @@ class Player(AbstractPlayer):
         if self.screen:
             self.x = self.screen.width / 2
             self.y = self.screen.height - 2
-            self.screen.status.pop('Gas', None)
+
+        self.flamethrower = Char(self.x, self.y, char=None)
 
     def render(self, screen: Screen):
         super().render(screen)
 
         if self.active:
+            screen.border.set_levels(self.hp / self.max_hp, self.gas / self.gas_limit)
+
+            if self.is_hit:
+                self.color = screen.COLOR_YELLOW
+                self.is_hit = False
+            else:
+                self.color = None
+
             if self.y_delta:
                 # Jumps up
                 if self.y_delta < 0:
@@ -50,9 +58,17 @@ class Player(AbstractPlayer):
                     if self.y >= self.screen.height - 2.5:
                         self.y_delta = 0
 
-            x_delta, y_delta = self.projectile_deltas
+            x_delta, y_delta, char = self.projectile_deltas
+            self.flamethrower.x = int(self.x + x_delta)
+            self.flamethrower.y = self.y + y_delta - 0.5
 
             if self.flame_on:
+                self.flamethrower.char = char
+                self.flamethrower.color = choice([screen.COLOR_RED, screen.COLOR_YELLOW])
+
+                if self.flamethrower not in screen:
+                    screen.add(self.flamethrower)
+
                 if self.gas > 0:
                     for flame_size in range(10):
                         explosion = Explosion(self.x, self.y, size=flame_size, parent=self)
@@ -69,8 +85,10 @@ class Player(AbstractPlayer):
                 else:
                     screen.add(Monologue(self.x, self.y - 2, texts=['Out of gas!!!',
                                                                     'Look for green gas refills']))
-
-        screen.border.status['Gas'] = '{}%'.format(int(self.gas))
+            else:
+                self.flamethrower.char = '⇓'
+                self.flamethrower.color = None
+                self.flamethrower.y = self.y + 0.5
 
     def destruct(self):
         super().destruct(msg='You got STUNG!!', explosion_size=30)
@@ -98,7 +116,9 @@ class Player(AbstractPlayer):
 
     def up_pressed(self):
         if self.alive:
-            if self.projectile_deltas == self.right_deltas:
+            if not self.flame_on:
+                self.flame_on = True
+            elif self.projectile_deltas == self.right_deltas:
                 self.projectile_deltas = self.upright_deltas
             elif self.projectile_deltas == self.left_deltas:
                 self.projectile_deltas = self.upleft_deltas
@@ -109,13 +129,15 @@ class Player(AbstractPlayer):
         if self.alive and self.y_delta and self.y_delta < 0:
             self.y_delta *= -1
 
-        if self.projectile_deltas == self.upleft_deltas:
+        if self.projectile_deltas in (self.left_deltas, self.right_deltas):
+            self.flame_on = False
+        elif self.projectile_deltas == self.upleft_deltas:
             self.projectile_deltas = self.left_deltas
         else:
             self.projectile_deltas = self.right_deltas
 
     def space_pressed(self):
-        self.flame_on = not self.flame_on
+        pass
 
 
 class Enemies(AbstractEnemies):
@@ -137,7 +159,7 @@ class Enemies(AbstractEnemies):
     def on_death(self, enemy):
         enemy_class = DyingWaspKaiju if isinstance(enemy, CompassionateBoss) else enemy.__class__
         wasp = enemy_class(enemy.x, enemy.y, color=self.screen.COLOR_RED, remove_after_animation=True,
-                           flip=enemy.flip)
+                           flip=getattr(enemy, 'flip', False))
         self.screen.add(wasp)
 
     def should_spawn_boss(self):

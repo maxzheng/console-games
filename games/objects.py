@@ -142,7 +142,7 @@ class ScreenObjectGroup(ScreenObject):
 
 class AbstractPlayer(ScreenObject, KeyListener):
     def __init__(self, name, shape: ScreenObject, controller, score_title='score', show_total=False,
-                 hp=1):
+                 max_hp=1):
         super().__init__(shape.x, shape.y, size=shape.size, color=shape.color)
 
         self.name = name
@@ -154,7 +154,7 @@ class AbstractPlayer(ScreenObject, KeyListener):
         self.char = shape.char
         self.controller = controller
         self.score_title = score_title
-        self.hp = hp
+        self.max_hp = max_hp
 
         self.reset()
 
@@ -168,9 +168,11 @@ class AbstractPlayer(ScreenObject, KeyListener):
 
     def reset(self):
         super().reset()
+        self.hp = self.max_hp
         self.score = 0
         self.alive = True
         self.active = True  # Indicates if the player is taking action, such as shooting
+        self.is_hit = False
         self.size = self.shape.size
         self.shape = self._original_shape
         if self.screen:
@@ -203,6 +205,7 @@ class AbstractPlayer(ScreenObject, KeyListener):
 
     def got_hit(self, points=1):
         """ Decrease player's HP by the given points and destruct when HP hits 0 """
+        self.is_hit = True
         self.hp -= points
         if self.hp <= 0:
             self.hp = 0
@@ -343,7 +346,7 @@ class AbstractEnemies(ScreenObject):
                         break
                 else:
                     if enemy.all_coords & self.player.coords and self.player.alive:
-                        self.player.destruct()
+                        self.player.got_hit()
 
 
 class Bitmap(ScreenObject):
@@ -478,7 +481,22 @@ class Border(ScreenObject):
 
     def reset(self):
         super().reset()
+
+        #: A value from 0 to 1 indicating the level of player's health
+        self.health_level = 0
+
+        #: A value from 0 to 1 indicating the level of player's energy
+        self.energy_level = 0
         self.status = {}
+
+    def set_levels(self, health_level, energy_level):
+        health_level = round(health_level, 2)  # Easier to compare with
+        energy_level = round(energy_level, 2)
+        if self.health_level != health_level:
+            self.health_level = health_level
+
+        if self.energy_level != energy_level:
+            self.energy_level = energy_level
 
     def render(self, screen: Screen):
         for x in range(screen.width):
@@ -491,6 +509,17 @@ class Border(ScreenObject):
                             or (x == screen.width - 1 and y == screen.height - 1) and chr(0x255D)
                             or (y == 0 or y == screen.height - 1) and chr(0x2550)
                             or (x == 0 or x == screen.width - 1) and chr(0x2551))
+
+                    if self.health_level and x == 0 and y < screen.height - 1:
+                        y_level = int((screen.height - 1) * self.health_level + 0.5)
+                        if screen.height - 1 - y <= y_level:
+                            screen.draw(1, y, '│', color=screen.COLOR_RED)
+
+                    if self.energy_level and x == screen.width - 1 and y < screen.height - 1:
+                        y_level = int((screen.height - 2) * self.energy_level + 0.5)
+                        if screen.height - 1 - y <= y_level:
+                            screen.draw(screen.width - 2, y, '│', color=screen.COLOR_GREEN)
+
                     screen.draw(x, y, char, color=self.color)
 
         if self.title:
@@ -1137,3 +1166,8 @@ r"""
 _     _
  \O-O/
 """) # noqa
+
+
+class HealthPotion(Char):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, char='♥', **kwargs)

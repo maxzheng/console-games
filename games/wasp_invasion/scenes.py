@@ -14,8 +14,7 @@ class Intro(Scene):
                                       "and killing everyone.",
                                       "Luckily, I got my trusty flamethrower with me.",
                                       "Oh no! Here they come. GET READY!!",
-                                      "Move around using arrow keys",
-                                      "and turn on/off the flame using Space bar."])
+                                      "Move around using arrow keys"])
         self.controller.player.reset()
         self.controller.player.active = False
 
