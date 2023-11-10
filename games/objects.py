@@ -1049,11 +1049,11 @@ class StickmanScared(Bitmap):
 class LeftFacingWasp(Bitmap):
     frames_per_bitmap = 1
     bitmaps = (r"""
- WW
+ vv
 8oQ
 """,  # noqa
 r"""
- vv
+ ww
 8oQ
 """)  # noqa noqa
 
@@ -1061,11 +1061,11 @@ r"""
 class RightFacingWasp(Bitmap):
     frames_per_bitmap = 1
     bitmaps = (r"""
-WW
+vv
 Qo8
 """,  # noqa
 r"""
-vv
+ww
 Qo8
 """)  # noqa noqa
 

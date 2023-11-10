@@ -8,12 +8,12 @@ class Intro(Scene):
         self.intro = Monologue(self.controller.player.x, self.controller.player.y - 3,
                                on_finish=self.next,
                                texts=["Hi, I am {}.".format(self.controller.player.name),
-                                      "A WASP KAIJU has invaded Earth!!",
-                                      "We don't know why it is here,",
-                                      "but it has taken control of all wasps",
+                                      "Wasp kaijus have invaded Earth!!",
+                                      "We don't know why they are here,",
+                                      "but they have taken control of all wasps",
                                       "and killing everyone.",
                                       "Luckily, I got my trusty flamethrower with me.",
-                                      "Uh oh! Here they come. GET READY!!",
+                                      "Oh no! Here they come. GET READY!!",
                                       "Move around using arrow keys",
                                       "and turn on/off the flame using Space bar."])
         self.controller.player.reset()
