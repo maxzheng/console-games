@@ -10,7 +10,9 @@ class Player(AbstractPlayer):
     def __init__(self, *args, **kwargs):
         self.gas_limit = 100
         self.left_deltas = (-2, 0)
+        self.upleft_deltas = (-2, -1)
         self.right_deltas = (2, 0)
+        self.upright_deltas = (2, -1)
         self.projectile_deltas = self.right_deltas
 
         super().__init__(*args, score_title='Killed', **kwargs)
@@ -54,7 +56,7 @@ class Player(AbstractPlayer):
                     for flame_size in range(10):
                         explosion = Explosion(self.x, self.y, size=flame_size, parent=self)
                         projectile = Projectile(self.x, self.y, shape=None, parent=self,
-                                                x_delta=x_delta * (1 + flame_size / 15),
+                                                x_delta=x_delta * (1 + flame_size / 20),
                                                 y_delta=y_delta, color=screen.COLOR_YELLOW,
                                                 explode_after_renders=flame_size,
                                                 explosion=explosion)
@@ -77,22 +79,39 @@ class Player(AbstractPlayer):
         if self.alive:
             if self.x > self.size:
                 self.x -= 1
-            self.projectile_deltas = self.left_deltas
+
+            if self.projectile_deltas in (self.upright_deltas, self.upleft_deltas):
+                self.projectile_deltas = self.upleft_deltas
+            else:
+                self.projectile_deltas = self.left_deltas
 
     def right_pressed(self):
         if self.alive:
             if self.x < self.screen.width - self.size:
                 self.x += 1
 
-            self.projectile_deltas = self.right_deltas
+            if self.projectile_deltas in (self.upleft_deltas, self.upright_deltas):
+                self.projectile_deltas = self.upright_deltas
+            else:
+                self.projectile_deltas = self.right_deltas
 
     def up_pressed(self):
-        if self.alive and not self.y_delta:
-            self.y_delta = -1
+        if self.alive:
+            if self.projectile_deltas == self.right_deltas:
+                self.projectile_deltas = self.upright_deltas
+            elif self.projectile_deltas == self.left_deltas:
+                self.projectile_deltas = self.upleft_deltas
+            elif not self.y_delta:
+                self.y_delta = -1
 
     def down_pressed(self):
         if self.alive and self.y_delta and self.y_delta < 0:
             self.y_delta *= -1
+
+        if self.projectile_deltas == self.upleft_deltas:
+            self.projectile_deltas = self.left_deltas
+        else:
+            self.projectile_deltas = self.right_deltas
 
     def space_pressed(self):
         self.flame_on = not self.flame_on
