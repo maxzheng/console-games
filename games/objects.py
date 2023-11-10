@@ -141,7 +141,8 @@ class ScreenObjectGroup(ScreenObject):
 
 
 class AbstractPlayer(ScreenObject, KeyListener):
-    def __init__(self, name, shape: ScreenObject, controller, score_title='score', show_total=False):
+    def __init__(self, name, shape: ScreenObject, controller, score_title='score', show_total=False,
+                 hp=1):
         super().__init__(shape.x, shape.y, size=shape.size, color=shape.color)
 
         self.name = name
@@ -153,6 +154,7 @@ class AbstractPlayer(ScreenObject, KeyListener):
         self.char = shape.char
         self.controller = controller
         self.score_title = score_title
+        self.hp = hp
 
         self.reset()
 
@@ -199,7 +201,14 @@ class AbstractPlayer(ScreenObject, KeyListener):
         if self.score > self.high_score:
             self.high_score = self.score
 
-    def destroy(self, msg='The End', explode=True, explosion_size=20):
+    def got_hit(self, points=1):
+        """ Decrease player's HP by the given points and destruct when HP hits 0 """
+        self.hp -= points
+        if self.hp <= 0:
+            self.hp = 0
+            self.destruct()
+
+    def destruct(self, msg='The End', explode=True, explosion_size=20):
         self.alive = False
         self.active = False
         self.screen.add(Text(self.screen.width / 2, self.screen.height / 2, msg,
@@ -334,7 +343,7 @@ class AbstractEnemies(ScreenObject):
                         break
                 else:
                     if enemy.all_coords & self.player.coords and self.player.alive:
-                        self.player.destroy()
+                        self.player.destruct()
 
 
 class Bitmap(ScreenObject):

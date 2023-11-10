@@ -22,7 +22,7 @@ def test_player(screen):
     assert player.screen == screen
     assert screen.status['Wins'] == '3'
 
-    player.destroy()
+    player.destruct()
     assert not player.alive and not player.visible
 
     player.reset()

@@ -44,8 +44,8 @@ class Player(AbstractPlayer):
             self.kids.add(projectile)
             self.screen.add(projectile)
 
-    def destroy(self):
-        super().destroy(msg='You got BASHED!!')
+    def destruct(self):
+        super().destruct(msg='You got BASHED!!')
 
     def left_pressed(self):
         if self.continuous_moves >= 5:
@@ -113,7 +113,7 @@ class Boss(CompassionateBoss):
         if self in screen:
             for projectile in self.kids:
                 if projectile.coords & self.player.coords:
-                    self.player.destroy()
+                    self.player.destruct()
 
             if self.player.size == 1 or not self.player.alive:
                 self.x_delta = 0

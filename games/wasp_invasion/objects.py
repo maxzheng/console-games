@@ -14,6 +14,7 @@ class Player(AbstractPlayer):
         self.right_deltas = (2, 0)
         self.upright_deltas = (2, -1)
         self.projectile_deltas = self.right_deltas
+        self.hp = 100
 
         super().__init__(*args, score_title='Killed', **kwargs)
 
@@ -71,8 +72,8 @@ class Player(AbstractPlayer):
 
         screen.border.status['Gas'] = '{}%'.format(int(self.gas))
 
-    def destroy(self):
-        super().destroy(msg='You got STUNG!!', explosion_size=30)
+    def destruct(self):
+        super().destruct(msg='You got STUNG!!', explosion_size=30)
         self.screen.add(Stickman(self.shape.x, self.shape.y, color=self.screen.COLOR_YELLOW, y_delta=-0.1))
 
     def left_pressed(self):

@@ -88,7 +88,7 @@ class Numbers(ScreenObject, KeyListener):
         self.player.react(self.formula)
 
         if self.all_coords & self.player.coords:
-            self.player.destroy(msg='You got CRUSHED!!')
+            self.player.destruct(msg='You got CRUSHED!!')
         else:
             answer = int(eval(self.formula.text))
             for answer_text in list(self.player.kids):

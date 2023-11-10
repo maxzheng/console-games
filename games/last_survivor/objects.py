@@ -138,8 +138,8 @@ class Player(AbstractPlayer):
         if self.flamethrower_enabled:
             screen.border.status['Gas'] = '{}%'.format(int(self.gas))
 
-    def destroy(self):
-        super().destroy(msg='You got ZOMBIFIED!!', explosion_size=30)
+    def destruct(self):
+        super().destruct(msg='You got ZOMBIFIED!!', explosion_size=30)
         self.screen.add(Zombie(self.shape.x, self.shape.y, color=self.screen.COLOR_GREEN, y_delta=-0.1))
 
     def left_pressed(self):
