@@ -28,7 +28,7 @@ class Intro(Scene):
 
 class Survive(Scene):
     def init(self):
-        self.enemies = Enemies(self.controller.player, max_enemies=10)
+        self.enemies = Enemies(self.controller.player, max_enemies=int(self.screen.width / 10))
         self.player.reset()
 
     def start(self):
