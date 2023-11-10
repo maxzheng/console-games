@@ -59,7 +59,7 @@ class Player(AbstractPlayer):
                         self.y_delta = 0
 
             x_delta, y_delta, char = self.projectile_deltas
-            self.flamethrower.x = int(self.x + x_delta)
+            self.flamethrower.x = self.x + x_delta - 0.5
             self.flamethrower.y = self.y + y_delta - 0.5
 
             if self.flame_on:
@@ -70,7 +70,7 @@ class Player(AbstractPlayer):
                     screen.add(self.flamethrower)
 
                 if self.gas > 0:
-                    for flame_size in range(10):
+                    for flame_size in range(int(screen.width / 10)):
                         explosion = Explosion(self.x, self.y, size=flame_size, parent=self)
                         projectile = Projectile(self.x, self.y, shape=None, parent=self,
                                                 x_delta=x_delta * (1 + flame_size / 20),
@@ -82,9 +82,10 @@ class Player(AbstractPlayer):
 
                 if self.gas > 0:
                     self.gas -= 0.01
-                else:
+                elif self.gas != -1:
                     screen.add(Monologue(self.x, self.y - 2, texts=['Out of gas!!!',
                                                                     'Look for green gas refills']))
+                    self.gas = -1
             else:
                 self.flamethrower.char = '⇓'
                 self.flamethrower.color = None
@@ -173,7 +174,7 @@ class Enemies(AbstractEnemies):
             x_delta = 0.1
             x = 0
 
-        return CompassionateBoss('Max',
+        return CompassionateBoss('Kaiju',
                                  WaspKaiju(x, self.screen.height - 10,
                                            x_delta=x_delta, y_delta=0.01,
                                            color=self.screen.COLOR_YELLOW, random_start=True),

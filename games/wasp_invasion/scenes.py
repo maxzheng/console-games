@@ -11,10 +11,11 @@ class Intro(Scene):
                                       "Wasp kaijus have invaded Earth!!",
                                       "We don't know why they are here,",
                                       "but they have taken control of all wasps",
-                                      "and killing everyone.",
+                                      "and started killing everyone.",
                                       "Luckily, I got my trusty flamethrower with me.",
                                       "Oh no! Here they come. GET READY!!",
-                                      "Move around using arrow keys"])
+                                      "Move around using left/right keys",
+                                      "and control the flame using up/down keys."])
         self.controller.player.reset()
         self.controller.player.active = False
 
