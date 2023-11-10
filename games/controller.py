@@ -112,6 +112,9 @@ class Controller(KeyListener):
         return self._key_presses.pop() if self._key_presses else None
 
     def key_pressed(self, key):
+        if key == ord('D') == self.last_key_pressed:
+            self.screen.debug()
+
         # self.screen.debug(key=key)
 
         self.last_key_pressed = key

@@ -201,8 +201,10 @@ class Screen:
                 self.border.status.update(debug_info)
         else:
             self.__exit__()
+            self._screen.move(self.height, 1)
             import pdb
             pdb.set_trace()
+            curses.noecho()  # Remove echo after continuing
 
 
 class ScreenBuffer:

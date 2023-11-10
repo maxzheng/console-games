@@ -338,7 +338,8 @@ class AbstractEnemies(ScreenObject):
 
 
 class Bitmap(ScreenObject):
-    def __init__(self, *args, char=None, random_start=False, remove_after_animation=False, **kwargs):
+    def __init__(self, *args, char=None, random_start=False, remove_after_animation=False,
+                 flip=False, **kwargs):
         super().__init__(*args, **kwargs)
         self.char = getattr(self, 'char', char)  # or chr(0x2588)
         self._bitmaps = getattr(self, 'bitmaps', [])
@@ -346,6 +347,7 @@ class Bitmap(ScreenObject):
         self._remove_after_animation = getattr(self, 'remove_after_animation', remove_after_animation)
         self._bitmap_index_offset = randint(0, max(len(self._bitmaps), 1) - 1) if random_start else 0
         self.renders = 0
+        self.flip = flip
 
         self._bitmap = self._bitmaps and self._bitmaps[0] or getattr(self, 'bitmap', """\
 ▓▓▓▓▓
@@ -376,8 +378,12 @@ class Bitmap(ScreenObject):
             try:
                 x_size = len(bitmap[y-start_y])
                 for x in range(start_x, start_x + x_size):
-                    if bitmap[y-start_y][x-start_x] != ' ':
-                        screen.draw(x, y, self.char or bitmap[y-start_y][x-start_x], color=self.color)
+                    if self.flip:
+                        x_offset = (start_x + x_size - 1) - x
+                    else:
+                        x_offset = x - start_x
+                    if bitmap[y-start_y][x_offset] != ' ':
+                        screen.draw(x, y, self.char or bitmap[y-start_y][x_offset], color=self.color)
                         self.coords.add((x, y))
 
             except Exception as e:
@@ -631,6 +637,14 @@ class Explosion(ScreenObject):
         return obj
 
     def render(self, screen: Screen):
+        if self.current_size > self.size:
+            screen.remove(self)
+            if self.parent:
+                self.parent.remove_kid(self)
+            if self.on_finish:
+                self.on_finish()
+            return
+
         super().render(screen)
 
         start_x = int(self.x - self.current_size / 2)
@@ -648,12 +662,6 @@ class Explosion(ScreenObject):
                         screen.draw(x, y, self.char, color=colors[randint(0, len(colors) - 1)])
 
         self.current_size += 1
-        if self.current_size > self.size:
-            screen.remove(self)
-            if self.parent:
-                self.parent.remove_kid(self)
-            if self.on_finish:
-                self.on_finish()
 
 
 class Triangle(ScreenObject):
@@ -1046,7 +1054,7 @@ class StickmanScared(Bitmap):
 """  # noqa
 
 
-class LeftFacingWasp(Bitmap):
+class Wasp(Bitmap):
     frames_per_bitmap = 1
     bitmaps = (r"""
  vv
@@ -1055,18 +1063,6 @@ class LeftFacingWasp(Bitmap):
 r"""
  ww
 8oQ
-""")  # noqa noqa
-
-
-class RightFacingWasp(Bitmap):
-    frames_per_bitmap = 1
-    bitmaps = (r"""
-vv
-Qo8
-""",  # noqa
-r"""
-ww
-Qo8
 """)  # noqa noqa
 
 

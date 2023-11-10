@@ -1,7 +1,7 @@
 from random import randint, random, choice
 
 from games.screen import Screen
-from games.objects import (LeftFacingWasp, RightFacingWasp, Explosion, Projectile, Monologue,
+from games.objects import (Wasp, Explosion, Projectile, Monologue,
                            Stickman, AbstractPlayer, AbstractEnemies, CompassionateBoss,
                            WaspKaiju, DyingWaspKaiju)
 
@@ -9,8 +9,8 @@ from games.objects import (LeftFacingWasp, RightFacingWasp, Explosion, Projectil
 class Player(AbstractPlayer):
     def __init__(self, *args, **kwargs):
         self.gas_limit = 100
-        self.left_deltas = (-3, 0)
-        self.right_deltas = (3, 0)
+        self.left_deltas = (-2, 0)
+        self.right_deltas = (2, 0)
         self.projectile_deltas = self.right_deltas
 
         super().__init__(*args, score_title='Killed', **kwargs)
@@ -54,7 +54,8 @@ class Player(AbstractPlayer):
                     for flame_size in range(10):
                         explosion = Explosion(self.x, self.y, size=flame_size, parent=self)
                         projectile = Projectile(self.x, self.y, shape=None, parent=self,
-                                                x_delta=x_delta, y_delta=y_delta, color=screen.COLOR_YELLOW,
+                                                x_delta=x_delta * (1 + flame_size / 15),
+                                                y_delta=y_delta, color=screen.COLOR_YELLOW,
                                                 explode_after_renders=flame_size,
                                                 explosion=explosion)
                         self.kids.add(projectile)
@@ -90,7 +91,7 @@ class Player(AbstractPlayer):
             self.y_delta = -1
 
     def down_pressed(self):
-        if self.alive and self.y_delta < 0:
+        if self.alive and self.y_delta and self.y_delta < 0:
             self.y_delta *= -1
 
     def space_pressed(self):
@@ -110,14 +111,13 @@ class Enemies(AbstractEnemies):
         x_sign = (1 if x < self.player.x else -1) * random()
         y_sign = (1 if y < self.player.y else -1) * random()
 
-        if x_sign < 0:
-            return LeftFacingWasp(x, y, x_delta=x_sign * speed, y_delta=y_sign * speed, random_start=True)
-        else:
-            return RightFacingWasp(x, y, x_delta=x_sign * speed, y_delta=y_sign * speed, random_start=True)
+        return Wasp(x, y, x_delta=x_sign * speed, y_delta=y_sign * speed, random_start=True,
+                    flip=x_sign > 0)
 
     def on_death(self, enemy):
         enemy_class = DyingWaspKaiju if isinstance(enemy, CompassionateBoss) else enemy.__class__
-        wasp = enemy_class(enemy.x, enemy.y, color=self.screen.COLOR_RED, remove_after_animation=True)
+        wasp = enemy_class(enemy.x, enemy.y, color=self.screen.COLOR_RED, remove_after_animation=True,
+                           flip=enemy.flip)
         self.screen.add(wasp)
 
     def should_spawn_boss(self):
