@@ -6,7 +6,7 @@ from games.listeners import KeyListener
 
 class ScreenObject:
     """ Base class for all objects on screen """
-    def __init__(self, x: int, y: int, x_delta=0, y_delta=0, color=None, size=1, parent=None):
+    def __init__(self, x: int, y: int, x_delta=None, y_delta=None, color=None, size=1, parent=None):
         self.x = x
         self.y = y
         self.x_delta = x_delta
@@ -211,13 +211,15 @@ class AbstractPlayer(ScreenObject, KeyListener):
 
 class CompassionateBoss(ScreenObject):
     def __init__(self, name, shape: ScreenObject, player: AbstractPlayer, hp=5):
-        super().__init__(shape.x, shape.y, size=shape.size, color=shape.color)
+        super().__init__(shape.x, shape.y, size=shape.size, color=shape.color,
+                         x_delta=shape.x_delta, y_delta=shape.y_delta)
         self.name = name
         self.shape = shape
         self.player = player
-        self.y = -5
-        self.y_delta = 0.1
-        self.x_delta = self.initial_x_delta
+        if self.y_delta is None:
+            self.y_delta = 0.1
+        if self.x_delta is None:
+            self.x_delta = self.initial_x_delta
         self.is_hit = False
         self.char = shape.char
         self.hp = hp
@@ -297,8 +299,10 @@ class AbstractEnemies(ScreenObject):
         for enemy in list(self.enemies):
             # Make them go fast when player is destroyed
             if not self.player.alive:
-                enemy.y_delta *= 1.2
-                enemy.x_delta *= 1.2
+                if enemy.y_delta:
+                    enemy.y_delta *= 1.2
+                if enemy.x_delta:
+                    enemy.x_delta *= 1.2
 
             # If it is out of the screen, remove it (except for boss or player is dead)
             if enemy.is_out and (enemy != self.boss or not self.player.alive):
@@ -334,11 +338,12 @@ class AbstractEnemies(ScreenObject):
 
 
 class Bitmap(ScreenObject):
-    def __init__(self, *args, char=None, random_start=False, **kwargs):
+    def __init__(self, *args, char=None, random_start=False, remove_after_animation=False, **kwargs):
         super().__init__(*args, **kwargs)
         self.char = getattr(self, 'char', char)  # or chr(0x2588)
         self._bitmaps = getattr(self, 'bitmaps', [])
         self._frames_per_bitmap = getattr(self, 'frames_per_bitmap', 10)
+        self._remove_after_animation = getattr(self, 'remove_after_animation', remove_after_animation)
         self._bitmap_index_offset = randint(0, max(len(self._bitmaps), 1) - 1) if random_start else 0
         self.renders = 0
 
@@ -380,9 +385,14 @@ class Bitmap(ScreenObject):
                 print(e)
                 print('here')
 
+        if self._remove_after_animation and self.renders > self._frames_per_bitmap * (len(self._bitmaps) - 1):
+            screen.remove(self)
+            if self.parent:
+                self.parent.remove_kid(self)
+
 
 class Text(ScreenObject):
-    def __init__(self, x: int, y: int, text: str, x_delta=0, y_delta=0, is_centered=False, color=None):
+    def __init__(self, x: int, y: int, text: str, x_delta=None, y_delta=None, is_centered=False, color=None):
         super().__init__(x, y, size=int(len(text) / 2), x_delta=x_delta, y_delta=y_delta, color=color)
         self.text = text
         self.is_centered = is_centered
@@ -416,7 +426,7 @@ class Logo(ScreenObject):
 
 
 class Monologue(Text):
-    def __init__(self, x: int, y: int, texts=[], on_finish=None, x_delta=0, y_delta=0):
+    def __init__(self, x: int, y: int, texts=[], on_finish=None, x_delta=None, y_delta=None):
         super().__init__(x, y, texts[0], x_delta=x_delta, y_delta=y_delta)
         self.center_x = x
         self.texts = texts
@@ -500,7 +510,7 @@ class Char(ScreenObject):
 
 
 class Projectile(ScreenObject):
-    def __init__(self, x: int, y: int, shape='^', x_delta=0, y_delta=-1, color=None, size=1,
+    def __init__(self, x: int, y: int, shape='^', x_delta=None, y_delta=-1, color=None, size=1,
                  parent=None, explode_after_renders=None, explosion=None, explosions=1):
         super().__init__(x, y, color=color, x_delta=x_delta, y_delta=y_delta, size=size, parent=parent)
         self.shape = shape
@@ -544,7 +554,7 @@ class Projectile(ScreenObject):
 
 
 class Circle(ScreenObject):
-    def __init__(self, x: int, y: int, size=5, char='O', x_delta=0, y_delta=0, color=None,
+    def __init__(self, x: int, y: int, size=5, char='O', x_delta=None, y_delta=None, color=None,
                  name=None):
         super().__init__(x, y, x_delta=x_delta, y_delta=y_delta, color=color,
                          size=size)
@@ -564,7 +574,7 @@ class Circle(ScreenObject):
 
 
 class Diamond(ScreenObject):
-    def __init__(self, x: int, y: int, size=2, char='!', x_delta=0, y_delta=0, color=None,
+    def __init__(self, x: int, y: int, size=2, char='!', x_delta=None, y_delta=None, color=None,
                  name=None):
         super().__init__(x, y, x_delta=x_delta, y_delta=y_delta, color=color,
                          size=size)
@@ -582,7 +592,7 @@ class Diamond(ScreenObject):
 
 
 class Square(ScreenObject):
-    def __init__(self, x: int, y: int, size=3, char='#', x_delta=0, y_delta=0, color=None,
+    def __init__(self, x: int, y: int, size=3, char='#', x_delta=None, y_delta=None, color=None,
                  name=None, solid=False):
         super().__init__(x, y, x_delta=x_delta, y_delta=y_delta, color=color,
                          size=size)
@@ -647,7 +657,7 @@ class Explosion(ScreenObject):
 
 
 class Triangle(ScreenObject):
-    def __init__(self, x: int, y: int, size=5, char='^', x_delta=0, y_delta=0, color=None,
+    def __init__(self, x: int, y: int, size=5, char='^', x_delta=None, y_delta=None, color=None,
                  name=None):
         super().__init__(x, y, x_delta=x_delta, y_delta=y_delta, color=color,
                          size=size)
@@ -674,7 +684,7 @@ class Triangle(ScreenObject):
 
 
 class Bar(ScreenObject):
-    def __init__(self, x: int, y: int, size=3, char='=', x_delta=0, y_delta=0, color=None,
+    def __init__(self, x: int, y: int, size=3, char='=', x_delta=None, y_delta=None, color=None,
                  parent=None):
         super().__init__(x, y, x_delta=x_delta, y_delta=y_delta, color=color,
                          size=size, parent=parent)
@@ -966,6 +976,7 @@ r"""
 
 
 class DyingZombie(Bitmap):
+    remove_after_animation = True
     frames_per_bitmap = 3
     bitmaps = (r"""
    O 
@@ -1010,14 +1021,6 @@ r"""
 \-O-/
 """) # noqa
 
-    def render(self, screen: Screen):
-        super().render(screen)
-
-        if self.renders > self._frames_per_bitmap * (len(self._bitmaps) - 1):
-            screen.remove(self)
-            if self.parent:
-                self.parent.remove_kid(self)
-
 
 class Stickman(Bitmap):
     bitmap = r"""
@@ -1043,72 +1046,89 @@ class StickmanScared(Bitmap):
 """  # noqa
 
 
-class Wasp(Bitmap):
+class LeftFacingWasp(Bitmap):
+    frames_per_bitmap = 1
     bitmaps = (r"""
-__      __
-  \_--_/
-  \O  O/
-   |  |
-   \\//
-""",  # noqa noqa
+ WW
+8oQ
+""",  # noqa
 r"""
--_      __
-  \_--_/
-  \O  O/
-   |  |
-   \||/
-""",  # noqa noqa
-r"""
-__      _
-  \_--_/ \
-  \O  O/
-   |  |
-   \\//
-""",  # noqa noqa
-r"""
-\_      _
-  \_--_/ \
-  \O  O/
-   |  |
-   \||/
+ vv
+8oQ
 """)  # noqa noqa
 
 
-class DyingWasp(Bitmap):
+class RightFacingWasp(Bitmap):
+    frames_per_bitmap = 1
+    bitmaps = (r"""
+WW
+Qo8
+""",  # noqa
+r"""
+vv
+Qo8
+""")  # noqa noqa
+
+
+class WaspKaiju(Bitmap):
+    bitmaps = (r"""
+ __      __
+/  \_--_/  \
+   |O  O|
+    \  /
+     \/
+""",  # noqa
+r"""
+--_      __
+   \_--_/  \
+   |O  O|
+    \  /
+     ||
+""",  # noqa
+r"""
+-__      ___
+   \_--_/
+   |O  O|
+    \  /
+     \/
+""",  # noqa
+r"""
+--_      __
+   \_--_/  \
+   |O  O|
+    \  /
+     ||
+""")  # noqa
+
+
+class DyingWaspKaiju(Bitmap):
+    remove_after_animation = True
     frames_per_bitmap = 3
     bitmaps = (r"""
+ __      __
+/  \_--_/  \
+   \O  O/
+    |  |
+    \\//
+""",  # noqa noqa
+r"""
+ 
+--_      _--
+   \_--_/
+   \O  O/
+    \||/
+""",  # noqa noqa
+r"""
+ 
+ 
 __      __
-  \_--_/
   \O  O/
-   |  |
    \\//
 """,  # noqa noqa
 r"""
  
--_      _-
-  \_--_/
-  \O  O/
-   \||/
-""",  # noqa noqa
-r"""
  
  
-__      __
-  \O  O/
-   \\//
-""",  # noqa noqa
-r"""
- 
- 
- 
- _      _
-/ \O--O/ \
+_     _
+ \O-O/
 """) # noqa
-
-    def render(self, screen: Screen):
-        super().render(screen)
-
-        if self.renders > self._frames_per_bitmap * (len(self._bitmaps) - 1):
-            screen.remove(self)
-            if self.parent:
-                self.parent.remove_kid(self)

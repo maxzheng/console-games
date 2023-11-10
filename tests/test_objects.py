@@ -132,7 +132,7 @@ def test_compassionate_boss(screen, player):
     boss = CompassionateBoss('Max', Circle(1, 1,), player)
     screen.add(boss)
     boss.render(screen)
-    assert boss.y == -4.9
+    assert boss.y == 1.1
 
 
 def test_enemies(screen, player):
