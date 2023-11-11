@@ -1,5 +1,23 @@
-Version 0.1.25
+Version 0.1.26
 ================================================================================
+
+* Update readme
+* Add landscape
+* Remove debug code
+* Increase flame size
+* Adjust flame size based on screen
+* Add flamethrower to screen
+* Rename to destruct
+* Allow flamethrower to be pointed up
+* Fix flame
+* Better wings
+* Set initial wasps based on screen size
+* Add small wasps and kaiju
+* Support jumping
+* Prototype Wasp Invasion
+
+Version 0.1.25
+--------------------------------------------------------------------------------
 
 * Update with better image
 
