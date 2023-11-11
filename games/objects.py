@@ -428,18 +428,31 @@ class ObjectMap(Bitmap):
     def is_out(self):
         return False
 
+    def render(self, screen: Screen):
+        # from time import time
+        # start = time()
+
+        super().render(screen)
+
+        # if not getattr(screen, 'render_secs', None):
+        #    screen.render_secs = {}
+        # screen.render_secs[self.__class__.__name__] = round((time() - start) * screen.fps_limit * 60, 2)
+        # screen.debug(render_secs=screen.render_secs)
+
     def draw(self, x, y, char, screen):
         x = (x - int(self.x)) * self.grid_size + int(self.x)
         y = (y - int(self.y)) * self.grid_size + int(self.y) + self.grid_size / 2
         if char in self._object_map:
+            if (x > screen.width + self.grid_size or y > screen.height + self.grid_size
+                    or x < -self.grid_size or y < -self.grid_size):
+                return
             obj_cls = self._object_map[char]
             obj = obj_cls(x, y)
-            if not obj.is_out:
-                self._objects_mapped += 1
-                # screen.debug(objects_mapped_per_frame=int(self._objects_mapped / screen.renders))
-                obj.renders = self.renders + x
-                obj.render(screen)
-                self.coords.update(obj.coords)
+            self._objects_mapped += 1
+            # screen.debug(objects_mapped_per_frame=int(self._objects_mapped / screen.renders))
+            obj.renders = self.renders + x
+            obj.render(screen)
+            self.coords.update(obj.coords)
 
 
 class Text(ScreenObject):
