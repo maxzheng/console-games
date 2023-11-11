@@ -70,7 +70,7 @@ class Player(AbstractPlayer):
                     screen.add(self.flamethrower)
 
                 if self.gas > 0:
-                    for flame_size in range(int(screen.width / 9)):
+                    for flame_size in range(min(20, int(screen.width / 9))):
                         explosion = Explosion(self.x, self.y, size=flame_size, parent=self)
                         projectile = Projectile(self.x, self.y, shape=None, parent=self,
                                                 x_delta=x_delta * (1 + flame_size / 20),
