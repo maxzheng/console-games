@@ -27,7 +27,7 @@ def test_add_and_remove():
 def test_enter_exit(screen):
     # These don't seem to work under pytest
     with screen as s:
-        assert len(s.colors) == 6
+        assert len(s.colors) == 8
         assert s.width
         assert s.height
         assert s.buffer

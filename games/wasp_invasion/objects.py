@@ -182,12 +182,6 @@ class Enemies(AbstractEnemies):
                                  hp=self.player.score/25)
 
 
-class Landscape0(Landscape):
-    bitmap = """
-          S
-"""
-
-
 class Landscape1(Landscape):
     move_speed = 0.1
     bitmap = """

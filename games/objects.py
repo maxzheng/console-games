@@ -11,7 +11,7 @@ class ScreenObject:
         self.y = y
         self.x_delta = x_delta
         self.y_delta = y_delta
-        self.color = color
+        self.color = color or getattr(self, 'color', None)
         self.size = size
         self.coords = set()
         self.parent = parent
@@ -421,6 +421,8 @@ class ObjectMap(Bitmap):
         #: Map of object characters to colors
         self._object_map = getattr(self, 'object_map', {})
 
+        self._objects_mapped = 0
+
     @property
     def is_out(self):
         return False
@@ -428,10 +430,12 @@ class ObjectMap(Bitmap):
     def draw(self, x, y, char, screen):
         x = (x - int(self.x)) * self.grid_size + int(self.x)
         y = (y - int(self.y)) * self.grid_size + int(self.y) + self.grid_size / 2
-        if char in self.object_map:
-            obj_cls, color_name = self.object_map[char]
-            obj = obj_cls(x, y, color=color_name and getattr(screen, color_name))
+        if char in self._object_map:
+            obj_cls = self._object_map[char]
+            obj = obj_cls(x, y)
             if not obj.is_out:
+                self._objects_mapped += 1
+                # screen.debug(objects_mapped_per_frame=int(self._objects_mapped / screen.renders))
                 obj.renders = self.renders + x
                 obj.render(screen)
                 self.coords.update(obj.coords)
@@ -1202,6 +1206,7 @@ class HealthPotion(Char):
 
 
 class Tree(Bitmap):
+    color = 'green'
     bitmaps = (r"""
  __  /   __
 //\\|\\_/\\\
@@ -1228,11 +1233,23 @@ r"""
 """)  # noqa
 
 
+class Sun(Bitmap):
+    color = ('white', 'yellow')
+    bitmap = (r"""
+   \ | /
+    ooo
+-- ooooo --
+-- ooooo --
+    ooo
+   / | \
+""")  # noqa
+
+
 class Landscape(ObjectMap, KeyListener):
     move_speed = 0
     object_map = {
-        'S': (Circle, 'COLOR_YELLOW'),  # Sun
-        'T': (Tree, 'COLOR_GREEN')
+        'S': Sun,
+        'T': Tree
     }
 
     def left_pressed(self):

@@ -7,7 +7,7 @@ from games.listeners import KeyListener
 
 class Screen:
     #: Special rainbow color
-    COLOR_RAINBOW = -1
+    COLOR_RAINBOW = (-1,)
 
     def __init__(self, border=None, fps=30, debug=False):
         #: FPS limit to render
@@ -39,6 +39,11 @@ class Screen:
 
         #: Curses screen object
         self._screen = None
+
+        #: Map of color name to actual color pairs for Curses screen. Full set is populated in __enter__
+        self.colors = {
+            'white': None,
+            'rainbow': self.COLOR_RAINBOW}
 
         self.reset()
 
@@ -85,13 +90,12 @@ class Screen:
         curses.cbreak()
         curses.curs_set(False)
 
-        self.colors = []
         for color in ('RED', 'GREEN', 'BLUE', 'YELLOW', 'CYAN', 'MAGENTA'):
             color_name = 'COLOR_' + color
             color_id = getattr(curses, color_name)
             curses.init_pair(color_id, color_id, -1)
             setattr(self, color_name, curses.color_pair(color_id))
-            self.colors.append(getattr(self, color_name))
+            self.colors[color.lower()] = getattr(self, color_name)
 
         return self
 
@@ -149,8 +153,12 @@ class Screen:
     def draw(self, x: int, y: int, char: str, color=None):
         """ Draw character on the given position """
         if x >= 0 and x < self._width and y >= 0 and y < self._height:
+            if type(color) in (tuple, list) and isinstance(color[0], str):
+                color = self.colors[choice(color)]
+            if color in self.colors:
+                color = self.colors[color]
             if color == self.COLOR_RAINBOW:
-                color = choice(self.colors)
+                color = choice(self.colors.values())
             self.buffer.add(x, y, char, color)
 
     def render(self):
