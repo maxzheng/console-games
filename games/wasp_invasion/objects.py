@@ -3,7 +3,7 @@ from random import randint, random, choice
 from games.screen import Screen
 from games.objects import (Wasp, Explosion, Projectile, Monologue,
                            Stickman, AbstractPlayer, AbstractEnemies, CompassionateBoss,
-                           WaspKaiju, DyingWaspKaiju, Char)
+                           WaspKaiju, DyingWaspKaiju, Char, Landscape)
 
 
 class Player(AbstractPlayer):
@@ -97,7 +97,7 @@ class Player(AbstractPlayer):
 
     def left_pressed(self):
         if self.alive:
-            if self.x > self.size:
+            if self.x > self.size * 5:
                 self.x -= 1
 
             if self.projectile_deltas in (self.upright_deltas, self.upleft_deltas):
@@ -107,7 +107,7 @@ class Player(AbstractPlayer):
 
     def right_pressed(self):
         if self.alive:
-            if self.x < self.screen.width - self.size:
+            if self.x < self.screen.width - self.size * 5:
                 self.x += 1
 
             if self.projectile_deltas in (self.upleft_deltas, self.upright_deltas):
@@ -155,7 +155,7 @@ class Enemies(AbstractEnemies):
         y_sign = (1 if y < self.player.y else -1) * random()
 
         return Wasp(x, y, x_delta=x_sign * speed, y_delta=y_sign * speed, random_start=True,
-                    flip=x_sign > 0)
+                    flip=x_sign > 0, color=self.screen.COLOR_YELLOW)
 
     def on_death(self, enemy):
         enemy_class = DyingWaspKaiju if isinstance(enemy, CompassionateBoss) else enemy.__class__
@@ -180,3 +180,28 @@ class Enemies(AbstractEnemies):
                                            color=self.screen.COLOR_YELLOW, random_start=True),
                                  self.player,
                                  hp=self.player.score/25)
+
+
+class Landscape0(Landscape):
+    bitmap = """
+          S
+"""
+
+
+class Landscape1(Landscape):
+    move_speed = 0.1
+    bitmap = """
+ 
+ 
+   T    T           T        T       T      T           T              T   T            T      T   T
+"""  # noqa
+
+
+class Landscape2(Landscape):
+    move_speed = 0.2
+    bitmap = """
+ 
+ 
+ 
+TT       T     T    T     T     T  T    T         T   T     T   TT   T   T T TTT   T    T    T     T TT
+"""  # noqa

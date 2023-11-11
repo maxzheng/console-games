@@ -351,7 +351,7 @@ class AbstractEnemies(ScreenObject):
 
 class Bitmap(ScreenObject):
     def __init__(self, *args, char=None, random_start=False, remove_after_animation=False,
-                 flip=False, **kwargs):
+                 flip=False, centered=True, **kwargs):
         super().__init__(*args, **kwargs)
         self.char = getattr(self, 'char', char)  # or chr(0x2588)
         self._bitmaps = getattr(self, 'bitmaps', [])
@@ -360,7 +360,7 @@ class Bitmap(ScreenObject):
         self._bitmap_index_offset = randint(0, max(len(self._bitmaps), 1) - 1) if random_start else 0
         self.renders = 0
         self.flip = flip
-
+        self.centered = centered
         self._bitmap = self._bitmaps and self._bitmaps[0] or getattr(self, 'bitmap', """\
 ▓▓▓▓▓
 ▓▓▓▓▓
@@ -369,6 +369,10 @@ class Bitmap(ScreenObject):
 ▓▓▓▓▓
 """)  # noqa
         self.size = len(self._bitmap.strip('\n').split('\n'))
+
+    def draw(self, x, y, char, screen: Screen):
+        screen.draw(x, y, char, color=self.color)
+        self.coords.add((x, y))
 
     def render(self, screen: Screen):
         super().render(screen)
@@ -382,8 +386,12 @@ class Bitmap(ScreenObject):
         bitmap = bitmap.strip('\n').split('\n')
 
         x_size = len(bitmap[0])
-        start_x = int(self.x - x_size / 2)
-        start_y = int(self.y - self.size / 2)
+        if self.centered:
+            start_x = int(self.x - x_size / 2)
+            start_y = int(self.y - self.size / 2)
+        else:
+            start_x = int(self.x)
+            start_y = int(self.y)
         self.coords = set()
 
         for y in range(start_y, start_y + self.size):
@@ -394,13 +402,38 @@ class Bitmap(ScreenObject):
                 else:
                     x_offset = x - start_x
                 if bitmap[y-start_y][x_offset] != ' ':
-                    screen.draw(x, y, self.char or bitmap[y-start_y][x_offset], color=self.color)
-                    self.coords.add((x, y))
+                    self.draw(x, y, self.char or bitmap[y-start_y][x_offset], screen)
 
         if self._remove_after_animation and self.renders > self._frames_per_bitmap * (len(self._bitmaps) - 1):
             screen.remove(self)
             if self.parent:
                 self.parent.remove_kid(self)
+
+
+class ObjectMap(Bitmap):
+    """ Represents screen objects using characters on a bitmap """
+    def __init__(self, *args, grid_size=5, **kwargs):
+        super().__init__(*args, centered=False, **kwargs)
+
+        #: Number of characters each object represents
+        self.grid_size = grid_size
+
+        #: Map of object characters to colors
+        self._object_map = getattr(self, 'object_map', {})
+
+    @property
+    def is_out(self):
+        return False
+
+    def draw(self, x, y, char, screen):
+        x = (x - int(self.x)) * self.grid_size + int(self.x)
+        y = (y - int(self.y)) * self.grid_size + int(self.y) + self.grid_size / 2
+        if char in self.object_map:
+            obj_cls, color_name = self.object_map[char]
+            obj = obj_cls(x, y, color=color_name and getattr(screen, color_name))
+            obj.renders = self.renders + x
+            obj.render(screen)
+            self.coords.update(obj.coords)
 
 
 class Text(ScreenObject):
@@ -1165,3 +1198,44 @@ _     _
 class HealthPotion(Char):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, char='♥', **kwargs)
+
+
+class Tree(Bitmap):
+    bitmaps = (r"""
+ __  /   __
+//\\|\\_/\\\
+// |\||/
+     ||
+     ||
+     ||
+""",  # noqa
+r"""
+ __  |   __
+\//\|\\_/\ /
+\/ |\||\
+     ||
+     ||
+     ||
+""",  # noqa
+r"""
+ __  \   __
+ \/\|\\_/\ \
+\\ |\||\
+     ||
+     ||
+     ||
+""")  # noqa
+
+
+class Landscape(ObjectMap, KeyListener):
+    move_speed = 0
+    object_map = {
+        'S': (Circle, 'COLOR_YELLOW'),  # Sun
+        'T': (Tree, 'COLOR_GREEN')
+    }
+
+    def left_pressed(self):
+        self.x += self.move_speed
+
+    def right_pressed(self):
+        self.x -= self.move_speed

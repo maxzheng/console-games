@@ -1,6 +1,6 @@
 from games.screen import Scene
 from games.objects import Monologue
-from games.wasp_invasion.objects import Enemies
+from games.wasp_invasion.objects import Enemies, Landscape0, Landscape1, Landscape2
 
 
 class Intro(Scene):
@@ -29,10 +29,11 @@ class Intro(Scene):
 class Survive(Scene):
     def init(self):
         self.enemies = Enemies(self.controller.player, max_enemies=int(self.screen.width / 10))
+        self.landscapes = (Landscape0(0, 0), Landscape1(0, 0), Landscape2(0, 0))
         self.player.reset()
 
     def start(self):
-        self.screen.add(self.player, self.enemies)
+        self.screen.add(*self.landscapes, self.player, self.enemies)
 
     def escape_pressed(self):
         self.controller.done = True
