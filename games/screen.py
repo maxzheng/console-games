@@ -158,8 +158,11 @@ class Screen:
             if color in self.colors:
                 color = self.colors[color]
             if color == self.COLOR_RAINBOW:
-                color = choice(self.colors.values())
+                color = self._color_for_rainbow()
             self.buffer.add(x, y, char, color)
+
+    def _color_for_rainbow(self):
+        return choice(list(set(self.colors.values()) - {None, self.COLOR_RAINBOW}))
 
     def render(self):
         start_time = time()

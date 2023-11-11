@@ -261,7 +261,7 @@ class CompassionateBoss(ScreenObject):
                 self.y = -2.5
 
             if self.is_hit:
-                self.color = list(self.screen.colors.values())[self.screen.renders % len(self.screen.colors)]
+                self.color = 'rainbow'
                 self.is_hit = self.got_hit()
 
 
@@ -371,7 +371,8 @@ class Bitmap(ScreenObject):
         self.size = len(self._bitmap.strip('\n').split('\n'))
 
     def draw(self, x, y, char, screen: Screen):
-        screen.draw(x, y, char, color=self.color)
+        color = self.color[self.renders % len(self.color)] if type(self.color) in (tuple, list) else self.color
+        screen.draw(x, y, char, color=color)
         self.coords.add((x, y))
 
     def render(self, screen: Screen):
@@ -819,14 +820,14 @@ class Choice(ScreenObject, KeyListener):
             self.kids.add(instruction)
 
             for i, x in enumerate(range(start_x, end_x, bar_size)):
-                choice = self.choices[i]
-                choice.x = x + bar_size / 2
-                choice.y = self.y
-                screen.add(choice)
-                self.kids.add(choice)
+                chosen = self.choices[i]
+                chosen.x = x + bar_size / 2
+                chosen.y = self.y
+                screen.add(chosen)
+                self.kids.add(chosen)
 
                 if i == self._current:
-                    self.bar.x = choice.x + 1
+                    self.bar.x = chosen.x + 1
 
     def left_pressed(self):
         if self._current > 0 and self.bar:
