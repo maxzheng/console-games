@@ -431,9 +431,10 @@ class ObjectMap(Bitmap):
         if char in self.object_map:
             obj_cls, color_name = self.object_map[char]
             obj = obj_cls(x, y, color=color_name and getattr(screen, color_name))
-            obj.renders = self.renders + x
-            obj.render(screen)
-            self.coords.update(obj.coords)
+            if not obj.is_out:
+                obj.renders = self.renders + x
+                obj.render(screen)
+                self.coords.update(obj.coords)
 
 
 class Text(ScreenObject):
