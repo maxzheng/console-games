@@ -261,7 +261,7 @@ class CompassionateBoss(ScreenObject):
                 self.y = -2.5
 
             if self.is_hit:
-                self.color = self.screen.colors.values()[self.screen.renders % len(self.screen.colors)]
+                self.color = list(self.screen.colors.values())[self.screen.renders % len(self.screen.colors)]
                 self.is_hit = self.got_hit()
 
 
