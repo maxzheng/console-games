@@ -31,7 +31,7 @@ class Player(AbstractPlayer):
 
         if (self.screen.renders % 2 == 0 or self.char == '!') and self.active:
             if self.char == '!':
-                color = self.screen.colors[int(self.screen.renders / 2) % len(self.screen.colors)]
+                color = self.screen.colors.values()[int(self.screen.renders / 2) % len(self.screen.colors)]
             else:
                 color = self.color
 
