@@ -1,5 +1,10 @@
-Version 0.2.2
+Version 0.2.3
 ================================================================================
+
+* Always spawn boss based on where player is moving to
+
+Version 0.2.2
+--------------------------------------------------------------------------------
 
 * Spawn boss more often and make it faster
 
