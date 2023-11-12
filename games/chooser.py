@@ -22,8 +22,8 @@ class Chooser(Controller):
 
 class Choose(Scene):
     def init(self):
-        self.games = [GeoBash(self.screen), NumberCrush(self.screen), LastSurvivor(self.screen),
-                      WaspInvasion(self.screen)]
+        self.games = [GeoBash(self.screen), NumberCrush(self.screen), WaspInvasion(self.screen),
+                      LastSurvivor(self.screen)]
         if self.controller.game_filter:
             self.games = list(filter(lambda g: self.controller.game_filter.lower() in g.name.lower(), self.games))
         self.game_logos = [Logo(0, 0, g.name, g.logo) for g in self.games]
