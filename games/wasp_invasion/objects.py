@@ -4,7 +4,8 @@ from games.screen import Screen
 from games.listeners import KeyListener
 from games.objects import (Wasp, Explosion, Projectile, Monologue,
                            Stickman, AbstractPlayer, AbstractEnemies, CompassionateBoss,
-                           WaspKaiju, DyingWaspKaiju, Char, Landscape)
+                           WaspKaiju, DyingWaspKaiju, Char, Landscape, StickmanScared,
+                           StickmanWorried)
 
 
 class Player(AbstractPlayer):
@@ -15,6 +16,8 @@ class Player(AbstractPlayer):
         self.right_deltas = (2, 0, '⇛')
         self.upright_deltas = (2, -1, '⇗')
         self.projectile_deltas = self.right_deltas
+        self.scared = StickmanScared(0, 0)
+        self.worried = StickmanWorried(0, 0)
 
         super().__init__(*args, score_title='Killed', max_hp=100, **kwargs)
 
@@ -39,9 +42,14 @@ class Player(AbstractPlayer):
 
             if self.is_hit:
                 self.color = screen.COLOR_YELLOW
+                self.scared.sync(self)
+                self.worried.sync(self)
+                self.shape = choice([self.scared, self.worried])
                 self.is_hit = False
-            else:
+            elif self.shape != self._original_shape:
                 self.color = None
+                self._original_shape.sync(self)
+                self.shape = self._original_shape
 
             if self.y_delta:
                 # Jumps up
