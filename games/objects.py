@@ -1149,7 +1149,7 @@ class Stickman(Bitmap):
     bitmap = r"""
  ☻ 
 /|\
-/ \
+/ \
 """  # noqa
 
 
@@ -1157,7 +1157,7 @@ class StickmanWorried(Bitmap):
     bitmap = r"""
  ☺ 
 \|/
-/ \
+/ \
 """  # noqa
 
 
@@ -1165,7 +1165,7 @@ class StickmanScared(Bitmap):
     bitmap = r"""
 \☹/
  | 
-/ \
+/ \
 """  # noqa
 
 
@@ -1293,17 +1293,17 @@ class Sun(Bitmap):
 class Rock(Bitmap):
     bitmap = r"""
   
-  _
- / \__
-/_//__\
+  
+ /¯\
+/_//¯¯\
 """  # noqa
 
 
 class Volcano(Bitmap):
     bitmap = r"""
    /V\
-  / \ \_
- / / \_ \
+  / \ \
+ / / \_¯\
 /________\
 """  # noqa
 
