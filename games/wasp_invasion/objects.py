@@ -118,8 +118,13 @@ class Player(AbstractPlayer):
                 self.projectile_deltas = self.upright_deltas
             elif self.projectile_deltas == self.left_deltas:
                 self.projectile_deltas = self.upleft_deltas
+            elif not self.y_delta or not self.can_move_y():
+                self.y_delta = -1
 
     def down_pressed(self):
+        if self.alive and self.y_delta and self.y_delta < 0:
+            self.y_delta *= -1
+
         if self.projectile_deltas in (self.left_deltas, self.right_deltas):
             self.flame_on = False
         elif self.projectile_deltas == self.upleft_deltas:
