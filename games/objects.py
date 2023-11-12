@@ -70,8 +70,8 @@ class ScreenObject:
         return y_delta or self.y_delta or True
 
     def shifted_coords(self, x_delta=0, y_delta=0):
-        x_adjustment = self.x - int(self.x)
-        y_adjustment = self.y - int(self.y)
+        x_adjustment = (self.x - int(self.x)) if x_delta else 0
+        y_adjustment = (self.y - int(self.y)) * 1.1 if y_delta else 0  # Times 1.1 to avoid stuck in rock
         new_coords = set()
         for x, y in self.coords:
             new_coords.add((int(x + x_delta + x_adjustment), int(y + y_delta + y_adjustment)))
@@ -1291,6 +1291,7 @@ class Sun(Bitmap):
 
 
 class Rock(Bitmap):
+    color = 'magenta'
     bitmap = r"""
   
   
@@ -1300,6 +1301,7 @@ class Rock(Bitmap):
 
 
 class Volcano(Bitmap):
+    color = 'magenta'
     bitmap = r"""
    /V\
   / \ \

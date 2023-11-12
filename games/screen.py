@@ -162,6 +162,11 @@ class Screen:
                 color = self.colors[color]
             if color == self.COLOR_RAINBOW:
                 color = choice(self.rainbow_colors)
+
+            if isinstance(color, str):
+                raise ValueError(('Invalid color name: {}\n'
+                                  'Please choose from: {}').format(color, ', '.join(self.colors)))
+
             self.buffer.add(x, y, char, color)
 
     def render(self):
