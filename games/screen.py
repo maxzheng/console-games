@@ -44,6 +44,7 @@ class Screen:
         self.colors = {
             'white': None,
             'rainbow': self.COLOR_RAINBOW}
+        self.rainbow_colors = []
 
         self.reset()
 
@@ -96,6 +97,7 @@ class Screen:
             curses.init_pair(color_id, color_id, -1)
             setattr(self, color_name, curses.color_pair(color_id))
             self.colors[color.lower()] = getattr(self, color_name)
+            self.rainbow_colors.append(getattr(self, color_name))
 
         return self
 
@@ -158,11 +160,8 @@ class Screen:
             if color in self.colors:
                 color = self.colors[color]
             if color == self.COLOR_RAINBOW:
-                color = self._color_for_rainbow()
+                color = choice(self.rainbow_colors)
             self.buffer.add(x, y, char, color)
-
-    def _color_for_rainbow(self):
-        return choice(list(set(self.colors.values()) - {None, self.COLOR_RAINBOW}))
 
     def render(self):
         start_time = time()
