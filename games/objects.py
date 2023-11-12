@@ -234,6 +234,12 @@ class AbstractPlayer(ScreenObject, KeyListener):
         if self.score > self.high_score:
             self.high_score = self.score
 
+    def killed_enemy(self):
+        self.scored()
+
+    def killed_boss(self):
+        self.scored(points=5)
+
     def got_hit(self, points=1):
         """ Decrease player's HP by the given points and destruct when HP hits 0 """
         self.is_hit = True
@@ -326,7 +332,7 @@ class AbstractEnemies(ScreenObject):
     def render(self, screen: Screen):
         super().render(screen)
 
-        if self.player.alive:
+        if self.player.active:
             # Create enemies
             if len(self.enemies) < self.max_enemies + self.additional_enemies():
                 enemy = self.create_enemy()
@@ -341,14 +347,14 @@ class AbstractEnemies(ScreenObject):
 
         for enemy in list(self.enemies):
             # Make them go fast when player is destroyed
-            if not self.player.alive:
+            if not self.player.active:
                 if enemy.y_delta:
                     enemy.y_delta *= 1.2
                 if enemy.x_delta:
                     enemy.x_delta *= 1.2
 
             # If it is out of the screen, remove it (except for boss or player is dead)
-            if enemy.is_out and (enemy != self.boss or not self.player.alive):
+            if enemy.is_out and (enemy != self.boss or not self.player.active):
                 self.enemies.remove(enemy)
                 screen.remove(enemy)
 
@@ -372,11 +378,14 @@ class AbstractEnemies(ScreenObject):
                         if hasattr(projectile, 'explode'):
                             projectile.explode()
 
-                        self.player.scored(points=5 if enemy == self.boss else 1)
+                        if enemy == self.boss:
+                            self.player.killed_boss()
+                        else:
+                            self.player.killed_enemy()
 
                         break
                 else:
-                    if enemy.all_coords & self.player.coords and self.player.alive:
+                    if enemy.all_coords & self.player.coords and self.player.active:
                         self.player.got_hit()
 
 
@@ -1151,6 +1160,19 @@ class Stickman(Bitmap):
 /|\
 / \
 """  # noqa
+
+
+class StickmanCelebrate(Bitmap):
+    bitmaps = (r"""
+\☻/
+ |
+/ \
+""",
+r"""
+ ☻
+/|\
+/ \
+""")  # noqa
 
 
 class StickmanWorried(Bitmap):

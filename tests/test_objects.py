@@ -178,8 +178,8 @@ def test_enemies(screen, player):
     assert len(enemies.enemies) == 6
     assert len(screen) == 7
 
-    # Next 10 renders will remove all enemies as they get out of screen when player is dead
-    player.alive = False
+    # Next 10 renders will remove all enemies as they get out of screen when player is no longer active
+    player.active = False
     with screen:
         for i in range(10):
             screen.render()

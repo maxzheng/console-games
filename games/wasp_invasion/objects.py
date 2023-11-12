@@ -5,7 +5,7 @@ from games.listeners import KeyListener
 from games.objects import (Wasp, Explosion, Projectile, Monologue,
                            Stickman, AbstractPlayer, AbstractEnemies, CompassionateBoss,
                            WaspKaiju, DyingWaspKaiju, Char, Landscape, StickmanScared,
-                           StickmanWorried)
+                           StickmanWorried, StickmanCelebrate)
 
 
 class Player(AbstractPlayer):
@@ -18,6 +18,7 @@ class Player(AbstractPlayer):
         self.projectile_deltas = self.right_deltas
         self.scared = StickmanScared(0, 0)
         self.worried = StickmanWorried(0, 0)
+        self.celebrate = StickmanCelebrate(0, 0)
 
         super().__init__(*args, score_title='Killed', max_hp=100, **kwargs)
 
@@ -27,12 +28,19 @@ class Player(AbstractPlayer):
 
         self.gas = self.gas_limit
         self.flame_on = True
+        self.kaijus_killed = 0
 
         if self.screen:
             self.x = self.screen.width / 2
             self.y = self.screen.height - 2
+            self.screen.status.pop('Kaijus', None)
 
         self.flamethrower = Char(self.x, self.y, char=None)
+
+    def killed_boss(self):
+        super().killed_boss()
+        self.kaijus_killed += 1
+        self.screen.status['Kaijus'] = self.kaijus_killed
 
     def render(self, screen: Screen):
         super().render(screen)
@@ -40,13 +48,29 @@ class Player(AbstractPlayer):
         if self.active:
             screen.border.set_levels(self.hp / self.max_hp, self.gas / self.gas_limit)
 
+            if self.kaijus_killed:
+                if self.kaijus_killed >= 10 and self.shape != self.celebrate:
+                    self.color = None
+                    self.y_delta = 0
+                    self.x_delta = 0
+                    self.celebrate.sync(self)
+                    self.shape = self.celebrate
+                    self.active = False
+                    screen.add(Monologue(self.x, self.y - 5, texts=['CONGRATS!',
+                                                                    'YOU DEFEATED ALL THE KAIJUS!!!',
+                                                                    'And saved humanity all thanks to',
+                                                                    'to having your trusty flamethrower',
+                                                                    'with you today.',
+                                                                    'Never leave home without it! ;)'],
+                                         on_finish=self.controller.reset_scene))
+
             if self.is_hit:
                 self.color = screen.COLOR_YELLOW
                 self.scared.sync(self)
                 self.worried.sync(self)
                 self.shape = choice([self.scared, self.worried])
                 self.is_hit = False
-            elif self.shape != self._original_shape:
+            elif self.shape not in (self._original_shape, self.celebrate):
                 self.color = None
                 self._original_shape.sync(self)
                 self.shape = self._original_shape
@@ -93,7 +117,7 @@ class Player(AbstractPlayer):
                     self.gas -= 0.01
                 elif self.gas != -1:
                     screen.add(Monologue(self.x, self.y - 2, texts=['Out of gas!!!',
-                                                                    'Look for green gas refills']))
+                                                                    'Better not be wasteful in next life']))
                     self.gas = -1
             else:
                 self.flamethrower.char = '⇓'
@@ -105,21 +129,21 @@ class Player(AbstractPlayer):
         self.screen.add(Stickman(self.shape.x, self.shape.y, color=self.screen.COLOR_YELLOW, y_delta=-0.1))
 
     def left_pressed(self):
-        if self.alive:
+        if self.active:
             if self.projectile_deltas in (self.upright_deltas, self.upleft_deltas):
                 self.projectile_deltas = self.upleft_deltas
             else:
                 self.projectile_deltas = self.left_deltas
 
     def right_pressed(self):
-        if self.alive:
+        if self.active:
             if self.projectile_deltas in (self.upleft_deltas, self.upright_deltas):
                 self.projectile_deltas = self.upright_deltas
             else:
                 self.projectile_deltas = self.right_deltas
 
     def up_pressed(self):
-        if self.alive:
+        if self.active:
             if not self.flame_on:
                 self.flame_on = True
             elif self.projectile_deltas == self.right_deltas:
@@ -130,7 +154,7 @@ class Player(AbstractPlayer):
                 self.y_delta = -1
 
     def down_pressed(self):
-        if self.alive and self.y_delta and self.y_delta < 0:
+        if self.active and self.y_delta and self.y_delta < 0:
             self.y_delta *= -1
 
         if self.projectile_deltas in (self.left_deltas, self.right_deltas):
@@ -141,7 +165,7 @@ class Player(AbstractPlayer):
             self.projectile_deltas = self.right_deltas
 
     def space_pressed(self):
-        if self.alive:
+        if self.active:
             if not self.y_delta or not self.can_move_y():
                 self.y_delta = -1
 
@@ -170,7 +194,7 @@ class Enemies(AbstractEnemies, KeyListener):
         self.screen.add(wasp)
 
     def should_spawn_boss(self):
-        return self.player.score and self.player.score % 50 == 0
+        return self.player.score % 50 == 0 and self.player.score
 
     def additional_enemies(self):
         return super().additional_enemies() + abs((self.player.obstacles.x - self.player.x) / 50)
