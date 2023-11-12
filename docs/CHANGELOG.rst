@@ -1,5 +1,10 @@
-Version 0.1.36
+Version 0.1.37
 ================================================================================
+
+* Use better chars for rock/volcano to avoid being stuck
+
+Version 0.1.36
+--------------------------------------------------------------------------------
 
 * Allow jumping using up key too
 
