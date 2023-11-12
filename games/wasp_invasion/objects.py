@@ -193,17 +193,17 @@ class Enemies(AbstractEnemies, KeyListener):
         self.screen.add(wasp)
 
     def should_spawn_boss(self):
-        return self.player.score % 50 == 0 and self.player.score
+        return self.player.score % 42 == 0 and self.player.score
 
     def additional_enemies(self):
         return super().additional_enemies() + abs((self.player.obstacles.x - self.player.x) / 50)
 
     def create_boss(self):
         if random() < 0.5:
-            x_delta = -0.1
+            x_delta = -0.2
             x = self.screen.width
         else:
-            x_delta = 0.1
+            x_delta = 0.2
             x = 0
 
         return CompassionateBoss('Kaiju',
