@@ -101,7 +101,7 @@ class Player(AbstractPlayer):
                 self.flamethrower.y = self.y + 0.5
 
     def destruct(self):
-        super().destruct(msg='You got STUNG!!', explosion_size=30)
+        super().destruct(msg='You got STUNG to death!!', explosion_size=30)
         self.screen.add(Stickman(self.shape.x, self.shape.y, color=self.screen.COLOR_YELLOW, y_delta=-0.1))
 
     def left_pressed(self):
