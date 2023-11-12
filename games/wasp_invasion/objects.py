@@ -199,7 +199,7 @@ class Enemies(AbstractEnemies, KeyListener):
         return super().additional_enemies() + abs((self.player.obstacles.x - self.player.x) / 50)
 
     def create_boss(self):
-        if random() < 0.5:
+        if getattr(self, 'last_move', None) == 'right':
             x_delta = -0.2
             x = self.screen.width
         else:
@@ -217,11 +217,13 @@ class Enemies(AbstractEnemies, KeyListener):
         if self.player.can_move_x(x_delta=-1):
             for enemy in self.enemies:
                 enemy.x += 1
+            self.last_move = 'left'
 
     def right_pressed(self):
         if self.player.can_move_x(x_delta=1):
             for enemy in self.enemies:
                 enemy.x -= 1
+            self.last_move = 'right'
 
 
 class Landscape1(Landscape):
