@@ -1,5 +1,10 @@
-Version 0.1.37
+Version 0.1.38
 ================================================================================
+
+* Color rock/volcano and fix stuck bug
+
+Version 0.1.37
+--------------------------------------------------------------------------------
 
 * Use better chars for rock/volcano to avoid being stuck
 
