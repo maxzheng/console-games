@@ -179,7 +179,7 @@ class Enemies(AbstractEnemies, KeyListener):
             y = 0
             x = randint(0, self.screen.width)
 
-        speed = min(2, random() * self.player.score / 200 + 0.2)
+        speed = min(2, random() * self.player.score / 420 + 0.2)
         x_sign = (1 if x < self.player.x else -1) * random()
         y_sign = (1 if y < self.player.y else -1) * random()
 
