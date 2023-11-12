@@ -61,6 +61,22 @@ class ScreenObject:
         except Exception:
             return False
 
+    def can_move_x(self, x_delta=0):
+        """ Indicates if object can move by given or self delta """
+        return x_delta or self.x_delta or True
+
+    def can_move_y(self, y_delta=0):
+        """ Indicates if object can move by given or self delta """
+        return y_delta or self.y_delta or True
+
+    def shifted_coords(self, x_delta=0, y_delta=0):
+        x_adjustment = self.x - int(self.x)
+        y_adjustment = self.y - int(self.y)
+        new_coords = set()
+        for x, y in self.coords:
+            new_coords.add((int(x + x_delta + x_adjustment), int(y + y_delta + y_adjustment)))
+        return new_coords
+
     def sync(self, screen_object, location_only=False):
         self.x = screen_object.x
         self.y = screen_object.y
@@ -77,10 +93,10 @@ class ScreenObject:
         """ Render object onto the given screen """
         self.screen = screen
 
-        if self.x_delta:
+        if self.x_delta and self.can_move_x():
             self.x += self.x_delta
 
-        if self.y_delta:
+        if self.y_delta and self.can_move_y():
             self.y += self.y_delta
 
     def reset(self):
@@ -158,14 +174,6 @@ class AbstractPlayer(ScreenObject, KeyListener):
 
         self.reset()
 
-    @property
-    def visible(self):
-        return self.alive
-
-    @visible.setter
-    def visible(self, visible):
-        self.alive = visible
-
     def reset(self):
         super().reset()
         self.hp = self.max_hp
@@ -175,9 +183,32 @@ class AbstractPlayer(ScreenObject, KeyListener):
         self.is_hit = False
         self.size = self.shape.size
         self.shape = self._original_shape
+        self.obstacles = None
         if self.screen:
             self.x = int(self.screen.width / 2) + 1
             self.y = self.screen.height - int(self.size / 2) - 1
+
+    @property
+    def visible(self):
+        return self.alive
+
+    @visible.setter
+    def visible(self, visible):
+        self.alive = visible
+
+    def can_move_x(self, x_delta=0):
+        x_delta = x_delta or self.x_delta or 0
+        return (self.screen
+                and (self.x + x_delta > self.size and self.x + x_delta < self.screen.width - self.size)
+                and (not self.obstacles
+                     or not(self.obstacles.coords & self.shifted_coords(x_delta=x_delta))))
+
+    def can_move_y(self, y_delta=0):
+        y_delta = y_delta or self.y_delta or 0
+        return (self.screen
+                and (self.y + y_delta > self.size and self.y + y_delta < self.screen.height-self.size/2)
+                and (not self.obstacles
+                     or not(self.obstacles.coords & self.shifted_coords(y_delta=y_delta))))
 
     def render(self, screen: Screen):
         super().render(screen)
@@ -1259,15 +1290,41 @@ class Sun(Bitmap):
 """)  # noqa
 
 
+class Rock(Bitmap):
+    bitmap = r"""
+  
+  _
+ / \__
+/_//__\
+"""  # noqa
+
+
+class Volcano(Bitmap):
+    bitmap = r"""
+   /V\
+  / \ \_
+ / / \_ \
+/________\
+"""  # noqa
+
+
 class Landscape(ObjectMap, KeyListener):
     move_speed = 0
     object_map = {
         'S': Sun,
-        'T': Tree
+        'T': Tree,
+        'R': Rock,
+        'V': Volcano
     }
 
+    def __init__(self, *args, player: AbstractPlayer = None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.player = player
+
     def left_pressed(self):
-        self.x += self.move_speed
+        if not self.player or self.player.can_move_x(x_delta=-1):
+            self.x += self.move_speed
 
     def right_pressed(self):
-        self.x -= self.move_speed
+        if not self.player or self.player.can_move_x(x_delta=1):
+            self.x -= self.move_speed

@@ -106,6 +106,7 @@ class Screen:
         curses.nocbreak()
         curses.echo()
         curses.endwin()
+        self._screen.move(self.height, 1)
 
     def add(self, *screen_objects):
         """ Add screen objects to the list """
@@ -211,7 +212,6 @@ class Screen:
                 self.border.status.update(debug_info)
         else:
             self.__exit__()
-            self._screen.move(self.height, 1)
             import pdb
             pdb.set_trace()
             curses.noecho()  # Remove echo after continuing

@@ -1,6 +1,6 @@
 from games.screen import Scene
 from games.objects import Monologue, Sun
-from games.wasp_invasion.objects import Enemies, Landscape1, Landscape2
+from games.wasp_invasion.objects import Enemies, Landscape1, Landscape2, Obstacles
 
 
 class Intro(Scene):
@@ -14,7 +14,7 @@ class Intro(Scene):
                                       "and started killing everyone.",
                                       "Luckily, I got my trusty flamethrower with me.",
                                       "Oh no! Here they come. GET READY!!",
-                                      "Move around using left/right keys",
+                                      "Move around using left/right/space keys",
                                       "and control the flame using up/down keys."])
         self.controller.player.reset()
         self.controller.player.active = False
@@ -29,11 +29,15 @@ class Intro(Scene):
 class Survive(Scene):
     def init(self):
         self.enemies = Enemies(self.controller.player, max_enemies=int(self.screen.width / 10))
-        self.landscapes = (Sun(self.screen.width / 2, 2), Landscape1(0, 0), Landscape2(0, 0))
+        self.landscapes = (Sun(self.screen.width / 2, 2),
+                           Landscape1(0, self.screen.height / 2 - 5, player=self.player),
+                           Landscape2(0, self.screen.height / 2, player=self.player))
+        self.obstacles = Obstacles(self.screen.width / 2, self.screen.height - 5, player=self.player)
         self.player.reset()
+        self.player.obstacles = self.obstacles
 
     def start(self):
-        self.screen.add(*self.landscapes, self.player, self.enemies)
+        self.screen.add(*self.landscapes, self.obstacles, self.enemies, self.player)
 
     def escape_pressed(self):
         self.controller.done = True

@@ -1,6 +1,7 @@
 from random import randint, random, choice
 
 from games.screen import Screen
+from games.listeners import KeyListener
 from games.objects import (Wasp, Explosion, Projectile, Monologue,
                            Stickman, AbstractPlayer, AbstractEnemies, CompassionateBoss,
                            WaspKaiju, DyingWaspKaiju, Char, Landscape)
@@ -97,9 +98,6 @@ class Player(AbstractPlayer):
 
     def left_pressed(self):
         if self.alive:
-            if self.x > self.size * 5:
-                self.x -= 1
-
             if self.projectile_deltas in (self.upright_deltas, self.upleft_deltas):
                 self.projectile_deltas = self.upleft_deltas
             else:
@@ -107,9 +105,6 @@ class Player(AbstractPlayer):
 
     def right_pressed(self):
         if self.alive:
-            if self.x < self.screen.width - self.size * 5:
-                self.x += 1
-
             if self.projectile_deltas in (self.upleft_deltas, self.upright_deltas):
                 self.projectile_deltas = self.upright_deltas
             else:
@@ -123,13 +118,8 @@ class Player(AbstractPlayer):
                 self.projectile_deltas = self.upright_deltas
             elif self.projectile_deltas == self.left_deltas:
                 self.projectile_deltas = self.upleft_deltas
-            elif not self.y_delta:
-                self.y_delta = -1
 
     def down_pressed(self):
-        if self.alive and self.y_delta and self.y_delta < 0:
-            self.y_delta *= -1
-
         if self.projectile_deltas in (self.left_deltas, self.right_deltas):
             self.flame_on = False
         elif self.projectile_deltas == self.upleft_deltas:
@@ -138,10 +128,12 @@ class Player(AbstractPlayer):
             self.projectile_deltas = self.right_deltas
 
     def space_pressed(self):
-        pass
+        if self.alive:
+            if not self.y_delta or not self.can_move_y():
+                self.y_delta = -1
 
 
-class Enemies(AbstractEnemies):
+class Enemies(AbstractEnemies, KeyListener):
     def create_enemy(self):
         if random() < 0.5:
             x = choice([0, self.screen.width])
@@ -150,7 +142,8 @@ class Enemies(AbstractEnemies):
             y = 0
             x = randint(0, self.screen.width)
 
-        speed = random() * self.player.score / 10000 + 0.2
+        distance_score = abs(self.player.obstacles.x - self.player.x) / 2
+        speed = min(2, random() * (self.player.score + distance_score) / 100 + 0.2)
         x_sign = (1 if x < self.player.x else -1) * random()
         y_sign = (1 if y < self.player.y else -1) * random()
 
@@ -166,6 +159,9 @@ class Enemies(AbstractEnemies):
     def should_spawn_boss(self):
         return self.player.score and self.player.score % 50 == 0
 
+    def additional_enemies(self):
+        return super().additional_enemies() + abs((self.player.obstacles.x - self.player.x) / 50)
+
     def create_boss(self):
         if random() < 0.5:
             x_delta = -0.1
@@ -179,14 +175,22 @@ class Enemies(AbstractEnemies):
                                            x_delta=x_delta, y_delta=0.01,
                                            color=self.screen.COLOR_YELLOW, random_start=True),
                                  self.player,
-                                 hp=self.player.score/25)
+                                 hp=self.player.score)
+
+    def left_pressed(self):
+        if self.player.can_move_x(x_delta=-1):
+            for enemy in self.enemies:
+                enemy.x += 1
+
+    def right_pressed(self):
+        if self.player.can_move_x(x_delta=1):
+            for enemy in self.enemies:
+                enemy.x -= 1
 
 
 class Landscape1(Landscape):
     move_speed = 0.1
     bitmap = """
- 
- 
    T    T           T        T       T      T           T              T   T            T      T   T
 """  # noqa
 
@@ -194,8 +198,12 @@ class Landscape1(Landscape):
 class Landscape2(Landscape):
     move_speed = 0.2
     bitmap = """
- 
- 
- 
 TT       T     T    T     T     T  T    T         T   T     T   TT   T   T T TTT   T    T    T     T TT
+"""  # noqa
+
+
+class Obstacles(Landscape):
+    move_speed = 1
+    bitmap = """
+  RR  R    RVR    R VV      R    VVV    RRR    R  R    R    R    RVR    VRV   R  R   R   RV   VR
 """  # noqa
