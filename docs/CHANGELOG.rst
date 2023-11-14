@@ -1,5 +1,11 @@
-Version 0.2.5
+Version 0.2.6
 ================================================================================
+
+* Slow monologue transition based on text length
+* Update README.rst
+
+Version 0.2.5
+--------------------------------------------------------------------------------
 
 * Support playing using Docker image
 * Update screenshot to include Wasp Invasion
