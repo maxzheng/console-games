@@ -1,5 +1,11 @@
-Version 0.2.6
+Version 0.2.7
 ================================================================================
+
+* Double the length of obstacles
+* Include license in Docker image
+
+Version 0.2.6
+--------------------------------------------------------------------------------
 
 * Slow monologue transition based on text length
 * Update README.rst
