@@ -466,7 +466,7 @@ class ObjectMap(Bitmap):
 
     @property
     def is_out(self):
-        return False
+        return False  # We want to be rendered always
 
     def render(self, screen: Screen):
         # from time import time
