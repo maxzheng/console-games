@@ -549,7 +549,8 @@ class Monologue(Text):
 
         super().render(screen)
 
-        if self.renders % 45 == 0:
+        if self.renders >= 30 + len(self.text):
+            self.renders = 0
             self.index += 1
             if self.index >= len(self.texts):
                 screen.remove(self)
