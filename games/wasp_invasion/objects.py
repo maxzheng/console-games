@@ -242,6 +242,6 @@ TT       T     T    T     T     T  T    T         T   T     T   TT   T   T T TTT
 
 class Obstacles(Landscape):
     move_speed = 1
-    bitmap = """
-  RR  R    RVR    R VV      R    VVV    RRR    R  R    R    R    RVR    VRV   R  R   R   RV   VR
-"""  # noqa
+    bitmap = """\
+  RR  R    RVR    R VV      R    VVV    RRR    R  R    R    R    RVR    VRV   R  R   R   RV   VR\
+""" * 2 # noqa
