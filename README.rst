@@ -33,9 +33,10 @@ Enjoy! And come back soon for more games!!
 Links & Contact Info
 ====================
 
-| PyPI Package: https://pypi.python.org/pypi/console-games
-| GitHub Source: https://github.com/maxzheng/console-games
-| Report Issues/Bugs: https://github.com/maxzheng/console-games/issues
+| Docker Image: https://hub.docker.com/r/maxzheng/console-games
+| Python Package: https://pypi.python.org/pypi/console-games
+| Source Code: https://github.com/maxzheng/console-games
+| Report Issues: https://github.com/maxzheng/console-games/issues
 |
 | Connect: https://www.linkedin.com/in/maxzheng
 | Contact: maxzheng.os @t gmail.com
