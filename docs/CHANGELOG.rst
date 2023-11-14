@@ -1,5 +1,11 @@
-Version 0.2.4
+Version 0.2.5
 ================================================================================
+
+* Support playing using Docker image
+* Update screenshot to include Wasp Invasion
+
+Version 0.2.4
+--------------------------------------------------------------------------------
 
 * Slow down wasps
 
