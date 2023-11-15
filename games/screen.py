@@ -1,3 +1,4 @@
+from collections import deque
 import curses
 from random import choice
 from time import sleep, time
@@ -27,6 +28,9 @@ class Screen:
 
         #: Number of times the screen has rendered
         self.renders = 0
+
+        #: Tracks the last N render times
+        self._render_secs = deque(maxlen=30)
 
         #: Show debug info
         self._debug = debug
@@ -71,8 +75,8 @@ class Screen:
 
     @property
     def fps(self):
-        if self.renders > 30:
-            return round(self.renders / (time() - self._start_time))
+        if self._render_secs:
+            return round(1 / (sum(self._render_secs) / len(self._render_secs)))
 
     @property
     def status(self):
@@ -175,13 +179,18 @@ class Screen:
         self._render()
 
         render_time = time() - start_time
-        # self.debug(rsecs=round(render_time * self.fps_limit, 1))
-        if render_time < 1/self.fps_limit:
-            sleep(1/self.fps_limit - render_time)
+        # self.debug(secs_to_render_fps_limit=round(render_time * self.fps_limit, 1))
+
+        # Sleep to ensure FPS doesn't exceed set limit
+        sleep_time = 1 / self.fps_limit - render_time
+        if sleep_time > 1 / self.fps_limit * 0.1:
+            sleep(sleep_time)
+            render_time += sleep_time
+
+        self.renders += 1
+        self._render_secs.append(render_time)
 
     def _render(self):
-        self.renders += 1
-
         if self.renders % self.fps_limit == 0:
             self.resize_screen(when_changed=True)
 
