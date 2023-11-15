@@ -110,7 +110,6 @@ class Screen:
         curses.nocbreak()
         curses.echo()
         curses.endwin()
-        self._screen.move(self.height, 1)
 
     def add(self, *screen_objects):
         """ Add screen objects to the list """
