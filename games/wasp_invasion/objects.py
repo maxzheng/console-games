@@ -19,6 +19,7 @@ class Player(AbstractPlayer):
         self.scared = StickmanScared(0, 0)
         self.worried = StickmanWorried(0, 0)
         self.celebrate = StickmanCelebrate(0, 0)
+        self.kaijus_killed_high = 0
 
         super().__init__(*args, score_title='Killed', max_hp=100, **kwargs)
 
@@ -40,10 +41,15 @@ class Player(AbstractPlayer):
     def killed_boss(self):
         super().killed_boss()
         self.kaijus_killed += 1
+        if self.kaijus_killed > self.kaijus_killed_high:
+            self.kaijus_killed_high = self.kaijus_killed
         self.screen.status['Kaijus'] = self.kaijus_killed
 
     def render(self, screen: Screen):
         super().render(screen)
+
+        if self.kaijus_killed < self.kaijus_killed_high:
+            self.screen.status[self.score_title] += ' ({} K)'.format(self.kaijus_killed_high)
 
         if self.active:
             screen.border.set_levels(self.hp / self.max_hp, self.gas / self.gas_limit)
