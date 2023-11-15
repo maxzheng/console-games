@@ -1,5 +1,11 @@
-Version 0.2.7
+Version 0.2.8
 ================================================================================
+
+* More wasps from sides than top
+* Run it before publishing
+
+Version 0.2.7
+--------------------------------------------------------------------------------
 
 * Double the length of obstacles
 * Include license in Docker image
