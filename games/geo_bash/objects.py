@@ -36,13 +36,15 @@ class Player(AbstractPlayer):
                 color = self.color
 
             if self.char == 'O':
-                projectile = Bar(self.x+1, self.y-1, char=self.char, parent=self, color=color,
-                                 y_delta=-1)
+                for x_delta in range(-1, 2):
+                    projectile = Projectile(self.x + x_delta, self.y-1, shape=self.char, parent=self,
+                                            color=color)
+                    self.kids.add(projectile)
+                    self.screen.add(projectile)
             else:
                 projectile = Projectile(self.x, self.y-1, shape=self.char, parent=self, color=color)
-
-            self.kids.add(projectile)
-            self.screen.add(projectile)
+                self.kids.add(projectile)
+                self.screen.add(projectile)
 
     def destruct(self):
         super().destruct(msg='You got BASHED!!')
