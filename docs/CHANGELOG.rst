@@ -1,5 +1,11 @@
-Version 0.2.9
+Version 0.2.10
 ================================================================================
+
+* Remove unnecessary code
+* Show high kills for Kaijus
+
+Version 0.2.9
+--------------------------------------------------------------------------------
 
 * Make Nina's bullets more powerful
 * Better FPS calculation
