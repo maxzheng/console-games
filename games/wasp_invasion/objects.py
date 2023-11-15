@@ -172,7 +172,7 @@ class Player(AbstractPlayer):
 
 class Enemies(AbstractEnemies, KeyListener):
     def create_enemy(self):
-        if random() < 0.5:
+        if random() < 0.75:
             x = choice([0, self.screen.width])
             y = randint(0, self.screen.height)
         else:
