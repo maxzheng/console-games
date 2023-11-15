@@ -1,5 +1,11 @@
-Version 0.2.8
+Version 0.2.9
 ================================================================================
+
+* Make Nina's bullets more powerful
+* Better FPS calculation
+
+Version 0.2.8
+--------------------------------------------------------------------------------
 
 * More wasps from sides than top
 * Run it before publishing
