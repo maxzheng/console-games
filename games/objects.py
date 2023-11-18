@@ -1,4 +1,8 @@
+from math import pi, sin, cos
 from random import randint, random
+
+from numpy import cross, eye, dot, matrix
+from scipy.linalg import expm, norm
 
 from games.screen import Screen
 from games.listeners import KeyListener
@@ -12,7 +16,7 @@ class ScreenObject:
         self.x_delta = x_delta
         self.y_delta = y_delta
         self.color = color or getattr(self, 'color', None)
-        self.size = size
+        self._size = size
         self.coords = set()
         self.parent = parent
         self.kids = set()
@@ -27,6 +31,15 @@ class ScreenObject:
         obj.visible = self.visible
         obj.screen = self.screen
         return obj
+
+    @property
+    def size(self):
+        return self._size
+
+    @size.setter
+    def size(self, value):
+        self._size = value
+        self.on_size_change(value)
 
     @property
     def all_kids(self):
@@ -60,6 +73,9 @@ class ScreenObject:
 
         except Exception:
             return False
+
+    def on_size_change(self, size):
+        pass
 
     def can_move_x(self, x_delta=0):
         """ Indicates if object can move by given or self delta """
@@ -117,6 +133,137 @@ class ScreenObject:
     def replace_kid(self, old_object, new_object):
         self.remove_kid(old_object)
         self.add_kid(new_object)
+
+
+class Object3D(ScreenObject):
+    def __init__(self, *args, points, connect_points=False, rotate_axes=(1, 1, 2), **kwargs):
+        super().__init__(*args, **kwargs)
+
+        #: Coordinates in 3D space
+        self.points = points
+
+        #: Connect points sequentially to form lines / shapes
+        self.connect_points = connect_points
+
+        #: Axes (x, y, z) to rotate
+        self.rotate_axes = rotate_axes
+
+    def move_matrix(self, axes, theta):
+        return expm(cross(eye(3), axes / norm(axes) * theta))
+
+    def render(self, screen: Screen):
+        super().render(screen)
+
+        points = []
+        for point in self.points:
+            color = (point[3] if len(point) > 3 else None) or self.color
+            new_point = matrix([point[0], point[1], point[2]]).reshape(3, 1)
+            theta = screen.renders / 10 % (2 * pi)
+
+            if True:
+                if self.rotate_axes[0] or self.rotate_axes[1] or self.rotate_axes[2]:
+                    mm = self.move_matrix(self.rotate_axes, theta)
+                    new_point = dot(mm, new_point)
+
+            else:  # Seems to be slower when there are many points (cube size 20+)
+                if self.rotate_axes[0]:  # x
+                    x_rotation = matrix([
+                        [self.rotate_axes[0], 0, 0],
+                        [0, cos(theta), -sin(theta)],
+                        [0, sin(theta), cos(theta)],
+                    ])
+                    new_point = dot(x_rotation, new_point)
+
+                if self.rotate_axes[1]:  # y
+                    y_rotation = matrix([
+                        [cos(theta), 0, sin(theta)],
+                        [0, self.rotate_axes[1], 0],
+                        [-sin(theta), 0, cos(theta)],
+                    ])
+                    new_point = dot(y_rotation, new_point)
+
+                if self.rotate_axes[2]:  # z
+                    z_rotation = matrix([
+                        [cos(theta), -sin(theta), 0],
+                        [sin(theta), cos(theta), 0],
+                        [0, 0, self.rotate_axes[2]],
+                    ])
+                    new_point = dot(z_rotation, new_point)
+
+            new_point = new_point.reshape(1, 3).tolist()[0]
+            x, y, _ = list(new_point)
+
+            abs_x = int(self.x + x)
+            abs_y = int(self.y + y)
+            screen.draw(abs_x, abs_y, chr(0x2588), color)
+            points.append((abs_x, abs_y))
+
+        if self.connect_points:
+            last_point = None
+            connecting_points = set()
+            for point in points:
+                if last_point:
+                    x_offset = last_point[0]
+                    y_offset = last_point[1]
+                    x_delta = (point[0] - last_point[0])
+                    y_delta = (point[1] - last_point[1])
+                    x_sign = 1 if point[0] >= last_point[0] else -1
+                    y_sign = 1 if point[1] >= last_point[1] else -1
+
+                    if x_delta:
+                        slope = (point[1] - last_point[1]) / x_delta
+
+                        if abs(x_delta) > abs(y_delta):
+                            for x in range(last_point[0], point[0], x_sign):
+                                y = slope * (x - x_offset) + y_offset
+                                connecting_points.add((int(x), int(y)))
+                        else:
+                            for y in range(last_point[1], point[1], y_sign):
+                                x = (y - y_offset) / slope + x_offset
+                                connecting_points.add((int(x), int(y)))
+
+                    else:
+                        for y in range(last_point[1], point[1], y_sign):
+                            connecting_points.add((x_offset, int(y)))
+
+                last_point = point
+
+            for point in (connecting_points - set(points)):
+                screen.draw(point[0], point[1], chr(0x2588), self.color)
+
+
+class Line3D(Object3D):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, connect_points=True, **kwargs)
+
+
+class Cube(Line3D):
+    def __init__(self, *args, size=7, **kwargs):
+        super().__init__(*args, size=size, points=self._points(size=size), **kwargs)
+
+    def on_size_change(self, size):
+        self.points = self._points()
+
+    def _points(self, size=None):
+        if not size:
+            size = self.size
+        return [[-size, -size, size],
+                [size, -size, size],
+                [size, size, size],
+                [-size, size, size],
+                [-size, -size, size],
+                [-size, -size, -size],
+                [-size, size, -size],
+                [-size, size, size],
+                [-size, size, -size],
+                [size, size, -size],
+                [size, size, size],
+                [size, size, -size],
+                [size, -size, -size],
+                [-size, -size, -size],
+                [size, -size, -size],
+                [size, -size, size],
+                ]
 
 
 class ScreenObjectGroup(ScreenObject):
