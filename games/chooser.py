@@ -5,7 +5,6 @@ from games.geo_bash import GeoBash
 from games.number_crush import NumberCrush
 from games.last_survivor import LastSurvivor
 from games.wasp_invasion import WaspInvasion
-from games.pong_3d import Pong3D
 
 
 class Chooser(Controller):
@@ -23,7 +22,7 @@ class Chooser(Controller):
 
 class Choose(Scene):
     def init(self):
-        self.games = [GeoBash(self.screen), Pong3D(self.screen), NumberCrush(self.screen),
+        self.games = [GeoBash(self.screen), NumberCrush(self.screen),
                       WaspInvasion(self.screen), LastSurvivor(self.screen)]
         if self.controller.game_filter:
             self.games = list(filter(lambda g: self.controller.game_filter.lower() in g.name.lower(), self.games))
