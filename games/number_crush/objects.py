@@ -9,7 +9,7 @@ from games.objects import (ScreenObject, KeyListener, Explosion, Text, ScreenObj
 
 class Player(AbstractPlayer):
     def __init__(self, controller):
-        super().__init__('Jon', Stickman(int(controller.screen.width / 2) + 1, controller.screen.height - 2),
+        super().__init__('Jon', Stickman(int(controller.screen.width / 2), controller.screen.height - 3),
                          controller, score_title='Crushed', show_total=True)
 
     def react(self, formula: ScreenObject):
@@ -114,7 +114,7 @@ class Numbers(ScreenObject, KeyListener):
 
             if self.last_answer != player_answer and len(str(player_answer)) == len(str(answer)):
                 answer = Text(self.player.x, self.player.y - 2, str(player_answer), y_delta=-1,
-                              is_centered=True)
+                              centered=True)
                 self.screen.add(answer)
                 self.player.kids.add(answer)
             self.last_answer = player_answer

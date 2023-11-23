@@ -57,8 +57,6 @@ class Player(AbstractPlayer):
             if self.kaijus_killed:
                 if self.kaijus_killed >= 10 and self.shape != self.celebrate:
                     self.color = None
-                    self.y_delta = 0
-                    self.x_delta = 0
                     self.celebrate.sync(self)
                     self.shape = self.celebrate
                     self.active = False
@@ -76,24 +74,8 @@ class Player(AbstractPlayer):
             else:
                 self.color = 'red'
 
-            if self.y_delta:
-                # Jumps up
-                if self.y_delta < 0:
-                    self.y_delta *= 0.9
-
-                    if self.y_delta > -0.2:
-                        self.y_delta *= -1
-
-                # Comes back down
-                else:
-                    if self.y_delta < 0.5:
-                        self.y_delta *= 1.1
-
-                    if self.y >= self.screen.height - 2.5:
-                        self.y_delta = 0
-
             x_delta, y_delta, char = self.projectile_deltas
-            self.flamethrower.x = self.x + x_delta - 0.5
+            self.flamethrower.x = self.x + x_delta * 4 - 0.5
             self.flamethrower.y = self.y + y_delta - 0.5
 
             if self.flame_on:
@@ -105,8 +87,8 @@ class Player(AbstractPlayer):
 
                 if self.gas > 0:
                     for flame_size in range(min(15, int(screen.width / 9))):
-                        explosion = Explosion(self.x, self.y, size=flame_size, parent=self)
-                        projectile = Projectile(self.x, self.y, shape=None, parent=self,
+                        explosion = Explosion(self.x + x_delta * 3, self.y, size=flame_size, parent=self)
+                        projectile = Projectile(self.x + x_delta * 3, self.y, shape=None, parent=self,
                                                 x_delta=x_delta * (1 + flame_size / 20),
                                                 y_delta=y_delta, color=screen.COLOR_YELLOW,
                                                 explode_after_renders=flame_size,
@@ -130,6 +112,7 @@ class Player(AbstractPlayer):
         self.screen.add(Stickman(self.shape.x, self.shape.y, color=self.screen.COLOR_YELLOW, y_delta=-0.1))
 
     def left_pressed(self):
+        self.shape.flip = False
         if self.active:
             if self.projectile_deltas in (self.upright_deltas, self.upleft_deltas):
                 self.projectile_deltas = self.upleft_deltas
@@ -137,6 +120,7 @@ class Player(AbstractPlayer):
                 self.projectile_deltas = self.left_deltas
 
     def right_pressed(self):
+        self.shape.flip = True
         if self.active:
             if self.projectile_deltas in (self.upleft_deltas, self.upright_deltas):
                 self.projectile_deltas = self.upright_deltas
@@ -151,24 +135,18 @@ class Player(AbstractPlayer):
                 self.projectile_deltas = self.upright_deltas
             elif self.projectile_deltas == self.left_deltas:
                 self.projectile_deltas = self.upleft_deltas
-            elif not self.y_delta or not self.can_move_y():
-                self.y_delta = -1
+
+            if self.can_move_y(y_delta=-1):
+                self.y -= 1
 
     def down_pressed(self):
-        if self.active and self.y_delta and self.y_delta < 0:
-            self.y_delta *= -1
-
-        if self.projectile_deltas in (self.left_deltas, self.right_deltas):
-            self.flame_on = False
-        elif self.projectile_deltas == self.upleft_deltas:
+        if self.projectile_deltas == self.upleft_deltas:
             self.projectile_deltas = self.left_deltas
-        else:
+        elif self.projectile_deltas == self.upright_deltas:
             self.projectile_deltas = self.right_deltas
 
-    def space_pressed(self):
-        if self.active:
-            if not self.y_delta or not self.can_move_y():
-                self.y_delta = -1
+        if self.can_move_y(y_delta=1):
+            self.y += 1
 
 
 class Enemies(AbstractEnemies, KeyListener):

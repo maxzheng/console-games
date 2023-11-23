@@ -118,14 +118,16 @@ def test_screen_object_group(screen):
 
     assert sog.kids == {char, circle}
 
-    assert sog.all_coords == {(14, 10), (11, 11), (10, 10), (11, 9), (8, 10),
-                              (12, 11), (13, 9), (12, 9), (13, 11)}
+    print(sog.all_coords)
+    assert sog.all_coords == {(10, 11), (11, 11), (11, 9), (9, 10), (7, 10), (12, 11), (12, 9),
+                              (10, 9), (13, 10)}
 
     sog.y += 10
     with screen:
         screen.render()
-    assert sog.all_coords == {(14, 20), (11, 21), (10, 20), (11, 19), (8, 20),
-                              (12, 21), (13, 19), (12, 19), (13, 21)}
+    print(sog.all_coords)
+    assert sog.all_coords == {(7, 20), (12, 21), (9, 20), (10, 19), (12, 19), (10, 21), (11, 21),
+                              (13, 20), (11, 19)}
 
 
 def test_compassionate_boss(screen, player):
@@ -186,3 +188,34 @@ def test_enemies(screen, player):
     print(enemies.enemies)
     assert len(enemies.enemies) == 0
     assert len(screen) == 1  # Just "enemies" object
+
+
+def test_bitmap(screen):
+    class ABC(Bitmap):
+        bitmap = r"""
+ab
+def"""  # noqa
+
+    with screen as s:
+        # Normal
+        abc = ABC(10, 10)
+        s.add(abc)
+        s.render()
+        assert s.without_distractions() == [
+            [('a', None), ('b', None)],
+            [('d', None), ('e', None), ('f', None)]]
+        assert abc.coords == {
+            (9, 9), (10, 9),
+            (9, 10), (10, 10), (11, 10)}
+
+        # Flip it
+        abc = ABC(10, 10, flip=True)
+        s.reset()
+        s.add(abc)
+        s.render()
+        assert s.without_distractions() == [
+            [('b', None), ('a', None)],
+            [('f', None), ('e', None), ('d', None)]]
+        assert abc.coords == {
+            (10, 9), (11, 9),
+            (9, 10), (10, 10), (11, 10)}

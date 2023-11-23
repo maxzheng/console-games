@@ -33,7 +33,7 @@ class Player(AbstractPlayer):
 
         if self.screen:
             self.x = self.screen.width / 2
-            self.y = self.screen.height - 2
+            self.y = self.screen.height - 3
             self.screen.status.pop('Kaijus', None)
 
         self.flamethrower = Char(self.x, self.y, char=None)
@@ -94,7 +94,7 @@ class Player(AbstractPlayer):
                     if self.y_delta < 0.5:
                         self.y_delta *= 1.1
 
-                    if self.y >= self.screen.height - 2.5:
+                    if self.y >= self.screen.height - 3:
                         self.y_delta = 0
 
             x_delta, y_delta, char = self.projectile_deltas

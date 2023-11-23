@@ -34,17 +34,6 @@ def test_enter_exit(screen):
 
 
 def test_buffer_render(screen):
-    def without_distractions(buffer):
-        content = []
-        for y, row in enumerate(buffer):
-            new_row = []
-            for x, col in enumerate(row):
-                if x != 0 and y != 0 and x != len(row) - 1 and y != len(buffer) - 1 and (col[0] or col[1]):
-                    new_row.append(col)
-            if new_row:
-                content.append(new_row)
-        return content
-
     with screen as s:
         assert s.renders == 0
 
@@ -52,7 +41,7 @@ def test_buffer_render(screen):
         s.render()
 
         assert s.renders == 1
-        assert without_distractions(s.buffer.screen) == [
+        assert screen.without_distractions() == [
             [('O', None), ('O', None), ('O', None)],
             [('O', None), ('O', None)],
             [('O', None), ('O', None), ('O', None)]]
@@ -62,7 +51,7 @@ def test_buffer_render(screen):
         s.render()
 
         assert s.renders == 1
-        assert without_distractions(s.buffer.screen) == [
+        assert screen.without_distractions() == [
             [('O', 256), ('O', 256), ('O', 256)],
             [('O', 256), ('O', 256)],
             [('O', 256), ('O', 256), ('O', 256)]]

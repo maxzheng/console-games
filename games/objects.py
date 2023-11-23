@@ -288,7 +288,7 @@ class ScreenObjectGroup(ScreenObject):
             padding = 1
             width = sum((o.size + padding) for o in self.ordered_objects)
             block_size = width / len(self.ordered_objects)
-            start_x = int(self.x - width / 2) - 2
+            start_x = int(self.x - width / 2) - 3
 
             for obj in self.ordered_objects:
                 start_x += block_size
@@ -332,8 +332,8 @@ class AbstractPlayer(ScreenObject, KeyListener):
         self.shape = self._original_shape
         self.obstacles = None
         if self.screen:
-            self.x = int(self.screen.width / 2) + 1
-            self.y = self.screen.height - int(self.size / 2) - 1
+            self.x = int(self.screen.width / 2)
+            self.y = self.screen.height - self.size
 
     @property
     def visible(self):
@@ -399,7 +399,7 @@ class AbstractPlayer(ScreenObject, KeyListener):
         self.alive = False
         self.active = False
         self.screen.add(Text(self.screen.width / 2, self.screen.height / 2, msg,
-                             is_centered=True))
+                             centered=True))
         if explode:
             self.screen.add(Explosion(self.x, self.y, size=explosion_size,
                                       on_finish=self.controller.reset_scene))
@@ -547,6 +547,7 @@ class Bitmap(ScreenObject):
         self._bitmap_index_offset = randint(0, max(len(self._bitmaps), 1) - 1) if random_start else 0
         self.renders = 0
         self.flip = flip
+        self._flip_map = getattr(self, 'flip_map', {})
         self.centered = centered
         self._bitmap = self._bitmaps and self._bitmaps[0] or getattr(self, 'bitmap', """\
 ▓▓▓▓▓
@@ -575,22 +576,25 @@ class Bitmap(ScreenObject):
 
         x_size = max(len(b) for b in bitmap)
         if self.centered:
-            start_x = int(self.x - x_size / 2)
-            start_y = int(self.y - self.size / 2)
+            start_x = int(self.x - x_size / 2 + 0.5)
+            start_y = int(self.y - self.size / 2 + 0.5)
         else:
             start_x = int(self.x)
             start_y = int(self.y)
         self.coords = set()
 
         for y in range(start_y, start_y + self.size):
-            x_size = len(bitmap[y-start_y])
+            y_offset = y - start_y
+            # x_size = len(bitmap[y_offset])
             for x in range(start_x, start_x + x_size):
+                x_offset = x - start_x
                 if self.flip:
-                    x_offset = (start_x + x_size - 1) - x
-                else:
-                    x_offset = x - start_x
-                if bitmap[y-start_y][x_offset] != ' ':
-                    self.draw(x, y, self.char or bitmap[y-start_y][x_offset], screen)
+                    x_offset = x_size - x_offset - 1
+                if x_offset < len(bitmap[y_offset]) and bitmap[y_offset][x_offset] != ' ':
+                    char = self.char or bitmap[y_offset][x_offset]
+                    if self.flip and char in self._flip_map:
+                        char = self._flip_map[char]
+                    self.draw(x, y, char, screen)
 
         if self._remove_after_animation and self.renders > self._frames_per_bitmap * (len(self._bitmaps) - 1):
             screen.remove(self)
@@ -643,17 +647,17 @@ class ObjectMap(Bitmap):
 
 
 class Text(ScreenObject):
-    def __init__(self, x: int, y: int, text: str, x_delta=None, y_delta=None, is_centered=False, color=None):
+    def __init__(self, x: int, y: int, text: str, x_delta=None, y_delta=None, centered=False, color=None):
         super().__init__(x, y, size=int(len(text) / 2), x_delta=x_delta, y_delta=y_delta, color=color)
         self.text = text
-        self.is_centered = is_centered
+        self.centered = centered
 
     def render(self, screen: Screen):
         super().render(screen)
 
         if self.text:
             self.coords = set()
-            x = self.x - len(self.text) / 2 if self.is_centered else self.x
+            x = self.x - int(len(self.text) / 2) if self.centered else self.x
             for offset, char in enumerate(self.text):
                 screen.draw(x + offset, self.y, char, color=self.color)
                 self.coords.add((int(x + offset), int(self.y)))
@@ -662,7 +666,7 @@ class Text(ScreenObject):
 class Logo(ScreenObject):
     def __init__(self, x, y, name: str, shape: ScreenObject, color=None):
         super().__init__(x, y, size=7, color=color)
-        self.text = Text(self.x, self.y + 3, name, is_centered=True, color=self.color)
+        self.text = Text(self.x, self.y + 3, name, centered=True, color=self.color)
         self.shape = shape
 
     def render(self, screen: Screen):
@@ -1483,43 +1487,44 @@ class Volcano(Bitmap):
 class Helicopter(Bitmap):
     frames_per_bitmap = 1
     color = 'red'
+    flip_map = {'/': '\\', '\\': '/'}
     bitmaps = (r"""
   ----
  __|___
-/_|    \____/\
-|      |___/\/
+/_|    \____/\
+|      |___/\/
 \______/
  _/  _\_/
 """,  # noqar
 r"""
  - ---
  __|___
-/_|    \____/\
-|      |___/\/
+/_|    \____/\
+|      |___/\/
 \______/
  _/  _\_/
 """,  # noqa
 r"""
  -- --
  __|___
-/_|    \____/\
-|      |___/\/
+/_|    \____/\
+|      |___/\/
 \______/
  _/  _\_/
 """,  # noqa
 r"""
  --- -
  __|___
-/_|    \____/\
-|      |___/\/
+/_|    \____/\
+|      |___/\/
 \______/
  _/  _\_/
 """,  # noqa
 r"""
  ----
  __|___
-/_|    \____/\
-|      |___/\/
+/_|    \____/\
+|      |___/\/
 \______/
  _/  _\_/
 """)  # noqa

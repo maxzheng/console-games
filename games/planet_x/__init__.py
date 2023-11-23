@@ -10,5 +10,5 @@ class PlanetX(Controller):
     def init(self):
         self.scenes = [Intro, Survive]
         self.logo = X3D(0, 0, color='cyan', rotate_axes=(0, 0, 1))
-        self.player = Player('Jon', Helicopter(self.screen.width / 2, self.screen.height - 5), self)
+        self.player = Player('Jon', Helicopter(5, self.screen.height / 2, flip=True), self)
         self.player.controller = self
