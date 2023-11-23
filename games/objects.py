@@ -136,11 +136,11 @@ class ScreenObject:
 
 
 class Object3D(ScreenObject):
-    def __init__(self, *args, points, connect_points=False, rotate_axes=(1, 1, 2), **kwargs):
+    def __init__(self, *args, points=None, connect_points=False, rotate_axes=(1, 1, 2), **kwargs):
         super().__init__(*args, **kwargs)
 
         #: Coordinates in 3D space
-        self.points = points
+        self._points = points or getattr(self, 'points', [])
 
         #: Connect points sequentially to form lines / shapes
         self.connect_points = connect_points
@@ -155,7 +155,7 @@ class Object3D(ScreenObject):
         super().render(screen)
 
         points = []
-        for point in self.points:
+        for point in self._points:
             color = (point[3] if len(point) > 3 else None) or self.color
             new_point = matrix([point[0], point[1], point[2]]).reshape(3, 1)
             theta = screen.renders / 10 % (2 * pi)
@@ -239,12 +239,12 @@ class Line3D(Object3D):
 
 class Cube(Line3D):
     def __init__(self, *args, size=7, **kwargs):
-        super().__init__(*args, size=size, points=self._points(size=size), **kwargs)
+        super().__init__(*args, size=size, points=self._make_cube(size=size), **kwargs)
 
     def on_size_change(self, size):
-        self.points = self._points()
+        self._points = self._make_cube()
 
-    def _points(self, size=None):
+    def _make_cube(self, size=None):
         if not size:
             size = self.size
         return [[-size, -size, size],
@@ -573,7 +573,7 @@ class Bitmap(ScreenObject):
             bitmap = self._bitmap
         bitmap = bitmap.strip('\n').split('\n')
 
-        x_size = len(bitmap[0])
+        x_size = max(len(b) for b in bitmap)
         if self.centered:
             start_x = int(self.x - x_size / 2)
             start_y = int(self.y - self.size / 2)
@@ -1478,6 +1478,51 @@ class Volcano(Bitmap):
  / / \_¯\
 /________\
 """  # noqa
+
+
+class Helicopter(Bitmap):
+    frames_per_bitmap = 1
+    color = 'red'
+    bitmaps = (r"""
+  ----
+ __|___
+/_|    \____/\
+|      |___/\/
+\______/
+ _/  _\_/
+""",  # noqar
+r"""
+ - ---
+ __|___
+/_|    \____/\
+|      |___/\/
+\______/
+ _/  _\_/
+""",  # noqa
+r"""
+ -- --
+ __|___
+/_|    \____/\
+|      |___/\/
+\______/
+ _/  _\_/
+""",  # noqa
+r"""
+ --- -
+ __|___
+/_|    \____/\
+|      |___/\/
+\______/
+ _/  _\_/
+""",  # noqa
+r"""
+ ----
+ __|___
+/_|    \____/\
+|      |___/\/
+\______/
+ _/  _\_/
+""")  # noqa
 
 
 class Landscape(ObjectMap, KeyListener):
