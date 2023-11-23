@@ -1,9 +1,6 @@
 from math import pi, sin, cos
 from random import randint, random
 
-from numpy import cross, eye, dot, matrix
-from scipy.linalg import expm, norm
-
 from games.screen import Screen
 from games.listeners import KeyListener
 
@@ -148,8 +145,40 @@ class Object3D(ScreenObject):
         #: Axes (x, y, z) to rotate
         self.rotate_axes = rotate_axes
 
-    def move_matrix(self, axes, theta):
-        return expm(cross(eye(3), axes / norm(axes) * theta))
+    @staticmethod
+    def dot(m1, m2):
+        """ Return the product of the given two matrices """
+        return [[sum(a * b for a, b in zip(m1_row, m2_col)) for m2_col in zip(*m2)] for m1_row in m1]
+
+    def rotate_point(self, point, theta):
+        """ Rotate the given point using self.rotate_axes and theta (radian) """
+        new_point = [[point[0]], [point[1]], [point[2]]]
+
+        if self.rotate_axes[0]:  # x
+            x_rotation = [
+                [self.rotate_axes[0], 0, 0],
+                [0, cos(theta), -sin(theta)],
+                [0, sin(theta), cos(theta)],
+            ]
+            new_point = self.dot(x_rotation, new_point)
+
+        if self.rotate_axes[1]:  # y
+            y_rotation = [
+                [cos(theta), 0, sin(theta)],
+                [0, self.rotate_axes[1], 0],
+                [-sin(theta), 0, cos(theta)],
+            ]
+            new_point = self.dot(y_rotation, new_point)
+
+        if self.rotate_axes[2]:  # z
+            z_rotation = [
+                [cos(theta), -sin(theta), 0],
+                [sin(theta), cos(theta), 0],
+                [0, 0, self.rotate_axes[2]],
+            ]
+            new_point = self.dot(z_rotation, new_point)
+
+        return new_point[0][0], new_point[1][0], new_point[2][0]
 
     def render(self, screen: Screen):
         super().render(screen)
@@ -157,44 +186,12 @@ class Object3D(ScreenObject):
         points = []
         for point in self._points:
             color = (point[3] if len(point) > 3 else None) or self.color
-            new_point = matrix([point[0], point[1], point[2]]).reshape(3, 1)
             theta = screen.renders / 10 % (2 * pi)
-
-            if True:
-                if self.rotate_axes[0] or self.rotate_axes[1] or self.rotate_axes[2]:
-                    mm = self.move_matrix(self.rotate_axes, theta)
-                    new_point = dot(mm, new_point)
-
-            else:  # Seems to be slower when there are many points (cube size 20+)
-                if self.rotate_axes[0]:  # x
-                    x_rotation = matrix([
-                        [self.rotate_axes[0], 0, 0],
-                        [0, cos(theta), -sin(theta)],
-                        [0, sin(theta), cos(theta)],
-                    ])
-                    new_point = dot(x_rotation, new_point)
-
-                if self.rotate_axes[1]:  # y
-                    y_rotation = matrix([
-                        [cos(theta), 0, sin(theta)],
-                        [0, self.rotate_axes[1], 0],
-                        [-sin(theta), 0, cos(theta)],
-                    ])
-                    new_point = dot(y_rotation, new_point)
-
-                if self.rotate_axes[2]:  # z
-                    z_rotation = matrix([
-                        [cos(theta), -sin(theta), 0],
-                        [sin(theta), cos(theta), 0],
-                        [0, 0, self.rotate_axes[2]],
-                    ])
-                    new_point = dot(z_rotation, new_point)
-
-            new_point = new_point.reshape(1, 3).tolist()[0]
-            x, y, _ = list(new_point)
-
+            new_point = self.rotate_point(point, theta)
+            x, y, _ = new_point
             abs_x = int(self.x + x)
             abs_y = int(self.y + y)
+
             screen.draw(abs_x, abs_y, chr(0x2588), color)
             points.append((abs_x, abs_y))
 
