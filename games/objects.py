@@ -182,6 +182,7 @@ class Object3D(ScreenObject):
 
     def render(self, screen: Screen):
         super().render(screen)
+        self.coords = set()
 
         points = []
         for point in self._points:
@@ -194,6 +195,7 @@ class Object3D(ScreenObject):
 
             screen.draw(abs_x, abs_y, chr(0x2588), color)
             points.append((abs_x, abs_y))
+            self.coords.add((abs_x, abs_y))
 
         if self.connect_points:
             last_point = None
@@ -227,6 +229,7 @@ class Object3D(ScreenObject):
 
             for point in (connecting_points - set(points)):
                 screen.draw(point[0], point[1], chr(0x2588), self.color)
+                self.coords.add((int(point[0]), int(point[1])))
 
 
 class Line3D(Object3D):
@@ -360,8 +363,6 @@ class AbstractPlayer(ScreenObject, KeyListener):
     def render(self, screen: Screen):
         super().render(screen)
 
-        # screen.debug(kids=len(self.kids))
-
         self.shape.sync(self)
         self.shape.render(screen)
         self.coords = self.shape.coords
@@ -395,14 +396,15 @@ class AbstractPlayer(ScreenObject, KeyListener):
             self.hp = 0
             self.destruct()
 
-    def destruct(self, msg='The End', explode=True, explosion_size=20):
+    def destruct(self, msg=None, explode=True, explosion_size=30, on_finish=None):
         self.alive = False
         self.active = False
-        self.screen.add(Text(self.screen.width / 2, self.screen.height / 2, msg,
-                             centered=True))
+        if msg:
+            self.screen.add(Text(self.screen.width / 2, self.screen.height / 2, msg,
+                                 centered=True))
         if explode:
             self.screen.add(Explosion(self.x, self.y, size=explosion_size,
-                                      on_finish=self.controller.reset_scene))
+                                      on_finish=on_finish or self.controller.reset_scene))
 
 
 class CompassionateBoss(ScreenObject):
@@ -1491,7 +1493,7 @@ class Helicopter(Bitmap):
     bitmaps = (r"""
   ----
  __|___
-/_|    \____/\
+/_|    \____ \
 | News |___/\/
 \______/
  _/  _\_/
@@ -1499,7 +1501,7 @@ class Helicopter(Bitmap):
 r"""
  - ---
  __|___
-/_|    \____/\
+/_|    \____/ 
 | News |___/\/
 \______/
  _/  _\_/
@@ -1508,7 +1510,7 @@ r"""
  -- --
  __|___
 /_|    \____/\
-| News |___/\/
+| News |___/\ 
 \______/
  _/  _\_/
 """,  # noqa
@@ -1516,14 +1518,14 @@ r"""
  --- -
  __|___
 /_|    \____/\
-| News |___/\/
+| News |___/ /
 \______/
  _/  _\_/
 """,  # noqa
 r"""
  ----
  __|___
-/_|    \____/\
+/_|    \____ \
 | News |___/\/
 \______/
  _/  _\_/
