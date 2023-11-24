@@ -1,7 +1,7 @@
 from games.controller import Controller
 from games.planet_x.scenes import Intro, WormholeAppeared, WormholeSucks, Level1, Level2
-from games.planet_x.objects import Player, Wormhole
-from games.objects import Helicopter
+from games.planet_x.objects import Player
+from games.objects import Helicopter, Wormhole
 
 
 class PlanetX(Controller):

@@ -2,7 +2,7 @@ from random import randint, random
 
 from games.screen import Screen
 from games.listeners import KeyListener
-from games.objects import (Bitmap, Monologue, Line3D, AbstractPlayer, AbstractEnemies, Landscape)
+from games.objects import (Bitmap, Monologue, AbstractPlayer, AbstractEnemies, Landscape, Circle)
 
 
 class Player(AbstractPlayer):
@@ -92,7 +92,7 @@ __________
 """)  # noqa
 
 
-class Enemies(AbstractEnemies, KeyListener):
+class CrabClawEnemies(AbstractEnemies, KeyListener):
     def create_enemy(self):
         x = randint(self.player.size, self.screen.width - 20)
         y = 0
@@ -102,34 +102,14 @@ class Enemies(AbstractEnemies, KeyListener):
         return CrabClaw(x, y, y_delta=y_delta, random_start=True)
 
 
-class Wormhole(Line3D):
-    color = 'cyan'
-    rotate_axes = (0, 0, 1)
-    points = [
-        # O
-        (-3, -1, 0),
-        (-1, -3, 0),
-        (1, -3, 0),
-        (3, -1, 0),
-        (3, 1, 0),
-        (1, 3, 0),
-        (-1, 3, 0),
-        (-3, 1, 0),
-        (-3, -1, 0),
+class AcidBubbleEnemies(AbstractEnemies, KeyListener):
+    def create_enemy(self):
+        x = randint(self.player.size, self.screen.width - 20)
+        y = self.screen.height
 
-        # X
-        (-1, -1, 0),
-        (1, 1, 0),
-        (0, 0, 0),
-        (-1, 1, 0),
-        (1, -1, 0)
-    ]
+        y_delta = -random()
 
-    def render(self, screen: Screen):
-        super().render(screen)
-
-        if self.coords & self.player.coords and self.player.x < self.x + 3:
-            self.scene.next()
+        return Circle(x, y, y_delta=y_delta, color='green')
 
 
 class Landscape1(Landscape):

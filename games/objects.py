@@ -7,7 +7,8 @@ from games.listeners import KeyListener
 
 class ScreenObject:
     """ Base class for all objects on screen """
-    def __init__(self, x: int, y: int, x_delta=None, y_delta=None, color=None, size=1, parent=None):
+    def __init__(self, x: int, y: int, x_delta=None, y_delta=None, color=None, size=1, parent=None,
+                 remove_after_renders=None, on_remove=None):
         self.x = x
         self.y = y
         self.x_delta = x_delta
@@ -19,6 +20,18 @@ class ScreenObject:
         self.kids = set()
         self.screen = None
         self.visible = True
+        self.renders = 0
+        self.remove_after_renders = remove_after_renders
+        self.on_remove = on_remove
+
+    def reset(self):
+        """ Reset object to original state """
+        self.renders = 0
+        if self.screen:
+            for kid in self.kids:
+                if kid in self.screen:
+                    self.screen.remove(kid)
+        self.kids = set()
 
     def copy(self):
         obj = self.__class__(self.x, self.y, x_delta=self.x_delta, y_delta=self.y_delta,
@@ -104,6 +117,7 @@ class ScreenObject:
 
     def render(self, screen: Screen):
         """ Render object onto the given screen """
+        self.renders += 1
         self.screen = screen
 
         if self.x_delta and self.can_move_x():
@@ -112,13 +126,8 @@ class ScreenObject:
         if self.y_delta and self.can_move_y():
             self.y += self.y_delta
 
-    def reset(self):
-        """ Reset object to original state """
-        if self.screen:
-            for kid in self.kids:
-                if kid in self.screen:
-                    self.screen.remove(kid)
-        self.kids = set()
+        if self.remove_after_renders and self.renders > self.remove_after_renders:
+            self.remove()
 
     def add_kid(self, screen_object):
         self.kids.add(screen_object)
@@ -130,6 +139,13 @@ class ScreenObject:
     def replace_kid(self, old_object, new_object):
         self.remove_kid(old_object)
         self.add_kid(new_object)
+
+    def remove(self):
+        self.screen.remove(self)
+        if self.parent:
+            self.parent.remove_kid(self)
+        if self.on_remove:
+            self.on_remove()
 
 
 class Object3D(ScreenObject):
@@ -547,7 +563,6 @@ class Bitmap(ScreenObject):
         self._frames_per_bitmap = getattr(self, 'frames_per_bitmap', 10)
         self._remove_after_animation = getattr(self, 'remove_after_animation', remove_after_animation)
         self._bitmap_index_offset = randint(0, max(len(self._bitmaps), 1) - 1) if random_start else 0
-        self.renders = 0
         self.flip = flip
         self._flip_map = getattr(self, 'flip_map', {})
         self.centered = centered
@@ -567,7 +582,6 @@ class Bitmap(ScreenObject):
 
     def render(self, screen: Screen):
         super().render(screen)
-        self.renders += 1
 
         if self._bitmaps:
             index = (self._bitmap_index_offset + int(self.renders / self._frames_per_bitmap)) % len(self._bitmaps)
@@ -693,10 +707,8 @@ class Monologue(Text):
     def reset(self):
         super().reset()
         self.index = 0
-        self.renders = 0
 
     def render(self, screen: Screen):
-        self.renders += 1
         self.text = self.texts[self.index]
         self.x = self.center_x - len(self.text) / 2
 
@@ -799,7 +811,6 @@ class Projectile(ScreenObject):
         super().__init__(x, y, color=color, x_delta=x_delta, y_delta=y_delta, size=size, parent=parent)
         self.shape = shape
         self.explode_after_renders = explode_after_renders
-        self.renders = 0
         self.explosion = explosion
         self.explosions = explosions
 
@@ -809,8 +820,6 @@ class Projectile(ScreenObject):
 
     def render(self, screen: Screen):
         super().render(screen)
-
-        self.renders += 1
 
         self.coords = set() if self.shape is None else {(int(self.x), int(self.y))}
 
@@ -1530,6 +1539,37 @@ r"""
 \______/
  _/  _\_/
 """)  # noqa
+
+
+class Wormhole(Line3D):
+    color = 'cyan'
+    rotate_axes = (0, 0, 1)
+    points = [
+        # O
+        (-3, -1, 0),
+        (-1, -3, 0),
+        (1, -3, 0),
+        (3, -1, 0),
+        (3, 1, 0),
+        (1, 3, 0),
+        (-1, 3, 0),
+        (-3, 1, 0),
+        (-3, -1, 0),
+
+        # X
+        (-1, -1, 0),
+        (1, 1, 0),
+        (0, 0, 0),
+        (-1, 1, 0),
+        (1, -1, 0)
+    ]
+    player = None
+
+    def render(self, screen: Screen):
+        super().render(screen)
+
+        if self.player and len(self.coords & self.player.coords) > 10:
+            self.scene.next()
 
 
 class Landscape(ObjectMap, KeyListener):
