@@ -15,13 +15,13 @@ class Player(AbstractPlayer):
         self.upleft_deltas = (-2, -1, '⇖')
         self.right_deltas = (2, 0, '⇛')
         self.upright_deltas = (2, -1, '⇗')
-        self.projectile_deltas = self.right_deltas
+        self.projectile_deltas = self.left_deltas
         self.scared = StickmanScared(0, 0)
         self.worried = StickmanWorried(0, 0)
         self.celebrate = StickmanCelebrate(0, 0)
         self.kaijus_killed_high = 0
 
-        super().__init__(*args, score_title='Killed', max_hp=100, **kwargs)
+        super().__init__(*args, score_title='Level', max_hp=100, **kwargs)
 
     def reset(self):
         super().reset()
@@ -30,11 +30,6 @@ class Player(AbstractPlayer):
         self.gas = self.gas_limit
         self.flame_on = True
         self.kaijus_killed = 0
-
-        if self.screen:
-            self.x = self.screen.width / 2
-            self.y = self.screen.height - 5
-            self.screen.status.pop('Kaijus', None)
 
         self.flamethrower = Char(self.x, self.y, char=None)
 
@@ -112,16 +107,16 @@ class Player(AbstractPlayer):
         self.screen.add(Stickman(self.shape.x, self.shape.y, color=self.screen.COLOR_YELLOW, y_delta=-0.1))
 
     def left_pressed(self):
-        self.shape.flip = False
         if self.active:
+            self.shape.flip = False
             if self.projectile_deltas in (self.upright_deltas, self.upleft_deltas):
                 self.projectile_deltas = self.upleft_deltas
             else:
                 self.projectile_deltas = self.left_deltas
 
     def right_pressed(self):
-        self.shape.flip = True
         if self.active:
+            self.shape.flip = True
             if self.projectile_deltas in (self.upleft_deltas, self.upright_deltas):
                 self.projectile_deltas = self.upright_deltas
             else:
@@ -140,13 +135,14 @@ class Player(AbstractPlayer):
                 self.y -= 1
 
     def down_pressed(self):
-        if self.projectile_deltas == self.upleft_deltas:
-            self.projectile_deltas = self.left_deltas
-        elif self.projectile_deltas == self.upright_deltas:
-            self.projectile_deltas = self.right_deltas
+        if self.active:
+            if self.projectile_deltas == self.upleft_deltas:
+                self.projectile_deltas = self.left_deltas
+            elif self.projectile_deltas == self.upright_deltas:
+                self.projectile_deltas = self.right_deltas
 
-        if self.can_move_y(y_delta=1):
-            self.y += 1
+            if self.can_move_y(y_delta=1):
+                self.y += 1
 
 
 class Enemies(AbstractEnemies, KeyListener):
@@ -205,7 +201,9 @@ class Enemies(AbstractEnemies, KeyListener):
             self.last_move = 'right'
 
 
-class X3D(Line3D):
+class Wormhole(Line3D):
+    color = 'cyan'
+    rotate_axes = (0, 0, 1)
     points = [
         # O
         (-3, -1, 0),

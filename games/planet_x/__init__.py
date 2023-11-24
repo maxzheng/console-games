@@ -1,6 +1,6 @@
 from games.controller import Controller
-from games.planet_x.scenes import Intro, Survive
-from games.planet_x.objects import Player, X3D
+from games.planet_x.scenes import Intro, WormholeAppeared, WormholeSucks, Level1
+from games.planet_x.objects import Player, Wormhole
 from games.objects import Helicopter
 
 
@@ -8,7 +8,7 @@ class PlanetX(Controller):
     name = "Planet X"
 
     def init(self):
-        self.scenes = [Intro, Survive]
-        self.logo = X3D(0, 0, color='cyan', rotate_axes=(0, 0, 1))
-        self.player = Player('Jon', Helicopter(5, self.screen.height / 2, flip=True), self)
+        self.scenes = [Intro, WormholeAppeared, WormholeSucks, Level1]
+        self.logo = Wormhole(0, 0)
+        self.player = Player('Max', Helicopter(self.screen.width - 15, self.screen.height / 2), self)
         self.player.controller = self

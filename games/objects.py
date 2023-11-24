@@ -133,7 +133,7 @@ class ScreenObject:
 
 
 class Object3D(ScreenObject):
-    def __init__(self, *args, points=None, connect_points=False, rotate_axes=(1, 1, 2), **kwargs):
+    def __init__(self, *args, points=None, connect_points=False, rotate_axes=None, **kwargs):
         super().__init__(*args, **kwargs)
 
         #: Coordinates in 3D space
@@ -143,7 +143,7 @@ class Object3D(ScreenObject):
         self.connect_points = connect_points
 
         #: Axes (x, y, z) to rotate
-        self.rotate_axes = rotate_axes
+        self._rotate_axes = rotate_axes or getattr(self, 'rotate_axes', (1, 1, 2))
 
     @staticmethod
     def dot(m1, m2):
@@ -151,30 +151,30 @@ class Object3D(ScreenObject):
         return [[sum(a * b for a, b in zip(m1_row, m2_col)) for m2_col in zip(*m2)] for m1_row in m1]
 
     def rotate_point(self, point, theta):
-        """ Rotate the given point using self.rotate_axes and theta (radian) """
+        """ Rotate the given point using self._rotate_axes and theta (radian) """
         new_point = [[point[0]], [point[1]], [point[2]]]
 
-        if self.rotate_axes[0]:  # x
+        if self._rotate_axes[0]:  # x
             x_rotation = [
-                [self.rotate_axes[0], 0, 0],
+                [self._rotate_axes[0], 0, 0],
                 [0, cos(theta), -sin(theta)],
                 [0, sin(theta), cos(theta)],
             ]
             new_point = self.dot(x_rotation, new_point)
 
-        if self.rotate_axes[1]:  # y
+        if self._rotate_axes[1]:  # y
             y_rotation = [
                 [cos(theta), 0, sin(theta)],
-                [0, self.rotate_axes[1], 0],
+                [0, self._rotate_axes[1], 0],
                 [-sin(theta), 0, cos(theta)],
             ]
             new_point = self.dot(y_rotation, new_point)
 
-        if self.rotate_axes[2]:  # z
+        if self._rotate_axes[2]:  # z
             z_rotation = [
                 [cos(theta), -sin(theta), 0],
                 [sin(theta), cos(theta), 0],
-                [0, 0, self.rotate_axes[2]],
+                [0, 0, self._rotate_axes[2]],
             ]
             new_point = self.dot(z_rotation, new_point)
 
@@ -308,6 +308,8 @@ class AbstractPlayer(ScreenObject, KeyListener):
         self.name = name
         self.shape = shape
         self._original_shape = shape
+        self._original_x = self.x
+        self._original_y = self.y
         self.high_score = 0
         self.total_score = 0
         self.show_total = show_total
@@ -328,9 +330,10 @@ class AbstractPlayer(ScreenObject, KeyListener):
         self.size = self.shape.size
         self.shape = self._original_shape
         self.obstacles = None
-        if self.screen:
-            self.x = int(self.screen.width / 2)
-            self.y = self.screen.height - self.size
+        self.x_delta = self.y_delta = 0
+        self.x = self._original_x
+        self.y = self._original_y
+        self.shape.sync(self)
 
     @property
     def visible(self):
@@ -1484,12 +1487,12 @@ class Volcano(Bitmap):
 class Helicopter(Bitmap):
     frames_per_bitmap = 1
     color = 'red'
-    flip_map = {'/': '\\', '\\': '/'}
+    flip_map = {'/': '\\', '\\': '/', 'e': 'ɘ', 's': 'ƨ'}
     bitmaps = (r"""
   ----
  __|___
 /_|    \____/\
-|      |___/\/
+| News |___/\/
 \______/
  _/  _\_/
 """,  # noqar
@@ -1497,7 +1500,7 @@ r"""
  - ---
  __|___
 /_|    \____/\
-|      |___/\/
+| News |___/\/
 \______/
  _/  _\_/
 """,  # noqa
@@ -1505,7 +1508,7 @@ r"""
  -- --
  __|___
 /_|    \____/\
-|      |___/\/
+| News |___/\/
 \______/
  _/  _\_/
 """,  # noqa
@@ -1513,7 +1516,7 @@ r"""
  --- -
  __|___
 /_|    \____/\
-|      |___/\/
+| News |___/\/
 \______/
  _/  _\_/
 """,  # noqa
@@ -1521,7 +1524,7 @@ r"""
  ----
  __|___
 /_|    \____/\
-|      |___/\/
+| News |___/\/
 \______/
  _/  _\_/
 """)  # noqa
