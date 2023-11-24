@@ -117,6 +117,9 @@ class ScreenObject:
 
     def render(self, screen: Screen):
         """ Render object onto the given screen """
+        if self.renders == 0:
+            self.render_init(screen)
+
         self.renders += 1
         self.screen = screen
 
@@ -128,6 +131,9 @@ class ScreenObject:
 
         if self.remove_after_renders and self.renders > self.remove_after_renders:
             self.remove()
+
+    def render_init(self, screen: Screen):
+        """ Only called once when self.renders = 0. Useful for initializing objects to render later """
 
     def add_kid(self, screen_object):
         self.kids.add(screen_object)
@@ -379,6 +385,8 @@ class AbstractPlayer(ScreenObject, KeyListener):
     def render(self, screen: Screen):
         super().render(screen)
 
+        # screen.debug(all_kids=len(self.all_kids), kids=len(self.kids))
+
         self.shape.sync(self)
         self.shape.render(screen)
         self.coords = self.shape.coords
@@ -525,7 +533,7 @@ class AbstractEnemies(ScreenObject):
 
             # Otherwise, check if player's projectiles hit the enemies
             else:
-                for projectile in list(self.player.kids):
+                for projectile in list(self.player.all_kids):
                     if projectile.coords & enemy.coords:
                         if enemy == self.boss and self.boss.hp > 0:
                             self.boss.hp -= 1
@@ -535,8 +543,8 @@ class AbstractEnemies(ScreenObject):
                         self.enemies.remove(enemy)
                         screen.remove(enemy)
 
-                        self.player.kids.remove(projectile)
-                        screen.remove(projectile)
+                        self.player.remove_kid(projectile)
+                        projectile.remove()
 
                         self.on_death(enemy)
 
@@ -751,6 +759,8 @@ class Border(ScreenObject):
             self.energy_level = energy_level
 
     def render(self, screen: Screen):
+        super().render(screen)
+
         for x in range(screen.width):
             for y in range(screen.height):
                 if x == 0 or y == 0 or x == screen.width - 1 or y == screen.height - 1:
@@ -842,8 +852,7 @@ class Projectile(ScreenObject):
                 self.explosions -= 1
 
             else:
-                self.screen.remove(self)
-                self.parent.remove_kid(self)
+                self.remove()
 
 
 class Circle(ScreenObject):
@@ -924,15 +933,13 @@ class Explosion(ScreenObject):
         return obj
 
     def render(self, screen: Screen):
+        super().render(screen)
+
         if self.current_size > self.size:
-            screen.remove(self)
-            if self.parent:
-                self.parent.remove_kid(self)
+            self.remove()
             if self.on_finish:
                 self.on_finish()
             return
-
-        super().render(screen)
 
         start_x = int(self.x - self.current_size / 2)
         start_y = int(self.y - self.current_size / 2)
@@ -1493,6 +1500,25 @@ class Volcano(Bitmap):
  / / \_¯\
 /________\
 """  # noqa
+
+
+class Flame(ScreenObject):
+    def render_init(self, screen: Screen):
+        for flame_size in range(self.size):
+            explosion = Explosion(self.x, self.y, size=flame_size, parent=self)
+            projectile = Projectile(self.x, self.y, shape=None, parent=self,
+                                    x_delta=self.x_delta * (1 + flame_size / 20),
+                                    y_delta=self.y_delta, color=screen.COLOR_YELLOW,
+                                    explode_after_renders=flame_size,
+                                    explosion=explosion)
+            self.add_kid(projectile)
+            screen.add(projectile)
+
+    def render(self, screen: Screen):
+        super().render(screen)
+
+        if not self.kids:  # Flamed out (explosions/projectiles are gone)
+            self.remove()
 
 
 class Helicopter(Bitmap):

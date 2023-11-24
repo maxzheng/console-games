@@ -2,10 +2,10 @@ from random import randint, random, choice
 
 from games.screen import Screen
 from games.listeners import KeyListener
-from games.objects import (Wasp, Explosion, Projectile, Monologue,
+from games.objects import (Wasp, Monologue,
                            Stickman, AbstractPlayer, AbstractEnemies, CompassionateBoss,
                            WaspKaiju, DyingWaspKaiju, Char, Landscape, StickmanScared,
-                           StickmanWorried, StickmanCelebrate)
+                           StickmanWorried, StickmanCelebrate, Flame)
 
 
 class Player(AbstractPlayer):
@@ -109,15 +109,11 @@ class Player(AbstractPlayer):
                     screen.add(self.flamethrower)
 
                 if self.gas > 0:
-                    for flame_size in range(min(15, int(screen.width / 9))):
-                        explosion = Explosion(self.x, self.y, size=flame_size, parent=self)
-                        projectile = Projectile(self.x, self.y, shape=None, parent=self,
-                                                x_delta=x_delta * (1 + flame_size / 20),
-                                                y_delta=y_delta, color=screen.COLOR_YELLOW,
-                                                explode_after_renders=flame_size,
-                                                explosion=explosion)
-                        self.kids.add(projectile)
-                        self.screen.add(projectile)
+                    size = min(15, int(screen.width / 9))
+                    flame = Flame(self.x, self.y, x_delta=x_delta, y_delta=y_delta, size=size,
+                                  parent=self)
+                    self.add_kid(flame)
+                    self.screen.add(flame)
 
                 if self.gas > 0:
                     self.gas -= 0.01
