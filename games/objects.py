@@ -372,7 +372,7 @@ class AbstractPlayer(ScreenObject, KeyListener):
     def can_move_y(self, y_delta=0):
         y_delta = y_delta or self.y_delta or 0
         return (self.screen
-                and (self.y + y_delta > self.size and self.y + y_delta < self.screen.height-self.size/2)
+                and (self.y + y_delta > self.size / 2 and self.y + y_delta < self.screen.height-self.size/2)
                 and (not self.obstacles
                      or not (self.obstacles.coords & self.shifted_coords(y_delta=y_delta))))
 
