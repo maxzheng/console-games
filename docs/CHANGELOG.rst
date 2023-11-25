@@ -1,3 +1,26 @@
+Version 0.3.0
+================================================================================
+
+* Add Planet X to readme
+* Fix bug
+* Add spinners for level 6
+* Add cube points for level 5
+* Move obstacles higher
+* Fix a few things
+* Add home as final destination
+* Add jelly fish on level 4
+* Add erupting volcano on level 3
+* Add Flame screen object
+* Allow player to go up higher
+* Add level transition
+* Add level 1
+* Add intro for Planet X
+* Remove numpy as it is big and hard to install in Alpine
+* Allow helicopter to fly
+* Add prototype for Planet X
+* Remove Pong 3D as resolution is too low to build it
+* 3D testing
+
 Version 0.2.10
 ================================================================================
 
