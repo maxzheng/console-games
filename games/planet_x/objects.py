@@ -1,9 +1,9 @@
-from random import randint, random
+from random import randint, random, choice
 
 from games.screen import Screen
 from games.listeners import KeyListener
 from games.objects import (Bitmap, Monologue, AbstractPlayer, AbstractEnemies, Landscape, Circle,
-                           VolcanoErupting)
+                           VolcanoErupting, JellyFish)
 
 
 class Player(AbstractPlayer):
@@ -138,8 +138,16 @@ class VolcanoEnemies(AbstractEnemies, KeyListener):
     def create_enemy(self):
         x = randint(self.player.size, self.screen.width - 20)
         y = self.screen.height - 3
-
         y_delta = -random()
         size = randint(int(self.screen.height / 3), int(self.screen.height / 1.2))
 
         return VolcanoErupting(x, y, y_delta=y_delta, size=size)
+
+
+class JellyFishEnemies(AbstractEnemies, KeyListener):
+    def create_enemy(self):
+        x = randint(self.player.size, self.screen.width - 20)
+        y = choice([3, self.screen.height - 3])
+        y_delta = random() if y == 3 else -random()
+
+        return JellyFish(x, y, y_delta=y_delta)

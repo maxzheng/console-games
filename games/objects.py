@@ -1,5 +1,5 @@
 from math import pi, sin, cos
-from random import randint, random
+from random import randint, random, choice
 
 from games.screen import Screen
 from games.listeners import KeyListener
@@ -1576,6 +1576,66 @@ r"""
 \______/
  _/  _\_/
 """)  # noqa
+
+
+class JellyFish(Bitmap):
+    color = 'magenta'
+    frames_per_bitmap = 5
+    bitmaps = (r"""
+ __--__
+/ -  - \
+|______|
+/ \ /| \
+| / |/  \
+\ |//   |
+/ \||   \
+""",  # noqar
+r"""
+ __--__
+/  - - \
+|______|
+/ \ /| \
+| |/ / |
+\ \\ | \
+ \|/ \  \
+""",  # noqa
+r"""
+ __--__
+/   -- \
+|______|
+/ \ || \
+| | /\ |
+\ \ || \
+/  \\\ |
+""",  # noqa
+r"""
+ __--__
+/    - \
+|______|
+/ \ /| |
+| |/ / |
+| \|/ /
+/ /|| |
+""",  # noqa
+r"""
+ __--__
+/ -  - \
+|______|
+/ \ /| |
+| | |/ |
+| \//  \
+/ /\|   \
+""")  # noqa
+
+    def render(self, screen: Screen):
+        super().render(screen)
+
+        self.x_delta *= 0.95
+        self.y_delta *= 0.95
+
+        if abs(self.x_delta) + abs(self.y_delta) < 0.01:
+            self.x_delta = random() * 0.75 * choice([1, -1])
+            self.y_delta = random() * 0.75 * choice([1, -1])
 
 
 class Wormhole(Line3D):
