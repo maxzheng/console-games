@@ -359,6 +359,7 @@ class AbstractPlayer(ScreenObject, KeyListener):
         self.x = self._original_x
         self.y = self._original_y
         self.shape.sync(self)
+        self.show_score = True
 
     @property
     def visible(self):
@@ -397,7 +398,10 @@ class AbstractPlayer(ScreenObject, KeyListener):
         if self.show_total and self.score < self.total_score:
             score += ' | Total: {}'.format(self.total_score)
 
-        self.screen.status[self.score_title] = score
+        if self.show_score:
+            self.screen.status[self.score_title] = score
+        else:
+            self.screen.status.pop(self.score_title, None)
 
     def scored(self, points=1):
         """ Add given points, defaults to 1, to the player's score """

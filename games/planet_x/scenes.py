@@ -8,6 +8,7 @@ class Intro(Scene):
     def init(self):
         self.controller.player.reset()
         self.controller.player.active = False
+        self.controller.player.show_score = False
         self.intro = Monologue(self.controller.player.x - 1, self.controller.player.y + 4,
                                on_finish=self.next,
                                texts=["This is your daily news",
@@ -141,3 +142,29 @@ class Level4(Scene):
 
     def escape_pressed(self):
         self.controller.done = True
+
+
+class Home(Scene):
+    def init(self):
+        self.controller.player.reset()
+        self.controller.player.active = False
+        self.controller.player.x = self.screen.width / 2
+        self.controller.player.y = self.screen.height / 2
+        self.controller.player.color = 'red'
+        self.controller.player.show_score = False
+
+        self.outro = Monologue(self.controller.player.x - 1, self.controller.player.y + 4,
+                               on_finish=self.next,
+                               texts=["Yay!! We are finally home!",
+                                      "Listeners, you would not believe",
+                                      "the strange things that we had seen...",
+                                      "We will tell you next time.",
+                                      "For now, we need a rest and vacation!",
+                                      "This is Kate & Kelly signing out."])
+        self.landscapes = (Sun(self.screen.width / 2, 2),
+                           Landscape1(0, self.screen.height / 2 - 5, player=self.player),
+                           Landscape2(0, self.screen.height / 2, player=self.player))
+        self.obstacles = Obstacles(-self.screen.width, self.screen.height - 5, player=self.player)
+
+    def start(self):
+        self.screen.add(*self.landscapes, self.obstacles, self.outro, self.controller.player)
