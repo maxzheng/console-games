@@ -1,8 +1,8 @@
 from games.screen import Scene
-from games.objects import Monologue, Sun, One, Two, Wormhole, Three, Four, Five, Six
+from games.objects import Monologue, Sun, One, Two, Wormhole, Three, Four, Five, Six, Seven
 from games.planet_x.objects import (Landscape1, Landscape2, Obstacles, CrabClawEnemies,
                                     AcidBubbleEnemies, VolcanoEnemies, JellyFishEnemies,
-                                    CubeEnemies, SpinnerEnemies)
+                                    CubeEnemies, SpinnerEnemies, XEnemies)
 
 
 class Intro(Scene):
@@ -182,6 +182,30 @@ class Level6(Scene):
         self.player.gas = gas
 
         self.enemies = SpinnerEnemies(self.controller.player, max_enemies=int(self.screen.width/17.5))
+        self.wormhole = Wormhole(6, self.screen.height / 2)
+        self.wormhole.player = self.controller.player
+        self.wormhole.scene = self
+
+    def start(self):
+        self.screen.add(self.level, self.enemies, self.player, self.wormhole)
+
+    def escape_pressed(self):
+        self.controller.done = True
+
+
+class Level7(Scene):
+    def init(self):
+        self.level = Seven(self.screen.width / 2, self.screen.height / 2, remove_after_renders=30)
+        hp = self.player.hp
+        gas = self.player.gas
+        self.player.reset()
+        self.player.score = 7
+        self.player.hp = hp
+        self.player.gas = gas
+
+        size = int(self.screen.height / 3)
+        max_enemies = max(1, int((self.screen.width - 30) / (size * 2)))
+        self.enemies = XEnemies(self.controller.player, max_enemies=max_enemies, size=size)
         self.wormhole = Wormhole(6, self.screen.height / 2)
         self.wormhole.player = self.controller.player
         self.wormhole.scene = self

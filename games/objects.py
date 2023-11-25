@@ -167,7 +167,8 @@ class ScreenObject:
 
 
 class Object3D(ScreenObject):
-    def __init__(self, *args, points=None, connect_points=False, rotate_axes=None, random_start=False, **kwargs):
+    def __init__(self, *args, points=None, connect_points=False, rotate_axes=None, random_start=False,
+                 magnify_by_size=False, **kwargs):
         super().__init__(*args, **kwargs)
 
         #: Coordinates in 3D space
@@ -186,6 +187,9 @@ class Object3D(ScreenObject):
             self.theta_factor = 1
         if random_start:
             self.theta_factor = (random() + 0.1) * choice([1, -1]) * self.theta_factor
+
+        #: Factor to magnify the points
+        self.magnify_by_size = magnify_by_size
 
     @staticmethod
     def dot(m1, m2):
@@ -232,6 +236,11 @@ class Object3D(ScreenObject):
             theta = (screen.renders / 10 * self.theta_factor) % (2 * pi)
             new_point = self.rotate_point(point, theta)
             x, y, _ = new_point
+
+            if self.magnify_by_size:
+                x *= self.size
+                y *= self.size
+
             abs_x = int(self.x + x)
             abs_y = int(self.y + y)
 
@@ -347,8 +356,8 @@ class ScreenObjectGroup(ScreenObject):
 
 class AbstractPlayer(ScreenObject, KeyListener):
     def __init__(self, name, shape: ScreenObject, controller, score_title='score', show_total=False,
-                 max_hp=1):
-        super().__init__(shape.x, shape.y, size=shape.size, color=shape.color)
+                 max_hp=1, **kwargs):
+        super().__init__(shape.x, shape.y, size=shape.size, color=shape.color, **kwargs)
 
         self.name = name
         self.shape = shape
@@ -500,8 +509,8 @@ class CompassionateBoss(ScreenObject):
 
 
 class AbstractEnemies(ScreenObject):
-    def __init__(self, player: AbstractPlayer, max_enemies=5):
-        super().__init__(0, 0, player=player)
+    def __init__(self, player: AbstractPlayer, max_enemies=5, **kwargs):
+        super().__init__(0, 0, player=player, **kwargs)
         self.max_enemies = max_enemies
         self.boss = None
 
@@ -1679,6 +1688,25 @@ class Wormhole(Line3D):
 
         if self.player and len(self.coords & self.player.coords) > 10:
             self.scene.next()
+
+
+class X(Line3D):
+    color = 'green'
+    rotate_axes = (0, 0, 1, 2)
+    points = [
+        # X
+        (-1, -1, 0),
+        (1, 1, 0),
+        (0, 0, 0),
+        (-1, 1, 0),
+        (1, -1, 0)
+    ]
+
+    def render(self, screen: Screen):
+        super().render(screen)
+
+        if abs(screen.height / 2 - self.y) <= 0.1:
+            self.y_delta = 0
 
 
 class Spinner(Object3D):
