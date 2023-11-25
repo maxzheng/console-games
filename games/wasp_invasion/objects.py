@@ -223,13 +223,13 @@ class Enemies(AbstractEnemies, KeyListener):
 
     def left_pressed(self):
         if self.player.can_move_x(x_delta=-1):
-            for enemy in self.enemies:
+            for enemy in self.kids:
                 enemy.x += 1
             self.last_move = 'left'
 
     def right_pressed(self):
         if self.player.can_move_x(x_delta=1):
-            for enemy in self.enemies:
+            for enemy in self.kids:
                 enemy.x -= 1
             self.last_move = 'right'
 
