@@ -1690,25 +1690,6 @@ class Wormhole(Line3D):
             self.scene.next()
 
 
-class X(Line3D):
-    color = 'green'
-    rotate_axes = (0, 0, 1, 2)
-    points = [
-        # X
-        (-1, -1, 0),
-        (1, 1, 0),
-        (0, 0, 0),
-        (-1, 1, 0),
-        (1, -1, 0)
-    ]
-
-    def render(self, screen: Screen):
-        super().render(screen)
-
-        if abs(screen.height / 2 - self.y) <= 0.1:
-            self.y_delta = 0
-
-
 class Spinner(Object3D):
     def __init__(self, *args, size=5, explode_on_impact=False, rotate_axes=(0, 0, 1, 7),
                  random_movement=True, random_start=True, **kwargs):

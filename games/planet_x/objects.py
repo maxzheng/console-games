@@ -3,7 +3,7 @@ from random import randint, random, choice
 from games.screen import Screen
 from games.listeners import KeyListener
 from games.objects import (Bitmap, Monologue, AbstractPlayer, AbstractEnemies, Landscape, Circle,
-                           VolcanoErupting, JellyFish, Cube, Spinner, X)
+                           VolcanoErupting, JellyFish, Cube, Spinner, Line3D)
 
 
 class Player(AbstractPlayer):
@@ -172,6 +172,25 @@ class SpinnerEnemies(AbstractEnemies, KeyListener):
         y_delta = random() if y == 3 else -random()
 
         return Spinner(x, y, y_delta=y_delta, player=self.player, explode_on_impact=True)
+
+
+class X(Line3D):
+    color = 'green'
+    rotate_axes = (0, 0, 1, 2)
+    points = [
+        # X
+        (-1, -1, 0),
+        (1, 1, 0),
+        (0, 0, 0),
+        (-1, 1, 0),
+        (1, -1, 0)
+    ]
+
+    def render(self, screen: Screen):
+        super().render(screen)
+
+        if abs(screen.height / 2 - self.y) <= 0.5:
+            self.y_delta = 0
 
 
 class XEnemies(AbstractEnemies, KeyListener):
