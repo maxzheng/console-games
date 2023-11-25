@@ -32,7 +32,7 @@ class Survive(Scene):
         self.landscapes = (Sun(self.screen.width / 2, 2),
                            Landscape1(0, self.screen.height / 2 - 5, player=self.player),
                            Landscape2(0, self.screen.height / 2, player=self.player))
-        self.obstacles = Obstacles(self.screen.width / 2, self.screen.height - 5, player=self.player)
+        self.obstacles = Obstacles(self.screen.width / 2, self.screen.height - 6, player=self.player)
         self.player.reset()
         self.player.obstacles = self.obstacles
 

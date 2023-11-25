@@ -17,7 +17,7 @@ class Intro(Scene):
         self.landscapes = (Sun(self.screen.width / 2, 2),
                            Landscape1(0, self.screen.height / 2 - 5, player=self.player),
                            Landscape2(0, self.screen.height / 2, player=self.player))
-        self.obstacles = Obstacles(-self.screen.width, self.screen.height - 5, player=self.player)
+        self.obstacles = Obstacles(-self.screen.width, self.screen.height - 6, player=self.player)
 
     def start(self):
         self.screen.add(*self.landscapes, self.obstacles, self.intro, self.controller.player)
@@ -170,7 +170,7 @@ class Home(Scene):
         self.landscapes = (Sun(self.screen.width / 2, 2),
                            Landscape1(0, self.screen.height / 2 - 5, player=self.player),
                            Landscape2(0, self.screen.height / 2, player=self.player))
-        self.obstacles = Obstacles(-self.screen.width, self.screen.height - 5, player=self.player)
+        self.obstacles = Obstacles(-self.screen.width, self.screen.height - 6, player=self.player)
 
     def start(self):
         self.screen.add(*self.landscapes, self.obstacles, self.outro, self.controller.player)
