@@ -72,8 +72,9 @@ class Level1(Scene):
                                       "We are in another planet.",
                                       "There is nothing,",
                                       "but strange obstacles",
-                                      "and a portal.",
-                                      "Perhaps we can get home thru it."])
+                                      "and a wormhole.",
+                                      "Perhaps we can get home thru it.",
+                                      "Move me using arrow keys."])
 
     def start(self):
         self.screen.add(self.level, self.enemies, self.player, self.wormhole, self.intro)
