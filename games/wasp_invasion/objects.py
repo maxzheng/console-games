@@ -67,8 +67,12 @@ class Player(AbstractPlayer):
                                                                     'And saved humanity all thanks to',
                                                                     'to having your trusty flamethrower',
                                                                     'with you today.',
-                                                                    'Never leave home without it! ;)'],
-                                         on_finish=self.controller.reset_scene))
+                                                                    'Never leave home without it! ;)',
+                                                                    'THE END',
+                                                                    'Press Space to play again '
+                                                                    'or Esc to exit.'
+                                                                    ],
+                                         ))
 
             if self.is_hit:
                 self.color = screen.COLOR_YELLOW
@@ -98,8 +102,8 @@ class Player(AbstractPlayer):
                         self.y_delta = 0
 
             x_delta, y_delta, char = self.projectile_deltas
-            self.flamethrower.x = self.x + x_delta - 0.5
-            self.flamethrower.y = self.y + y_delta - 0.5
+            self.flamethrower.x = self.x + x_delta
+            self.flamethrower.y = self.y + y_delta
 
             if self.flame_on:
                 self.flamethrower.char = char
@@ -170,6 +174,8 @@ class Player(AbstractPlayer):
         if self.active:
             if not self.y_delta or not self.can_move_y():
                 self.y_delta = -1
+        else:
+            self.controller.current_scene.next()
 
 
 class Enemies(AbstractEnemies, KeyListener):

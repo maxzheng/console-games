@@ -40,16 +40,16 @@ class Player(AbstractPlayer):
                 self.active = False
 
     def left_pressed(self):
-        if self.active:
-            self.shape.flip = False
+        self.shape.flip = False
 
+        if self.active:
             if self.can_move_x(x_delta=-1):
                 self.x -= 1
 
     def right_pressed(self):
-        if self.active:
-            self.shape.flip = True
+        self.shape.flip = True
 
+        if self.active:
             if self.can_move_x(x_delta=1):
                 self.x += 1
 

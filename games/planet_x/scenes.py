@@ -25,6 +25,9 @@ class Intro(Scene):
     def key_pressed(self, key):
         self.next()
 
+    def escape_pressed(self):
+        self.controller.done = True
+
 
 class WormholeAppeared(Intro):
     def init(self):
@@ -153,14 +156,17 @@ class Home(Scene):
         self.controller.player.color = 'red'
         self.controller.player.show_score = False
 
+        self.screen.border.reset()
+
         self.outro = Monologue(self.controller.player.x - 1, self.controller.player.y + 4,
-                               on_finish=self.next,
                                texts=["Yay!! We are finally home!",
                                       "Listeners, you would not believe",
                                       "the strange things that we had seen...",
                                       "We will tell you next time.",
                                       "For now, we need a rest and vacation!",
-                                      "This is Kate & Kelly signing out."])
+                                      "This is Kate & Kelly signing out.",
+                                      "THE END",
+                                      "Press Space to play again or Esc to exit"])
         self.landscapes = (Sun(self.screen.width / 2, 2),
                            Landscape1(0, self.screen.height / 2 - 5, player=self.player),
                            Landscape2(0, self.screen.height / 2, player=self.player))
@@ -168,3 +174,9 @@ class Home(Scene):
 
     def start(self):
         self.screen.add(*self.landscapes, self.obstacles, self.outro, self.controller.player)
+
+    def escape_pressed(self):
+        self.controller.done = True
+
+    def space_pressed(self):
+        self.next()
