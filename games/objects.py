@@ -8,7 +8,7 @@ from games.listeners import KeyListener
 class ScreenObject:
     """ Base class for all objects on screen """
     def __init__(self, x: int, y: int, x_delta=0, y_delta=0, color=None, size=1, parent=None,
-                 remove_after_renders=None, on_remove=None):
+                 remove_after_renders=None, on_remove=None, random_movement=False):
         self.x = x
         self.y = y
         self.x_delta = x_delta
@@ -23,6 +23,7 @@ class ScreenObject:
         self.renders = 0
         self.remove_after_renders = remove_after_renders
         self.on_remove = on_remove
+        self._random_movement = random_movement or getattr(self, 'random_movement', False)
 
     def reset(self):
         """ Reset object to original state """
@@ -132,6 +133,14 @@ class ScreenObject:
         if self.remove_after_renders and self.renders > self.remove_after_renders:
             self.remove()
 
+        if self._random_movement:
+            self.x_delta *= 0.95
+            self.y_delta *= 0.95
+
+            if abs(self.x_delta) + abs(self.y_delta) < 0.01:
+                self.x_delta = random() * 0.75 * choice([1, -1])
+                self.y_delta = random() * 0.75 * choice([1, -1])
+
     def render_init(self, screen: Screen):
         """ Only called once when self.renders = 0. Useful for initializing objects to render later """
 
@@ -155,7 +164,7 @@ class ScreenObject:
 
 
 class Object3D(ScreenObject):
-    def __init__(self, *args, points=None, connect_points=False, rotate_axes=None, **kwargs):
+    def __init__(self, *args, points=None, connect_points=False, rotate_axes=None, random_start=False, **kwargs):
         super().__init__(*args, **kwargs)
 
         #: Coordinates in 3D space
@@ -165,7 +174,15 @@ class Object3D(ScreenObject):
         self.connect_points = connect_points
 
         #: Axes (x, y, z) to rotate
-        self._rotate_axes = rotate_axes or getattr(self, 'rotate_axes', (1, 1, 2))
+        self._rotate_axes = rotate_axes or getattr(self, 'rotate_axes', (1, 1, 2, 1))
+
+        #: Factor to multiply theta to adjust rotation
+        if random_start:
+            self.theta_factor = (random() + 0.1) * choice([1, -1])
+        elif len(self._rotate_axes) > 3:
+            self.theta_factor = self._rotate_axes[3]
+        else:
+            self.theta_factor = 1
 
     @staticmethod
     def dot(m1, m2):
@@ -209,7 +226,7 @@ class Object3D(ScreenObject):
         points = []
         for point in self._points:
             color = (point[3] if len(point) > 3 else None) or self.color
-            theta = screen.renders / 10 % (2 * pi)
+            theta = (screen.renders / 10 * self.theta_factor) % (2 * pi)
             new_point = self.rotate_point(point, theta)
             x, y, _ = new_point
             abs_x = int(self.x + x)
@@ -1539,7 +1556,7 @@ class VolcanoErupting(ScreenObject):
 class Helicopter(Bitmap):
     frames_per_bitmap = 1
     color = 'red'
-    flip_map = {'/': '\\', '\\': '/', 'e': 'ɘ', 's': 'ƨ'}
+    flip_map = {'/': '\\', '\\': '/', 'e': 'ɘ', 's': 'ƨ', 'N': 'И'}
     bitmaps = (r"""
   ----
  __|___
@@ -1583,6 +1600,7 @@ r"""
 
 
 class JellyFish(Bitmap):
+    random_movement = True
     color = 'magenta'
     frames_per_bitmap = 5
     bitmaps = (r"""
@@ -1630,16 +1648,6 @@ r"""
 | \//  \
 / /\|   \
 """)  # noqa
-
-    def render(self, screen: Screen):
-        super().render(screen)
-
-        self.x_delta *= 0.95
-        self.y_delta *= 0.95
-
-        if abs(self.x_delta) + abs(self.y_delta) < 0.01:
-            self.x_delta = random() * 0.75 * choice([1, -1])
-            self.y_delta = random() * 0.75 * choice([1, -1])
 
 
 class Wormhole(Line3D):

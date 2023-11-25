@@ -3,7 +3,7 @@ from random import randint, random, choice
 from games.screen import Screen
 from games.listeners import KeyListener
 from games.objects import (Bitmap, Monologue, AbstractPlayer, AbstractEnemies, Landscape, Circle,
-                           VolcanoErupting, JellyFish)
+                           VolcanoErupting, JellyFish, Cube)
 
 
 class Player(AbstractPlayer):
@@ -151,3 +151,15 @@ class JellyFishEnemies(AbstractEnemies, KeyListener):
         y_delta = random() if y == 3 else -random()
 
         return JellyFish(x, y, y_delta=y_delta)
+
+
+class CubeEnemies(AbstractEnemies, KeyListener):
+    def create_enemy(self):
+        x = randint(self.player.size, self.screen.width - 20)
+        y = choice([3, self.screen.height - 3])
+        y_delta = random() if y == 3 else -random()
+
+        cube = Cube(x, y, y_delta=y_delta, size=5, color='rainbow', random_start=True,
+                    random_movement=True)
+        cube.connect_points = False
+        return cube
