@@ -7,7 +7,7 @@ from games.listeners import KeyListener
 
 class ScreenObject:
     """ Base class for all objects on screen """
-    def __init__(self, x: int, y: int, x_delta=None, y_delta=None, color=None, size=1, parent=None,
+    def __init__(self, x: int, y: int, x_delta=0, y_delta=0, color=None, size=1, parent=None,
                  remove_after_renders=None, on_remove=None):
         self.x = x
         self.y = y
@@ -1519,6 +1519,17 @@ class Flame(ScreenObject):
 
         if not self.kids:  # Flamed out (explosions/projectiles are gone)
             self.remove()
+
+
+class VolcanoErupting(ScreenObject):
+    def render_init(self, screen: Screen):
+        volcano = Volcano(self.x, self.y, color=self.color)
+        screen.add(volcano)
+        self.add_kid(volcano)
+
+        flame = Flame(self.x, self.y, y_delta=-1, size=self.size)
+        screen.add(flame)
+        self.add_kid(flame)
 
 
 class Helicopter(Bitmap):

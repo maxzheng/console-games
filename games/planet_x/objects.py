@@ -2,7 +2,8 @@ from random import randint, random
 
 from games.screen import Screen
 from games.listeners import KeyListener
-from games.objects import (Bitmap, Monologue, AbstractPlayer, AbstractEnemies, Landscape, Circle)
+from games.objects import (Bitmap, Monologue, AbstractPlayer, AbstractEnemies, Landscape, Circle,
+                           VolcanoErupting)
 
 
 class Player(AbstractPlayer):
@@ -66,6 +67,27 @@ class Player(AbstractPlayer):
         super().destruct(*args, **kwargs, on_finish=self.controller.reset)
 
 
+class Landscape1(Landscape):
+    move_speed = 0.1
+    bitmap = """
+   T    T           T        T       T      T           T              T   T            T      T   T
+"""  # noqa
+
+
+class Landscape2(Landscape):
+    move_speed = 0.2
+    bitmap = """
+TT       T     T    T     T     T  T    T         T   T     T   TT   T   T T TTT   T    T    T     T TT
+"""  # noqa
+
+
+class Obstacles(Landscape):
+    move_speed = 1
+    bitmap = """\
+   RVRR    VR  V  R   R    RVR    VRV   R  R   R   RV   VR
+""" # noqa
+
+
 class CrabClaw(Bitmap):
     color = 'red'
     bitmaps = (r"""
@@ -112,22 +134,12 @@ class AcidBubbleEnemies(AbstractEnemies, KeyListener):
         return Circle(x, y, y_delta=y_delta, color='green')
 
 
-class Landscape1(Landscape):
-    move_speed = 0.1
-    bitmap = """
-   T    T           T        T       T      T           T              T   T            T      T   T
-"""  # noqa
+class VolcanoEnemies(AbstractEnemies, KeyListener):
+    def create_enemy(self):
+        x = randint(self.player.size, self.screen.width - 20)
+        y = self.screen.height - 3
 
+        y_delta = -random()
+        size = randint(int(self.screen.height / 3), int(self.screen.height / 1.2))
 
-class Landscape2(Landscape):
-    move_speed = 0.2
-    bitmap = """
-TT       T     T    T     T     T  T    T         T   T     T   TT   T   T T TTT   T    T    T     T TT
-"""  # noqa
-
-
-class Obstacles(Landscape):
-    move_speed = 1
-    bitmap = """\
-   RVRR    VR  V  R   R    RVR    VRV   R  R   R   RV   VR
-""" # noqa
+        return VolcanoErupting(x, y, y_delta=y_delta, size=size)

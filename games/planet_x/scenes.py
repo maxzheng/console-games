@@ -1,6 +1,7 @@
 from games.screen import Scene
-from games.objects import Monologue, Sun, One, Two, Wormhole
-from games.planet_x.objects import Landscape1, Landscape2, Obstacles, CrabClawEnemies, AcidBubbleEnemies
+from games.objects import Monologue, Sun, One, Two, Wormhole, Three
+from games.planet_x.objects import (Landscape1, Landscape2, Obstacles, CrabClawEnemies,
+                                    AcidBubbleEnemies, VolcanoEnemies)
 
 
 class Intro(Scene):
@@ -57,7 +58,7 @@ class Level1(Scene):
         self.level = One(self.screen.width / 2, self.screen.height / 2, remove_after_renders=30)
         self.player.reset()
         self.player.score = 1
-        self.enemies = CrabClawEnemies(self.controller.player)
+        self.enemies = CrabClawEnemies(self.controller.player, max_enemies=int(self.screen.width/20))
         self.wormhole = Wormhole(6, self.screen.height / 2)
         self.wormhole.player = self.controller.player
         self.wormhole.scene = self
@@ -86,7 +87,29 @@ class Level2(Scene):
         self.player.hp = hp
         self.player.gas = gas
 
-        self.enemies = AcidBubbleEnemies(self.controller.player, max_enemies=6)
+        self.enemies = AcidBubbleEnemies(self.controller.player, max_enemies=int(self.screen.width/17.5))
+        self.wormhole = Wormhole(6, self.screen.height / 2)
+        self.wormhole.player = self.controller.player
+        self.wormhole.scene = self
+
+    def start(self):
+        self.screen.add(self.level, self.enemies, self.player, self.wormhole)
+
+    def escape_pressed(self):
+        self.controller.done = True
+
+
+class Level3(Scene):
+    def init(self):
+        self.level = Three(self.screen.width / 2, self.screen.height / 2, remove_after_renders=30)
+        hp = self.player.hp
+        gas = self.player.gas
+        self.player.reset()
+        self.player.score = 3
+        self.player.hp = hp
+        self.player.gas = gas
+
+        self.enemies = VolcanoEnemies(self.controller.player, max_enemies=int(self.screen.width/15))
         self.wormhole = Wormhole(6, self.screen.height / 2)
         self.wormhole.player = self.controller.player
         self.wormhole.scene = self
