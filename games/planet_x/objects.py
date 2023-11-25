@@ -3,7 +3,7 @@ from random import randint, random, choice
 from games.screen import Screen
 from games.listeners import KeyListener
 from games.objects import (Bitmap, Monologue, AbstractPlayer, AbstractEnemies, Landscape, Circle,
-                           VolcanoErupting, JellyFish, Cube)
+                           VolcanoErupting, JellyFish, Cube, Spinner)
 
 
 class Player(AbstractPlayer):
@@ -91,8 +91,8 @@ class Obstacles(Landscape):
 class CrabClaw(Bitmap):
     color = 'red'
     bitmaps = (r"""
-__________
-|        |
+ ________
+/        \
 | \/     |
 |  \ /   |
 |   /\   |
@@ -102,8 +102,8 @@ __________
   \_\
 """,  # noqa
 r"""
-__________
-|        |
+ ________
+/        \
 | \/     |
 |  \ /   |
 |   /\   |
@@ -163,3 +163,12 @@ class CubeEnemies(AbstractEnemies, KeyListener):
                     random_movement=True)
         cube.connect_points = False
         return cube
+
+
+class SpinnerEnemies(AbstractEnemies, KeyListener):
+    def create_enemy(self):
+        x = randint(self.player.size, self.screen.width - 20)
+        y = choice([3, self.screen.height - 3])
+        y_delta = random() if y == 3 else -random()
+
+        return Spinner(x, y, y_delta=y_delta, player=self.player, explode_on_impact=True)

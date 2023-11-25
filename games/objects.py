@@ -8,7 +8,7 @@ from games.listeners import KeyListener
 class ScreenObject:
     """ Base class for all objects on screen """
     def __init__(self, x: int, y: int, x_delta=0, y_delta=0, color=None, size=1, parent=None,
-                 remove_after_renders=None, on_remove=None, random_movement=False):
+                 remove_after_renders=None, on_remove=None, random_movement=False, player=None):
         self.x = x
         self.y = y
         self.x_delta = x_delta
@@ -24,6 +24,7 @@ class ScreenObject:
         self.remove_after_renders = remove_after_renders
         self.on_remove = on_remove
         self._random_movement = random_movement or getattr(self, 'random_movement', False)
+        self.player = player
 
     def reset(self):
         """ Reset object to original state """
@@ -146,6 +147,8 @@ class ScreenObject:
 
     def add_kid(self, screen_object):
         self.kids.add(screen_object)
+        if not screen_object.parent:
+            screen_object.parent = self
 
     def remove_kid(self, screen_object):
         if screen_object in self.kids:
@@ -177,12 +180,12 @@ class Object3D(ScreenObject):
         self._rotate_axes = rotate_axes or getattr(self, 'rotate_axes', (1, 1, 2, 1))
 
         #: Factor to multiply theta to adjust rotation
-        if random_start:
-            self.theta_factor = (random() + 0.1) * choice([1, -1])
-        elif len(self._rotate_axes) > 3:
+        if len(self._rotate_axes) > 3:
             self.theta_factor = self._rotate_axes[3]
         else:
             self.theta_factor = 1
+        if random_start:
+            self.theta_factor = (random() + 0.1) * choice([1, -1]) * self.theta_factor
 
     @staticmethod
     def dot(m1, m2):
@@ -455,10 +458,10 @@ class AbstractPlayer(ScreenObject, KeyListener):
 class CompassionateBoss(ScreenObject):
     def __init__(self, name, shape: ScreenObject, player: AbstractPlayer, hp=5):
         super().__init__(shape.x, shape.y, size=shape.size, color=shape.color,
-                         x_delta=shape.x_delta, y_delta=shape.y_delta)
+                         x_delta=shape.x_delta, y_delta=shape.y_delta,
+                         player=player)
         self.name = name
         self.shape = shape
-        self.player = player
         if self.y_delta is None:
             self.y_delta = 0.1
         if self.x_delta is None:
@@ -498,10 +501,8 @@ class CompassionateBoss(ScreenObject):
 
 class AbstractEnemies(ScreenObject):
     def __init__(self, player: AbstractPlayer, max_enemies=5):
-        super().__init__(0, 0)
+        super().__init__(0, 0, player=player)
         self.max_enemies = max_enemies
-        self.enemies = set()
-        self.player = player
         self.boss = None
 
     def create_enemy(self) -> ScreenObject:
@@ -528,18 +529,20 @@ class AbstractEnemies(ScreenObject):
 
         if self.player.active:
             # Create enemies
-            if len(self.enemies) < self.max_enemies + self.additional_enemies():
+            if len(self.kids) < self.max_enemies + self.additional_enemies():
                 enemy = self.create_enemy()
-                self.enemies.add(enemy)
+                enemy.parent = self
+                self.add_kid(enemy)
                 screen.add(enemy)
 
             # Create boss
             if self.should_spawn_boss() and self.boss not in screen:
                 self.boss = self.create_boss()
-                self.enemies.add(self.boss)
+                self.boss.parent = self
+                self.add_kid(self.boss)
                 screen.add(self.boss)
 
-        for enemy in list(self.enemies):
+        for enemy in list(self.kids):
             # Make them go fast when player is destroyed
             if not self.player.active:
                 if enemy.y_delta:
@@ -549,8 +552,7 @@ class AbstractEnemies(ScreenObject):
 
             # If it is out of the screen, remove it (except for boss or player is dead)
             if enemy.is_out and (enemy != self.boss or not self.player.active):
-                self.enemies.remove(enemy)
-                screen.remove(enemy)
+                enemy.remove()
 
             # Otherwise, check if player's projectiles hit the enemies
             else:
@@ -561,8 +563,7 @@ class AbstractEnemies(ScreenObject):
                             self.boss.is_hit = True
                             break
 
-                        self.enemies.remove(enemy)
-                        screen.remove(enemy)
+                        enemy.remove()
 
                         self.player.remove_kid(projectile)
                         projectile.remove()
@@ -1672,13 +1673,31 @@ class Wormhole(Line3D):
         (-1, 1, 0),
         (1, -1, 0)
     ]
-    player = None
 
     def render(self, screen: Screen):
         super().render(screen)
 
         if self.player and len(self.coords & self.player.coords) > 10:
             self.scene.next()
+
+
+class Spinner(Object3D):
+    def __init__(self, *args, size=5, explode_on_impact=False, rotate_axes=(0, 0, 1, 7),
+                 random_movement=True, random_start=True, **kwargs):
+        super().__init__(*args, points=[(size, size, 0)], size=size, rotate_axes=rotate_axes,
+                         random_movement=random_movement, random_start=random_start, **kwargs)
+        self.explode_on_impact = True
+
+    def render(self, screen: Screen):
+        super().render(screen)
+
+        if self.explode_on_impact and self.player and self.coords & self.player.coords:
+            x, y = list(self.coords)[0]
+            explosion = Explosion(x, y)
+            if self.parent:
+                self.parent.add_kid(explosion)
+            screen.add(explosion)
+            self.remove()
 
 
 class Landscape(ObjectMap, KeyListener):
@@ -1689,10 +1708,6 @@ class Landscape(ObjectMap, KeyListener):
         'R': Rock,
         'V': Volcano
     }
-
-    def __init__(self, *args, player: AbstractPlayer = None, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.player = player
 
     def left_pressed(self):
         if not self.player or self.player.can_move_x(x_delta=-1):

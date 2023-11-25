@@ -153,15 +153,15 @@ def test_enemies(screen, player):
     enemies.render(screen)
     screen.add(enemies)
 
-    assert len(enemies.enemies) == 1
+    assert len(enemies.kids) == 1
     assert len(screen) == 2  # enemies + first_enemy
-    first_enemy = list(enemies.enemies)[0]
+    first_enemy = list(enemies.kids)[0]
 
     # Next 10 renders will create max of 5 enemies and no more
     with screen:
         for i in range(10):
             screen.render()
-    assert len(enemies.enemies) == 5
+    assert len(enemies.kids) == 5
     assert len(screen) == 6
 
     assert first_enemy.x == 11
@@ -171,13 +171,13 @@ def test_enemies(screen, player):
     player.score = 10
     with screen:
         screen.render()
-    assert len(enemies.enemies) == 6
+    assert len(enemies.kids) == 6
     assert len(screen) == 7
 
     # No more enemies will be created
     with screen:
         screen.render()
-    assert len(enemies.enemies) == 6
+    assert len(enemies.kids) == 6
     assert len(screen) == 7
 
     # Next 10 renders will remove all enemies as they get out of screen when player is no longer active
@@ -185,8 +185,8 @@ def test_enemies(screen, player):
     with screen:
         for i in range(10):
             screen.render()
-    print(enemies.enemies)
-    assert len(enemies.enemies) == 0
+    print(enemies.kids)
+    assert len(enemies.kids) == 0
     assert len(screen) == 1  # Just "enemies" object
 
 
