@@ -1,5 +1,11 @@
-Version 0.3.3
+Version 0.3.4
 ================================================================================
+
+* Longer landscape obstacles
+* Allow debug mode to be toggled using "dd"
+
+Version 0.3.3
+--------------------------------------------------------------------------------
 
 * Increase chance of locking X
 
