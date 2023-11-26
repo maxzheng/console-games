@@ -1695,7 +1695,7 @@ class Spinner(Object3D):
                  random_movement=True, random_start=True, **kwargs):
         super().__init__(*args, points=[(size, size, 0)], size=size, rotate_axes=rotate_axes,
                          random_movement=random_movement, random_start=random_start, **kwargs)
-        self.explode_on_impact = True
+        self.explode_on_impact = explode_on_impact
 
     def render(self, screen: Screen):
         super().render(screen)
