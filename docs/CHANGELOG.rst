@@ -1,5 +1,10 @@
-Version 0.3.4
+Version 0.3.5
 ================================================================================
+
+* Consume gas faster
+
+Version 0.3.4
+--------------------------------------------------------------------------------
 
 * Longer landscape obstacles
 * Allow debug mode to be toggled using "dd"
