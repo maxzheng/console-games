@@ -1058,7 +1058,7 @@ class Choice(ScreenObject, KeyListener):
 
         if not self.bar:
             max_size = max(c.size for c in self.choices)
-            bar_size = max_size * 4
+            bar_size = int(max_size * 3.5)
             width = bar_size * len(self.choices)
             start_x = int(self.x - width / 2)
             end_x = start_x + width

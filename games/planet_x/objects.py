@@ -30,7 +30,7 @@ class Player(AbstractPlayer):
                 self.color = 'red'
 
             if self.gas > 0:
-                self.gas -= 0.01
+                self.gas -= 0.025
             elif self.gas != -1:
                 screen.add(Monologue(self.x, self.y - 2, on_finish=self.destruct,
                                      texts=['Out of gas!!!',

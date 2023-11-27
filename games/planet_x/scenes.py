@@ -7,6 +7,7 @@ from games.planet_x.objects import (Landscape1, Landscape2, Obstacles, CrabClawE
 
 class Intro(Scene):
     def init(self):
+        self.screen.border.reset()
         self.controller.player.reset()
         self.controller.player.active = False
         self.controller.player.show_score = False
