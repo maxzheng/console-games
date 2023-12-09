@@ -4,7 +4,7 @@ console games
 .. image:: https://raw.githubusercontent.com/maxzheng/console-games/master/docs/console-games.jpg
  :alt: Console Games
 
-Four games are available:
+Five games are available:
 
 1. **Geometry Bash**: Bash the squares before they get you and watch out for the money boss! Don't like geometry? You will love this one!! :D
 2. **Planet X**: You have been transported to Planet X thru a wormhole. Fly thru obstacles and wormholes to get back home! Game design by my kids.
