@@ -29,7 +29,7 @@ And then start playing::
 
     play
 
-Enjoy! And come back soon for more games!!
+Enjoy!
 
 Links & Contact Info
 ====================
